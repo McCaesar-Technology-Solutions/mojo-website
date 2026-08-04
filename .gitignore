@@ -18,8 +18,13 @@ dist-ssr
 .env
 .env.*
 !.env.example
+.env.local
+.env.*.local
 
-# Wrangler / Cloudflare
+# Vercel
+.vercel
+
+# Wrangler / Cloudflare (legacy; app targets Vercel)
 .wrangler/
 .dev.vars
 

@@ -1,6 +1,14 @@
-export function getAppEnv(): "local" | "staging" | "production" {
+export type AppEnv = "local" | "preview" | "staging" | "production";
+
+/**
+ * App environment for logging / feature gates.
+ * Set VITE_APP_ENV on Vercel: `preview` (Preview) or `production` (Production).
+ */
+export function getAppEnv(): AppEnv {
   const v = (import.meta.env.VITE_APP_ENV ?? import.meta.env.APP_ENV ?? "local") as string;
-  if (v === "staging" || v === "production") return v;
+  if (v === "production") return "production";
+  if (v === "preview") return "preview";
+  if (v === "staging") return "staging";
   return "local";
 }
 
@@ -14,6 +22,7 @@ export function getSupabaseConfig() {
   };
 }
 
+/** Canonical public site URL (no trailing slash). Set VITE_APP_URL per Vercel environment. */
 export function getAppUrl() {
   return (import.meta.env.VITE_APP_URL as string | undefined)?.replace(/\/$/, "") || "";
 }
