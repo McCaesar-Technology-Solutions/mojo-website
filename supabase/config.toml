@@ -1,0 +1,20 @@
+# Minimal Supabase CLI config for local/staging workflows.
+# Create a project at https://supabase.com then link with: supabase link
+
+project_id = "mojo-hotels"
+
+[api]
+enabled = true
+
+[db]
+major_version = 15
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173/**", "https://*.lovable.app/**"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false

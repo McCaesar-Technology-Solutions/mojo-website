@@ -150,7 +150,17 @@ Ensure the layer order matches the source precisely for the fixed nav and sticky
 
 All pricing in Ghana Cedis (GHS). All locations in Ghana.
 
-Booking flow is enquiry-only — no instant reservation or payment processing UI.
+## Production stack
+
+MOJO is a TanStack Start app with **Supabase** (Auth, Postgres + RLS, Storage, Edge Functions) and **Paystack** Instant Book.
+
+- Public routes: `/`, `/properties`, `/properties/$slug`, auth, account, legal pages
+- Admin: `/admin/*` (content, enquiries, bookings, calendar, guests, analytics, reviews, audit)
+- Booking: Request to Book (enquiry → admin approve) and Instant Book (Paystack)
+- Without env vars the UI runs in **demo mode** using `src/data/demo-properties.ts`
+
+Setup guides: [docs/PRODUCTION.md](docs/PRODUCTION.md), [docs/RUNBOOKS.md](docs/RUNBOOKS.md), [docs/RLS_CHECKLIST.md](docs/RLS_CHECKLIST.md).  
+Copy [.env.example](.env.example) → `.env.local`, apply `supabase/migrations/`, then seed.
 
 This project was built with [Lovable](https://lovable.dev).
 
@@ -164,12 +174,11 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
 npm i
+cp .env.example .env.local   # add Supabase keys when ready
 npm run dev
+npm run typecheck
+npm run build
 ```
-# mojo-website
+
