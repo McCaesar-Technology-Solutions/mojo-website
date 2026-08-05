@@ -274,6 +274,8 @@ function Index() {
             description: "Premium apartments and hotels thoughtfully managed across Ghana.",
             areaServed: "Ghana",
             url: "https://mojoapartments.com",
+            logo: "https://mojoapartments.com/logo.svg",
+            image: "https://mojoapartments.com/icons/icon-512.png",
           }),
         }}
       />

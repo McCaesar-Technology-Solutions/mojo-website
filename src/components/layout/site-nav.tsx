@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { useAuth } from "@/contexts/auth-context";
 
 export function SiteNav({ wishlistCount = 0 }: { wishlistCount?: number }) {
@@ -19,8 +20,8 @@ export function SiteNav({ wishlistCount = 0 }: { wishlistCount?: number }) {
       }`}
     >
       <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-semibold uppercase tracking-tighter text-gold">
-          MOJO
+        <Link to="/" className="flex items-center" aria-label="MOJO Apartments home">
+          <BrandMark variant="brand" className="!h-8" />
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium">
           <div className="relative group">

@@ -1,4 +1,5 @@
 import { Outlet, createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { getSupabase } from "@/lib/supabase/client";
 
 const links = [
@@ -35,8 +36,8 @@ function AdminLayout() {
       <header className="border-b border-brand-900/10 bg-white">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link to="/" className="text-lg font-semibold uppercase tracking-tighter text-gold">
-              MOJO
+            <Link to="/" className="flex items-center gap-2" aria-label="MOJO Apartments home">
+              <BrandMark variant="brand" className="!h-7" />
             </Link>
             <span className="text-sm text-gray-500">Admin</span>
           </div>

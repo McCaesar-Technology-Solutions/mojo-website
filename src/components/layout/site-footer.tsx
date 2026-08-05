@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { getWhatsAppNumber } from "@/lib/env";
 
 export function SiteFooter() {
@@ -8,7 +9,9 @@ export function SiteFooter() {
     <footer className="bg-brand-900 text-white/80 pt-16 pb-8 px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10">
         <div className="col-span-2 md:col-span-1">
-          <div className="text-2xl font-semibold uppercase tracking-tighter text-gold">MOJO</div>
+          <Link to="/" className="inline-flex items-center" aria-label="MOJO Apartments home">
+            <BrandMark variant="gold" className="!h-9" />
+          </Link>
           <p className="mt-4 text-sm text-white/60 leading-relaxed">
             Premium apartments and hotels thoughtfully managed across Ghana.
           </p>
