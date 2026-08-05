@@ -5,7 +5,7 @@ import heroVideoWebm from "../assets/hero-bg.webm.asset.json";
 import { SiteNav } from "@/components/layout/site-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PropertyCard } from "@/components/properties/property-card";
-import { DEMO_TESTIMONIALS } from "@/data/demo-properties";
+import { GUEST_QUOTES } from "@/data/guest-quotes";
 import { listPublishedProperties } from "@/lib/properties";
 import type { Property } from "@/types/domain";
 
@@ -42,7 +42,9 @@ function Index() {
   const [guests, setGuests] = useState(2);
 
   useEffect(() => {
-    void listPublishedProperties().then(({ properties: list }) => setProperties(list));
+    void listPublishedProperties()
+      .then(({ properties: list }) => setProperties(list))
+      .catch(() => setProperties([]));
   }, []);
 
   const featured = properties.filter((p) => p.is_featured).slice(0, 4);
@@ -202,7 +204,7 @@ function Index() {
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {DEMO_TESTIMONIALS.map((t) => (
+            {GUEST_QUOTES.map((t) => (
               <div
                 key={t.name}
                 className="bg-white shadow-lg hover:shadow-2xl ring-1 ring-brand-900/5 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1"
@@ -256,12 +258,6 @@ function Index() {
             >
               Sign In
             </Link>
-          </div>
-          <div className="mt-10 flex items-center justify-center gap-6 grayscale opacity-70">
-            <iconify-icon icon="logos:visa" width="48" />
-            <iconify-icon icon="logos:mastercard" width="48" />
-            <iconify-icon icon="logos:amex" width="48" />
-            <iconify-icon icon="logos:paypal" width="48" />
           </div>
         </div>
       </section>

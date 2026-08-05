@@ -152,12 +152,11 @@ All pricing in Ghana Cedis (GHS). All locations in Ghana.
 
 ## Production stack
 
-MOJO is a TanStack Start app hosted on **Vercel** (Nitro `vercel` preset), with **Supabase** (Auth, Postgres + RLS, Storage, Edge Functions) and **Paystack** Instant Book.
+MOJO is a TanStack Start app hosted on **Vercel** (Nitro `vercel` preset), with **Supabase** (Auth, Postgres + RLS, Storage, Edge Functions). Instant Book / Paystack is in the repo but deferred for launch.
 
 - Public routes: `/`, `/properties`, `/properties/$slug`, auth, account, legal pages
 - Admin: `/admin/*` (content, enquiries, bookings, calendar, guests, analytics, reviews, audit)
-- Booking: Request to Book (enquiry → admin approve) and Instant Book (Paystack)
-- Without env vars the UI runs in **demo mode** using `src/data/demo-properties.ts`
+- Booking: **Request to Book** (enquiry → admin approve). Requires live Supabase — no demo catalog.
 
 Setup guides: [docs/LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md), [docs/VERCEL.md](docs/VERCEL.md), [docs/PRODUCTION.md](docs/PRODUCTION.md), [docs/RUNBOOKS.md](docs/RUNBOOKS.md), [docs/RLS_CHECKLIST.md](docs/RLS_CHECKLIST.md).  
 Copy [.env.example](.env.example) → `.env.local` (never commit real keys).

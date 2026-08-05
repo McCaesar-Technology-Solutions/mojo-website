@@ -34,21 +34,18 @@ Bootstrap admin after first user signs up:
 update public.profiles set role = 'admin' where id = '<auth-user-uuid>';
 ```
 
-## Edge Functions
+## Edge Functions (optional until Paystack)
+
+For launch you only need the app + DB. Deploy payment functions when Instant Book ships:
 
 ```bash
-npx supabase secrets set PAYSTACK_SECRET_KEY=sk_... RESEND_API_KEY=re_... ADMIN_NOTIFY_EMAIL=ops@... APP_URL=https://...
-npx supabase functions deploy paystack-initialize
-npx supabase functions deploy paystack-webhook
-npx supabase functions deploy paystack-refund
 npx supabase functions deploy notify-enquiry
-npx supabase functions deploy release-expired-holds
+# later:
+# npx supabase functions deploy paystack-initialize
+# npx supabase functions deploy paystack-webhook
+# npx supabase functions deploy paystack-refund
+# npx supabase functions deploy release-expired-holds
 ```
-
-Point Paystack webhook URL to:  
-`https://<project>.supabase.co/functions/v1/paystack-webhook`
-
-Schedule `release-expired-holds` every 15 minutes (Supabase cron / external scheduler).
 
 ## Deploy app (Vercel)
 
@@ -57,15 +54,16 @@ Schedule `release-expired-holds` every 15 minutes (Supabase cron / external sche
 - Client env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_URL`, `VITE_APP_ENV`, `VITE_WHATSAPP_NUMBER`
 - Server env: `SUPABASE_SERVICE_ROLE_KEY` (and later Paystack/Resend) — never `VITE_`
 
-## Smoke checklist
+## Smoke checklist (Request to Book launch)
 
-1. Home loads featured properties (Supabase or demo fallback)
+1. Home loads featured properties from Supabase (empty catalog if unseeded — never demo inventory)
 2. Sign up / sign in
-3. Submit enquiry on a `request` property → appears in admin inbox
+3. Submit enquiry → appears in `/admin/enquiries`
 4. Approve enquiry → booking + calendar block
-5. Instant Book on `instant` property → Paystack test charge → `/booking/success`
-6. Admin refund path (test mode)
-7. Legal pages reachable from footer
+5. Guest sees trip under `/account/trips`
+6. Legal pages reachable from footer
+
+Paystack Instant Book smoke tests are deferred until payment go-live.
 
 ## Monitoring
 

@@ -24,7 +24,7 @@ insert into public.properties (
   'MOJO Luxury Suite',
   'Suite',
   'published',
-  'instant',
+  'request',
   'Accra',
   'Cantonments',
   'A refined two-bedroom retreat in the heart of Cantonments. Floor-to-ceiling windows, locally-curated art, and a private terrace overlooking the embassy gardens.',
@@ -143,19 +143,6 @@ values
   ('22222222-2222-2222-2222-222222222207', 1500, 1900, 250, 0.046875, '-21% Monthly'),
   ('22222222-2222-2222-2222-222222222208', 2100, 2500, 280, 0.046875, '-16% Stay 3+')
 on conflict (property_id) do nothing;
-
--- Media: delete+reinsert for seeded properties to keep seed re-runnable
-delete from public.property_media
-where property_id in (
-  '22222222-2222-2222-2222-222222222201',
-  '22222222-2222-2222-2222-222222222202',
-  '22222222-2222-2222-2222-222222222203',
-  '22222222-2222-2222-2222-222222222204',
-  '22222222-2222-2222-2222-222222222205',
-  '22222222-2222-2222-2222-222222222206',
-  '22222222-2222-2222-2222-222222222207',
-  '22222222-2222-2222-2222-222222222208'
-);
 
 insert into public.property_media (property_id, url, sort_order, is_cover) values
   ('22222222-2222-2222-2222-222222222201', 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?auto=format&fit=crop&w=1200&q=80', 0, true),

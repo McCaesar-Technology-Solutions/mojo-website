@@ -27,6 +27,9 @@ export function getAppUrl() {
   return (import.meta.env.VITE_APP_URL as string | undefined)?.replace(/\/$/, "") || "";
 }
 
+/** Digits only, country code included (e.g. 233XXXXXXXXX). Empty if unset. */
 export function getWhatsAppNumber() {
-  return (import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined) || "233000000000";
+  const raw = (import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined)?.trim() ?? "";
+  const digits = raw.replace(/\D/g, "");
+  return digits.length >= 10 ? digits : "";
 }

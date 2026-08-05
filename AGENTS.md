@@ -14,9 +14,9 @@
 - Backend is **Supabase** (Auth, Postgres, Storage, Edge Functions). Apply SQL from `supabase/migrations/` before relying on live data.
 - **RLS is required** on every user-facing table. Never disable RLS to "just make it work."
 - `SUPABASE_SERVICE_ROLE_KEY` and `PAYSTACK_SECRET_KEY` are server-only. Never put them in `VITE_*` vars or client bundles.
-- Public site falls back to demo catalog in `src/data/demo-properties.ts` when Supabase env is missing — fine for local UI, not for production traffic.
+- Public site requires Supabase env — **no demo catalog fallback**. Empty DB shows empty states.
 - Admin bootstrap: after first signup, run  
   `update public.profiles set role = 'admin' where id = '<uuid>';`  
   Do not expose an open "sign up as admin" path.
-- Booking modes: `request` (enquiry → admin approve) and `instant` (Paystack). Keep both paths working.
+- Launch booking path: **Request to Book** only (`request`). Instant Book / Paystack is deferred.
 - Prefer additive migrations over editing applied migration files.

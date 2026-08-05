@@ -1,6 +1,6 @@
-import { DEMO_PROPERTIES } from "@/data/demo-properties";
-import { getAppEnv } from "@/lib/env";
+import { getSupabaseConfig } from "@/lib/env";
 import { getSupabase } from "@/lib/supabase/client";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Property } from "@/types/domain";
 
 type PropertyRow = {
@@ -50,7 +50,8 @@ function mapRow(row: PropertyRow): Property {
     title: row.title,
     type: row.type,
     status: row.status,
-    booking_mode: row.booking_mode,
+    // Paystack Instant Book deferred — treat as request at the edge
+    booking_mode: "request",
     city: row.city,
     area: row.area,
     country: row.country,
@@ -81,32 +82,31 @@ const selectShape = `
   property_amenities ( amenities ( id, label, icon, sort_order ) )
 `;
 
-/** Demo catalog only for local/dev when Supabase env is missing. Never on production builds. */
-function allowDemoFallback() {
-  if (import.meta.env.PROD) return false;
-  return getAppEnv() === "local";
-}
+function client(): SupabaseClient {
+  const existing = getSupabase();
+  if (existing) return existing;
 
-function filterDemo(opts?: { city?: string; featured?: boolean; guests?: number }) {
-  let list = DEMO_PROPERTIES.filter((p) => p.status === "published");
-  if (opts?.city) list = list.filter((p) => p.city.toLowerCase() === opts.city!.toLowerCase());
-  if (opts?.featured) list = list.filter((p) => p.is_featured);
-  if (opts?.guests) list = list.filter((p) => p.max_guests >= opts.guests!);
-  return list;
+  const { url, anonKey, isConfigured } = getSupabaseConfig();
+  if (!isConfigured) {
+    throw new Error(
+      "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
+    );
+  }
+  return createClient(url, anonKey, {
+    auth: {
+      persistSession: typeof window !== "undefined",
+      autoRefreshToken: typeof window !== "undefined",
+      detectSessionInUrl: typeof window !== "undefined",
+    },
+  });
 }
 
 export async function listPublishedProperties(opts?: {
   city?: string;
   featured?: boolean;
   guests?: number;
-}): Promise<{ properties: Property[]; source: "supabase" | "demo" }> {
-  const supabase = getSupabase();
-  if (!supabase) {
-    if (!allowDemoFallback()) {
-      throw new Error("Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
-    }
-    return { properties: filterDemo(opts), source: "demo" };
-  }
+}): Promise<{ properties: Property[]; source: "supabase" }> {
+  const supabase = client();
 
   let query = supabase.from("properties").select(selectShape).eq("status", "published");
   if (opts?.city) query = query.ilike("city", opts.city);
@@ -114,29 +114,15 @@ export async function listPublishedProperties(opts?: {
   if (opts?.guests) query = query.gte("max_guests", opts.guests);
 
   const { data, error } = await query.order("created_at", { ascending: false });
-  if (error) {
-    console.error("listPublishedProperties", error.message);
-    if (!allowDemoFallback()) throw new Error(error.message);
-    return { properties: filterDemo(opts), source: "demo" };
-  }
+  if (error) throw new Error(error.message);
 
-  // Empty catalog is valid — never invent demo listings in preview/production
   return { properties: ((data ?? []) as PropertyRow[]).map(mapRow), source: "supabase" };
 }
 
 export async function getPropertyBySlug(
   slug: string,
-): Promise<{ property: Property | null; source: "supabase" | "demo" }> {
-  const supabase = getSupabase();
-  if (!supabase) {
-    if (!allowDemoFallback()) {
-      throw new Error("Supabase is not configured.");
-    }
-    return {
-      property: DEMO_PROPERTIES.find((p) => p.slug === slug) ?? null,
-      source: "demo",
-    };
-  }
+): Promise<{ property: Property | null; source: "supabase" }> {
+  const supabase = client();
 
   const { data, error } = await supabase
     .from("properties")
@@ -144,31 +130,20 @@ export async function getPropertyBySlug(
     .eq("slug", slug)
     .maybeSingle();
 
-  if (error) {
-    console.error("getPropertyBySlug", error.message);
-    if (!allowDemoFallback()) throw new Error(error.message);
-    return {
-      property: DEMO_PROPERTIES.find((p) => p.slug === slug) ?? null,
-      source: "demo",
-    };
-  }
-
-  if (!data) {
-    // Do not resurrect demo rows for missing live slugs
-    return { property: null, source: "supabase" };
-  }
-
+  if (error) throw new Error(error.message);
+  if (!data) return { property: null, source: "supabase" };
   return { property: mapRow(data as PropertyRow), source: "supabase" };
 }
 
 export async function getBlockedDates(propertyId: string): Promise<string[]> {
-  const supabase = getSupabase();
-  if (!supabase || propertyId.startsWith("p-")) return [];
+  const supabase = client();
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("availability_blocks")
     .select("start_date, end_date")
     .eq("property_id", propertyId);
+
+  if (error) throw new Error(error.message);
 
   const days: string[] = [];
   for (const block of data ?? []) {

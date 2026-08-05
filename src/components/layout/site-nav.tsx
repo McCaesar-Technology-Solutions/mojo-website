@@ -1,12 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { getSupabase } from "@/lib/supabase/client";
 
 export function SiteNav({ wishlistCount = 0 }: { wishlistCount?: number }) {
   const [scrolled, setScrolled] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
-  const configured = Boolean(getSupabase());
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -129,11 +127,6 @@ export function SiteNav({ wishlistCount = 0 }: { wishlistCount?: number }) {
               </span>
             )}
           </Link>
-          {!configured && (
-            <span className="hidden lg:inline text-[10px] uppercase tracking-wide text-amber-700 bg-amber-50 px-2 py-1 rounded">
-              Demo mode
-            </span>
-          )}
         </div>
       </div>
     </nav>

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DEMO_PROPERTIES } from "@/data/demo-properties";
-import { getAppUrl } from "@/lib/env";
+import { getAppUrl, getSupabaseConfig } from "@/lib/env";
+import { createClient } from "@supabase/supabase-js";
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
@@ -16,9 +16,19 @@ export const Route = createFileRoute("/sitemap.xml")({
           "/privacy",
           "/terms",
         ];
+        let propertyPaths: string[] = [];
+        const { url, anonKey, isConfigured } = getSupabaseConfig();
+        if (isConfigured) {
+          const supabase = createClient(url, anonKey);
+          const { data } = await supabase
+            .from("properties")
+            .select("slug")
+            .eq("status", "published");
+          propertyPaths = (data ?? []).map((p) => `/properties/${p.slug}`);
+        }
         const urls = [
           ...staticPaths.map((p) => `${base}${p}`),
-          ...DEMO_PROPERTIES.map((p) => `${base}/properties/${p.slug}`),
+          ...propertyPaths.map((p) => `${base}${p}`),
         ];
         const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { calcStayTotal, nightsBetween } from "@/lib/format";
-import { getAppEnv } from "@/lib/env";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Enquiry, EnquiryInput, Property } from "@/types/domain";
 
@@ -18,22 +17,6 @@ export const enquirySchema = z.object({
 
 export type EnquiryFormValues = z.infer<typeof enquirySchema>;
 
-const DEMO_ENQUIRIES_KEY = "mojo_demo_enquiries";
-
-function readDemoEnquiries(): Enquiry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(DEMO_ENQUIRIES_KEY) ?? "[]") as Enquiry[];
-  } catch {
-    return [];
-  }
-}
-
-function writeDemoEnquiries(items: Enquiry[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(DEMO_ENQUIRIES_KEY, JSON.stringify(items));
-}
-
 export function buildEnquiryTotals(property: Property, checkIn: string, checkOut: string) {
   const nightly = property.pricing?.nightly_rate ?? 0;
   const cleaning = property.pricing?.cleaning_fee ?? 0;
@@ -45,7 +28,7 @@ export function buildEnquiryTotals(property: Property, checkIn: string, checkOut
 export async function submitEnquiry(
   input: EnquiryInput,
   property: Property,
-): Promise<{ enquiry: Enquiry; source: "supabase" | "demo" }> {
+): Promise<{ enquiry: Enquiry; source: "supabase" }> {
   const parsed = enquirySchema.parse({
     ...input,
     property_id: property.id,
@@ -61,40 +44,8 @@ export async function submitEnquiry(
   }
 
   const supabase = getSupabase();
-  const isDemoId = property.id.startsWith("p-") || !z.string().uuid().safeParse(property.id).success;
-
-  // Preview/production builds: never fake a successful enquiry
-  if (!supabase || isDemoId) {
-    if (import.meta.env.PROD || getAppEnv() !== "local") {
-      throw new Error(
-        "Booking is temporarily unavailable. This listing is not connected to live inventory.",
-      );
-    }
-    const enquiry: Enquiry = {
-      id: crypto.randomUUID(),
-      property_id: property.id,
-      user_id: null,
-      check_in: parsed.check_in,
-      check_out: parsed.check_out,
-      guests: parsed.guests,
-      full_name: parsed.full_name,
-      email: parsed.email,
-      phone: parsed.phone,
-      notes: parsed.notes ?? null,
-      status: "new",
-      admin_notes: null,
-      decline_reason: null,
-      nightly_rate: totals.nightly,
-      cleaning_fee: totals.cleaning,
-      service_fee: totals.serviceFee,
-      total: totals.total,
-      currency: "GHS",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      property,
-    };
-    writeDemoEnquiries([enquiry, ...readDemoEnquiries()]);
-    return { enquiry, source: "demo" };
+  if (!supabase) {
+    throw new Error("Booking is temporarily unavailable. Please try again shortly.");
   }
 
   const {
@@ -131,14 +82,12 @@ export async function submitEnquiry(
 
 export async function listMyEnquiries(): Promise<Enquiry[]> {
   const supabase = getSupabase();
-  if (!supabase) {
-    return getAppEnv() === "local" ? readDemoEnquiries() : [];
-  }
+  if (!supabase) return [];
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return getAppEnv() === "local" ? readDemoEnquiries() : [];
+  if (!user) return [];
 
   const { data, error } = await supabase
     .from("enquiries")
@@ -146,9 +95,6 @@ export async function listMyEnquiries(): Promise<Enquiry[]> {
     .or(`user_id.eq.${user.id},email.eq.${user.email}`)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    if (getAppEnv() === "local") return readDemoEnquiries();
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
   return (data ?? []) as Enquiry[];
 }

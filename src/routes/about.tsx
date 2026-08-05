@@ -11,8 +11,7 @@ export const Route = createFileRoute("/about")({
         experience.
       </p>
       <p>
-        Guests can Request to Book (our team confirms availability) or Instant Book on selected
-        properties with secure Paystack checkout.
+        Guests Request to Book — our team confirms availability and follows up to finalize your stay.
       </p>
     </LegalPage>
   ),

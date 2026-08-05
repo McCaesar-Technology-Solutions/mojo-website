@@ -6,8 +6,7 @@ import { getSupabase } from "@/lib/supabase/client";
 export const Route = createFileRoute("/account")({
   beforeLoad: async ({ location }) => {
     const supabase = getSupabase();
-    // Allow wishlist/trips in demo mode without auth; soft-guard when configured
-    if (!supabase) return;
+    if (!supabase) throw redirect({ to: "/auth/sign-in" });
     const { data } = await supabase.auth.getSession();
     if (!data.session && !location.pathname.includes("wishlist")) {
       throw redirect({ to: "/auth/sign-in" });

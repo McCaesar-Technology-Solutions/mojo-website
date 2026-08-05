@@ -20,9 +20,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     if (!getSupabase()) {
-      setError(
-        "Connect Supabase to load live admin stats. Demo catalog still powers the public site.",
-      );
+      setError("Unable to load admin stats. Check your session and try again.");
       return;
     }
     void adminDashboardStats()

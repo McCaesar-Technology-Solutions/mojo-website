@@ -158,16 +158,10 @@ function AdminPropertiesPage() {
                 Booking mode
                 <select
                   className="mt-1 w-full border rounded-xl p-2"
-                  value={editing.booking_mode}
-                  onChange={(e) =>
-                    setEditing({
-                      ...editing,
-                      booking_mode: e.target.value as Property["booking_mode"],
-                    })
-                  }
+                  value="request"
+                  disabled
                 >
                   <option value="request">request</option>
-                  <option value="instant">instant</option>
                 </select>
               </label>
               <label className="text-sm">
@@ -244,7 +238,10 @@ function AdminPropertiesPage() {
                 className="px-4 py-2 rounded-full bg-royal text-white text-sm"
                 onClick={() => {
                   if (!editing.title || !editing.slug || !editing.city || !editing.type) return;
-                  void adminUpsertProperty(editing as Property)
+                  void adminUpsertProperty({
+                    ...(editing as Property),
+                    booking_mode: "request",
+                  })
                     .then(async (saved) => {
                       await adminSavePricing(saved.id, {
                         nightly_rate: nightly,

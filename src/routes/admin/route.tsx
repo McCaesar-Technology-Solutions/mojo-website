@@ -16,7 +16,7 @@ const links = [
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
     const supabase = getSupabase();
-    if (!supabase) return; // allow viewing shell in demo with banners
+    if (!supabase) throw redirect({ to: "/auth/sign-in" });
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth/sign-in" });
     const { data: profile } = await supabase

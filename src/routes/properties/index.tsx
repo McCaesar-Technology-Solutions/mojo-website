@@ -37,10 +37,15 @@ function PropertiesPage() {
     void listPublishedProperties({
       city: search.city,
       guests: search.guests,
-    }).then(({ properties: list }) => {
-      setProperties(list);
-      setLoading(false);
-    });
+    })
+      .then(({ properties: list }) => {
+        setProperties(list);
+        setLoading(false);
+      })
+      .catch(() => {
+        setProperties([]);
+        setLoading(false);
+      });
   }, [search.city, search.guests]);
 
   const filtered = useMemo(() => {

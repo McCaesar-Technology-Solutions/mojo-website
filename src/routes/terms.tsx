@@ -7,7 +7,7 @@ export const Route = createFileRoute("/terms")({
     <LegalPage title="Terms of Service">
       <p>
         By using MOJO Apartments you agree to provide accurate guest information, respect house
-        rules, and pay confirmed charges for Instant Book stays.
+        rules, and honour payment terms once a booking is confirmed by our team.
       </p>
       <p>
         MOJO may decline or cancel bookings that conflict with availability, safety, or house rules.

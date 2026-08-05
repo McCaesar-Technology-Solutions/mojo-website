@@ -12,7 +12,7 @@ export const Route = createFileRoute("/account/trips")({
 });
 
 function TripsPage() {
-  const { user, isConfigured } = useAuth();
+  const { user } = useAuth();
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
 
@@ -32,11 +32,6 @@ function TripsPage() {
     <div>
       <h1 className="text-3xl font-light">My trips</h1>
       <p className="mt-2 text-gray-600">Enquiries and confirmed stays.</p>
-      {!isConfigured && (
-        <p className="mt-4 text-sm text-amber-800 bg-amber-50 rounded-xl p-3">
-          Demo mode: enquiries are stored in this browser only until Supabase is connected.
-        </p>
-      )}
 
       <section className="mt-10">
         <h2 className="text-xl font-medium mb-4">Confirmed bookings</h2>

@@ -12,22 +12,6 @@ export function SiteFooter() {
           <p className="mt-4 text-sm text-white/60 leading-relaxed">
             Premium apartments and hotels thoughtfully managed across Ghana.
           </p>
-          <div className="mt-5 flex gap-3">
-            {[
-              "solar:instagram-linear",
-              "solar:facebook-linear",
-              "solar:twitter-linear",
-              "solar:linkedin-linear",
-            ].map((i) => (
-              <a
-                key={i}
-                href="#"
-                className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center hover:bg-gold hover:border-gold transition"
-              >
-                <iconify-icon icon={i} width="16" />
-              </a>
-            ))}
-          </div>
         </div>
         <div>
           <h4 className="text-white font-medium mb-4">Accommodation</h4>
@@ -100,14 +84,20 @@ export function SiteFooter() {
       <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/50">
         <div>© {new Date().getFullYear()} MOJO Apartments. All rights reserved.</div>
         <div className="flex items-center gap-5">
-          <a
-            href={`https://wa.me/${wa}`}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 hover:text-gold transition"
-          >
-            <iconify-icon icon="solar:chat-round-dots-linear" width="16" /> WhatsApp
-          </a>
+          {wa ? (
+            <a
+              href={`https://wa.me/${wa}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 hover:text-gold transition"
+            >
+              <iconify-icon icon="solar:chat-round-dots-linear" width="16" /> WhatsApp
+            </a>
+          ) : (
+            <Link to="/support" className="flex items-center gap-2 hover:text-gold transition">
+              <iconify-icon icon="solar:chat-round-dots-linear" width="16" /> Contact
+            </Link>
+          )}
           <span className="flex items-center gap-2">
             <iconify-icon icon="solar:dollar-linear" width="16" /> GHS — Ghana Cedi
           </span>

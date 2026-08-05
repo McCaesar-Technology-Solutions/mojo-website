@@ -11,8 +11,12 @@ import type { Property } from "@/types/domain";
 
 export const Route = createFileRoute("/properties/$slug")({
   loader: async ({ params }) => {
-    const { property, source } = await getPropertyBySlug(params.slug);
-    return { property, source };
+    try {
+      const { property, source } = await getPropertyBySlug(params.slug);
+      return { property, source };
+    } catch {
+      return { property: null, source: "supabase" as const };
+    }
   },
   head: ({ loaderData }) => ({
     meta: [
@@ -43,8 +47,6 @@ function PropertyDetailPage() {
   const [guests, setGuests] = useState(2);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [blocked, setBlocked] = useState<string[]>([]);
-  const [payLoading, setPayLoading] = useState(false);
-  const [payError, setPayError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -79,52 +81,13 @@ function PropertyDetailPage() {
   const rate = property.pricing?.service_fee_rate ?? 0.046875;
   const nights = nightsBetween(checkIn, checkOut);
   const { subtotal, serviceFee, total } = calcStayTotal(nightly, nights, cleaning, rate);
-  const isInstant = property.booking_mode === "instant";
 
   const dateBlocked = (d: string) => blocked.includes(d);
 
-  async function startInstantBook(current: Property) {
-    setPayError(null);
-    if (nights <= 0) {
-      setPayError("Select valid dates");
-      return;
-    }
-    if (!user) {
-      setPayError("Sign in to Instant Book");
-      return;
-    }
-    const supabase = getSupabase();
-    if (!supabase || current.id.startsWith("p-")) {
-      setPayError("Instant Book requires a live Supabase + Paystack setup.");
-      return;
-    }
-    setPayLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("paystack-initialize", {
-        body: {
-          property_id: current.id,
-          check_in: checkIn,
-          check_out: checkOut,
-          guests,
-        },
-      });
-      if (error) throw error;
-      if (data?.authorization_url) {
-        window.location.href = data.authorization_url as string;
-      } else {
-        throw new Error(data?.error ?? "Could not start checkout");
-      }
-    } catch (e) {
-      setPayError(e instanceof Error ? e.message : "Checkout failed");
-    } finally {
-      setPayLoading(false);
-    }
-  }
-
   async function toggleWishlist(current: Property) {
     const supabase = getSupabase();
-    if (!supabase || !user || current.id.startsWith("p-")) {
-      setSaved((s) => !s);
+    if (!supabase || !user) {
+      window.location.href = "/auth/sign-in";
       return;
     }
     if (saved) {
@@ -176,7 +139,7 @@ function PropertyDetailPage() {
                   </span>
                 )}
                 <span className="text-xs uppercase tracking-wide px-2 py-1 rounded-full bg-lavender text-royal">
-                  {isInstant ? "Instant Book" : "Request to Book"}
+                  Request to Book
                 </span>
               </p>
             </div>
@@ -397,28 +360,15 @@ function PropertyDetailPage() {
                   </div>
                 </div>
 
-                {isInstant ? (
-                  <button
-                    onClick={() => void startInstantBook(property)}
-                    disabled={nights <= 0 || payLoading}
-                    className="mt-5 w-full py-3 rounded-full bg-royal text-white font-medium hover:opacity-90 active:scale-[0.98] transition disabled:opacity-40"
-                  >
-                    {payLoading ? "Starting checkout…" : "Instant Book"}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setEnquiryOpen(true)}
-                    disabled={nights <= 0}
-                    className="mt-5 w-full py-3 rounded-full bg-royal text-white font-medium hover:opacity-90 active:scale-[0.98] transition disabled:opacity-40"
-                  >
-                    Book Enquiry
-                  </button>
-                )}
-                {payError && <p className="mt-2 text-xs text-red-600">{payError}</p>}
+                <button
+                  onClick={() => setEnquiryOpen(true)}
+                  disabled={nights <= 0}
+                  className="mt-5 w-full py-3 rounded-full bg-royal text-white font-medium hover:opacity-90 active:scale-[0.98] transition disabled:opacity-40"
+                >
+                  Request to Book
+                </button>
                 <p className="mt-3 text-xs text-center text-gray-500">
-                  {isInstant
-                    ? "Secure payment via Paystack. See "
-                    : "You won't be charged yet — enquiry only. See "}
+                  You won&apos;t be charged yet — our team confirms availability. See{" "}
                   <Link to="/cancellation" className="underline">
                     cancellation
                   </Link>{" "}

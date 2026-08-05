@@ -54,9 +54,9 @@ In Supabase → Authentication → URL configuration, add:
 
 ## Verify a deployment
 
-1. Open the Preview URL — home page loads (demo catalog is OK until Slice 2 migration).
+1. Open the Preview URL — home page loads from Supabase (seed required for listings).
 2. Hit `/properties` and `/auth/sign-in` — pages render without 500s.
-3. Confirm browser network calls (if env set) go to your Supabase project, not missing-env demo-only forever once migration is applied.
+3. Confirm browser network calls go to your Supabase project.
 4. Check Vercel build logs: Nitro should target **vercel**, not Cloudflare / Wrangler.
 
 ## Local production build (Vercel-shaped)

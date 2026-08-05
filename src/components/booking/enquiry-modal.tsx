@@ -70,7 +70,7 @@ export function EnquiryModal({
         <div className="flex items-start justify-between p-6 pb-4 border-b border-brand-900/10">
           <div>
             <h3 id="enquiry-title" className="text-lg font-semibold text-brand-900">
-              Book Enquiry
+              Request to Book
             </h3>
             <p className="text-sm text-gray-500 mt-1">
               {property.title} — {property.area ? `${property.area}, ` : ""}
@@ -94,21 +94,23 @@ export function EnquiryModal({
               Our team will confirm availability for {fmtDate(checkIn)} — {fmtDate(checkOut)} within
               24 hours.
             </p>
-            <a
-              href={whatsappEnquiryLink(
-                getWhatsAppNumber(),
-                property.title,
-                checkIn,
-                checkOut,
-                guests,
-              )}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-4 inline-flex items-center gap-2 text-sm text-royal hover:underline"
-            >
-              <iconify-icon icon="solar:chat-round-dots-linear" width="16" />
-              Follow up on WhatsApp
-            </a>
+            {getWhatsAppNumber() ? (
+              <a
+                href={whatsappEnquiryLink(
+                  getWhatsAppNumber(),
+                  property.title,
+                  checkIn,
+                  checkOut,
+                  guests,
+                )}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex items-center gap-2 text-sm text-royal hover:underline"
+              >
+                <iconify-icon icon="solar:chat-round-dots-linear" width="16" />
+                Follow up on WhatsApp
+              </a>
+            ) : null}
             <button
               onClick={onClose}
               className="mt-6 block w-full px-6 py-3 rounded-full bg-royal text-white text-sm font-medium hover:opacity-90 active:scale-[0.98] transition"
