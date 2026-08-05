@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { OpsAlert, OpsEmpty, OpsPageHeader, OpsPanel } from "@/components/admin/ops-ui";
 import { adminListGuests } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 
@@ -33,34 +34,46 @@ function AdminGuestsPage() {
   const uniqueContacts = Array.from(new Map(contacts.map((c) => [c.guest_email, c])).values());
 
   return (
-    <div>
-      <h1 className="text-2xl font-light">Guests</h1>
-      <p className="text-sm text-gray-600">Profiles and booking contacts.</p>
-      {error && <p className="mt-4 text-sm text-amber-800 bg-amber-50 rounded-xl p-3">{error}</p>}
-      <div className="mt-6 grid md:grid-cols-2 gap-6">
-        <section>
-          <h2 className="font-medium mb-3">Accounts</h2>
-          <div className="space-y-2">
-            {profiles.map((p) => (
-              <div key={p.id} className="bg-white rounded-xl p-3 text-sm ring-1 ring-brand-900/5">
-                {p.full_name ?? "Guest"} · {p.phone ?? "—"}
-              </div>
-            ))}
+    <div className="space-y-4">
+      <OpsPageHeader title="Guests" description="Accounts and booking contacts." />
+      {error && <OpsAlert>{error}</OpsAlert>}
+      <div className="grid gap-4 md:grid-cols-2">
+        <OpsPanel>
+          <div className="border-b border-brand-900/10 px-4 py-3">
+            <h2 className="text-[14px] font-semibold">Accounts</h2>
           </div>
-        </section>
-        <section>
-          <h2 className="font-medium mb-3">Booking contacts</h2>
-          <div className="space-y-2">
-            {uniqueContacts.map((c) => (
-              <div
-                key={c.guest_email}
-                className="bg-white rounded-xl p-3 text-sm ring-1 ring-brand-900/5"
-              >
-                {c.guest_name} · {c.guest_email} · {c.guest_phone}
-              </div>
-            ))}
+          {profiles.length === 0 ? (
+            <OpsEmpty>No guest accounts.</OpsEmpty>
+          ) : (
+            <ul className="divide-y divide-brand-900/8">
+              {profiles.map((p) => (
+                <li key={p.id} className="px-4 py-3 text-[13px]">
+                  <span className="font-medium">{p.full_name ?? "Guest"}</span>
+                  <span className="text-brand-900/50"> · {p.phone ?? "—"}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </OpsPanel>
+        <OpsPanel>
+          <div className="border-b border-brand-900/10 px-4 py-3">
+            <h2 className="text-[14px] font-semibold">Booking contacts</h2>
           </div>
-        </section>
+          {uniqueContacts.length === 0 ? (
+            <OpsEmpty>No booking contacts yet.</OpsEmpty>
+          ) : (
+            <ul className="divide-y divide-brand-900/8">
+              {uniqueContacts.map((c) => (
+                <li key={c.guest_email} className="px-4 py-3 text-[13px]">
+                  <p className="font-medium">{c.guest_name}</p>
+                  <p className="text-[12px] text-brand-900/50">
+                    {c.guest_email} · {c.guest_phone}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </OpsPanel>
       </div>
     </div>
   );

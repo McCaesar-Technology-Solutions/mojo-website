@@ -1,8 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import {
+  OpsAlert,
+  OpsEmpty,
+  OpsPageHeader,
+  OpsPanel,
+  OpsSelect,
+  OpsTextarea,
+} from "@/components/admin/ops-ui";
 import { adminListBookings, adminRefundBooking, adminUpdateBooking } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import { fmtDate, ghs } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Booking, BookingStatus } from "@/types/domain";
 
 export const Route = createFileRoute("/admin/bookings")({
@@ -48,87 +57,119 @@ function AdminBookingsPage() {
   }, [items, filter, today]);
 
   return (
-    <div>
-      <h1 className="text-2xl font-light">Bookings</h1>
-      <div className="mt-4 flex flex-wrap gap-2">
+    <div className="space-y-4">
+      <OpsPageHeader
+        title="Bookings"
+        description="Confirmed stays from approved requests. Update status and notes as the stay progresses."
+      />
+
+      <div className="flex flex-wrap items-center gap-1 border-b border-brand-900/10">
         {(["all", "upcoming", "in_stay", "completed", "cancelled"] as const).map((f) => (
           <button
             key={f}
+            type="button"
             onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-xs border ${
-              filter === f ? "bg-royal text-white border-royal" : "bg-white"
-            }`}
+            className={cn(
+              "-mb-px border-b-2 px-3 py-2 text-[13px] capitalize transition",
+              filter === f
+                ? "border-royal font-semibold text-royal"
+                : "border-transparent text-brand-900/55 hover:text-brand-900",
+            )}
           >
             {f.replace("_", " ")}
           </button>
         ))}
       </div>
-      {error && <p className="mt-4 text-sm text-amber-800 bg-amber-50 rounded-xl p-3">{error}</p>}
-      <div className="mt-6 space-y-3">
-        {filtered.map((b) => (
-          <div key={b.id} className="bg-white rounded-2xl p-5 ring-1 ring-brand-900/5">
-            <div className="flex justify-between gap-4 flex-wrap">
-              <div>
-                <p className="font-medium">
-                  {(b.property as { title?: string } | null)?.title ?? b.property_id}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {b.guest_name} · {b.guest_email}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {fmtDate(b.check_in)} — {fmtDate(b.check_out)} · {ghs(b.total)}
-                </p>
-                <textarea
-                  className="mt-2 w-full max-w-md border rounded-xl p-2 text-sm"
-                  placeholder="Admin notes"
-                  defaultValue={b.admin_notes ?? ""}
-                  onBlur={(e) =>
-                    void adminUpdateBooking(b.id, { admin_notes: e.target.value }).catch((err) =>
-                      setError(err.message),
-                    )
-                  }
-                />
-              </div>
-              <div className="space-y-2 text-right">
-                <select
-                  className="border rounded-xl px-2 py-1 text-sm"
-                  value={b.status}
-                  onChange={(e) =>
-                    void adminUpdateBooking(b.id, { status: e.target.value as BookingStatus })
-                      .then(() => reload())
-                      .catch((err) => setError(err.message))
-                  }
-                >
-                  {[
-                    "pending_payment",
-                    "confirmed",
-                    "checked_in",
-                    "completed",
-                    "cancelled",
-                    "refunded",
-                  ].map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                {b.paystack_reference && b.status === "confirmed" && (
-                  <button
-                    className="block ml-auto text-xs text-red-700 underline"
-                    onClick={() =>
-                      void adminRefundBooking(b.id)
-                        .then(() => reload())
-                        .catch((err) => setError(err.message))
-                    }
-                  >
-                    Refund via Paystack
-                  </button>
-                )}
-              </div>
-            </div>
+
+      {error && <OpsAlert>{error}</OpsAlert>}
+
+      {filtered.length === 0 ? (
+        <OpsEmpty>No bookings in this view.</OpsEmpty>
+      ) : (
+        <OpsPanel className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-[13px]">
+              <thead className="border-b border-brand-900/10 bg-[#FBFaf7] text-[11px] uppercase tracking-[0.06em] text-brand-900/45">
+                <tr>
+                  <th className="px-4 py-2.5 font-semibold">Guest</th>
+                  <th className="px-4 py-2.5 font-semibold">Stay</th>
+                  <th className="px-4 py-2.5 font-semibold">Total</th>
+                  <th className="px-4 py-2.5 font-semibold">Status</th>
+                  <th className="px-4 py-2.5 font-semibold">Notes</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-brand-900/8">
+                {filtered.map((b) => (
+                  <tr key={b.id} className="align-top hover:bg-lavender/25">
+                    <td className="px-4 py-3">
+                      <p className="font-medium">{b.guest_name}</p>
+                      <p className="text-[12px] text-brand-900/50">{b.guest_email}</p>
+                      <p className="mt-1 text-[12px] text-brand-900/45">
+                        {(b.property as { title?: string } | null)?.title ?? b.property_id}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-brand-900/70">
+                      {fmtDate(b.check_in)} → {fmtDate(b.check_out)}
+                    </td>
+                    <td className="px-4 py-3 font-semibold tabular-nums">{ghs(b.total)}</td>
+                    <td className="px-4 py-3">
+                      <OpsSelect
+                        className="max-w-[160px]"
+                        value={b.status}
+                        onChange={(e) =>
+                          void adminUpdateBooking(b.id, {
+                            status: e.target.value as BookingStatus,
+                          })
+                            .then(() => reload())
+                            .catch((err) => setError(err.message))
+                        }
+                      >
+                        {[
+                          "pending_payment",
+                          "confirmed",
+                          "checked_in",
+                          "completed",
+                          "cancelled",
+                          "refunded",
+                        ].map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </OpsSelect>
+                      {b.paystack_reference && b.status === "confirmed" && (
+                        <button
+                          type="button"
+                          className="mt-2 block text-[11px] text-rose-800 underline"
+                          onClick={() =>
+                            void adminRefundBooking(b.id)
+                              .then(() => reload())
+                              .catch((err) => setError(err.message))
+                          }
+                        >
+                          Refund via Paystack
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <OpsTextarea
+                        className="min-h-[64px] min-w-[180px]"
+                        placeholder="Admin notes"
+                        defaultValue={b.admin_notes ?? ""}
+                        onBlur={(e) =>
+                          void adminUpdateBooking(b.id, { admin_notes: e.target.value }).catch(
+                            (err) => setError(err.message),
+                          )
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
-      </div>
+        </OpsPanel>
+      )}
     </div>
   );
 }

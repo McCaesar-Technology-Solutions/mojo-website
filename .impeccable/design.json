@@ -1,0 +1,393 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-05T14:47:05Z",
+  "title": "Design System: MOJO Ops Console",
+  "extensions": {
+    "colorMeta": {
+      "paper-stone": {
+        "role": "neutral",
+        "displayName": "Paper Stone",
+        "canonical": "#F4F2EE",
+        "tonalRamp": [
+          "#2A2620",
+          "#4A443C",
+          "#6E665C",
+          "#938A7E",
+          "#B8AFA3",
+          "#D4CDC4",
+          "#E8E4DE",
+          "#F4F2EE"
+        ]
+      },
+      "sheet-cream": {
+        "role": "neutral",
+        "displayName": "Sheet Cream",
+        "canonical": "#FBFAF7",
+        "tonalRamp": [
+          "#2C2A26",
+          "#4D4A44",
+          "#716C64",
+          "#968F85",
+          "#BBB4A9",
+          "#D9D4CC",
+          "#EDEAE4",
+          "#FBFAF7"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White Sheet",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#1A1A1A",
+          "#3D3D3D",
+          "#616161",
+          "#858585",
+          "#A8A8A8",
+          "#CCCCCC",
+          "#E8E8E8",
+          "#FFFFFF"
+        ]
+      },
+      "brand-ink": {
+        "role": "neutral",
+        "displayName": "Brand Ink",
+        "canonical": "#24104D",
+        "tonalRamp": [
+          "#120828",
+          "#24104D",
+          "#3A1F73",
+          "#553A96",
+          "#7A63B3",
+          "#A796CF",
+          "#D0C8E6",
+          "#F3F0FA"
+        ]
+      },
+      "royal": {
+        "role": "primary",
+        "displayName": "Deep Royal",
+        "canonical": "#2D1659",
+        "tonalRamp": [
+          "#160B2C",
+          "#2D1659",
+          "#44287A",
+          "#5F3F9C",
+          "#8366B8",
+          "#AC96D4",
+          "#D4C8EA",
+          "#F3F0FA"
+        ]
+      },
+      "gold": {
+        "role": "secondary",
+        "displayName": "Luxury Gold",
+        "canonical": "#C89B2C",
+        "tonalRamp": [
+          "#3D2E0A",
+          "#6B5014",
+          "#97731F",
+          "#C89B2C",
+          "#D9B55A",
+          "#E8CE8E",
+          "#F3E4C0",
+          "#FBF5E8"
+        ]
+      },
+      "lavender": {
+        "role": "tertiary",
+        "displayName": "Lavender Wash",
+        "canonical": "#F3F0FA",
+        "tonalRamp": [
+          "#24104D",
+          "#3A1F73",
+          "#5F3F9C",
+          "#8366B8",
+          "#AC96D4",
+          "#CDC3E4",
+          "#E4DEEF",
+          "#F3F0FA"
+        ]
+      },
+      "status-ok-bg": {
+        "role": "neutral",
+        "displayName": "Status OK Ground",
+        "canonical": "#ECFDF5",
+        "tonalRamp": [
+          "#022C22",
+          "#064E3B",
+          "#047857",
+          "#10B981",
+          "#6EE7B7",
+          "#A7F3D0",
+          "#D1FAE5",
+          "#ECFDF5"
+        ]
+      },
+      "status-ok-ink": {
+        "role": "neutral",
+        "displayName": "Status OK Ink",
+        "canonical": "#064E3B",
+        "tonalRamp": [
+          "#022C22",
+          "#064E3B",
+          "#047857",
+          "#059669",
+          "#34D399",
+          "#6EE7B7",
+          "#A7F3D0",
+          "#ECFDF5"
+        ]
+      },
+      "status-bad-bg": {
+        "role": "neutral",
+        "displayName": "Status Bad Ground",
+        "canonical": "#FFF1F2",
+        "tonalRamp": [
+          "#4C0519",
+          "#881337",
+          "#BE123C",
+          "#E11D48",
+          "#FB7185",
+          "#FECDD3",
+          "#FFE4E6",
+          "#FFF1F2"
+        ]
+      },
+      "status-bad-ink": {
+        "role": "neutral",
+        "displayName": "Status Bad Ink",
+        "canonical": "#881337",
+        "tonalRamp": [
+          "#4C0519",
+          "#881337",
+          "#9F1239",
+          "#BE123C",
+          "#E11D48",
+          "#FB7185",
+          "#FECDD3",
+          "#FFF1F2"
+        ]
+      },
+      "alert-bg": {
+        "role": "neutral",
+        "displayName": "Alert Amber Ground",
+        "canonical": "#FFFBEB",
+        "tonalRamp": [
+          "#451A03",
+          "#78350F",
+          "#B45309",
+          "#D97706",
+          "#FBBF24",
+          "#FDE68A",
+          "#FEF3C7",
+          "#FFFBEB"
+        ]
+      },
+      "alert-ink": {
+        "role": "neutral",
+        "displayName": "Alert Amber Ink",
+        "canonical": "#451A03",
+        "tonalRamp": [
+          "#1C0A02",
+          "#451A03",
+          "#78350F",
+          "#92400E",
+          "#B45309",
+          "#D97706",
+          "#FBBF24",
+          "#FEF3C7"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Page Title",
+        "purpose": "Ops page headers (OpsPageHeader)."
+      },
+      "folio-name": {
+        "displayName": "Folio Name",
+        "purpose": "Selected guest name in the request folio only."
+      },
+      "body": {
+        "displayName": "Body / Controls",
+        "purpose": "Queue rows, tables, buttons, nav, field values — default 13px workhorse."
+      },
+      "label": {
+        "displayName": "Section Label",
+        "purpose": "Uppercase micro labels for folio sections, table thead, metric strip."
+      },
+      "micro": {
+        "displayName": "Micro Chip",
+        "purpose": "Status chips, tab count badges, stay-fact cell labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "rail-active",
+        "value": "0 1px 2px rgba(45, 22, 89, 0.25)",
+        "purpose": "Active ops-rail nav pill only."
+      },
+      {
+        "name": "panel-rest",
+        "value": "0 1px 2px rgba(36, 16, 77, 0.04)",
+        "purpose": "Barely-there resting lift on OpsPanel."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-state",
+        "value": "transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease",
+        "purpose": "Default Tailwind transition on buttons, rows, and tabs."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Royal fill CTA — Approve, Inbox, New property.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Approve</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 8px; background: #2D1659; color: #FFFFFF; padding: 8px 14px; font: 500 13px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; cursor: pointer; transition: background-color 150ms ease; } .ds-btn-primary:hover { background: rgba(45, 22, 89, 0.9); } .ds-btn-primary:focus-visible { outline: 2px solid #2D1659; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined decline / secondary action beside primary.",
+      "html": "<button class=\"ds-btn-secondary\" type=\"button\">Decline</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(36, 16, 77, 0.15); border-radius: 8px; background: #FFFFFF; color: #24104D; padding: 8px 14px; font: 500 13px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; cursor: pointer; transition: background-color 150ms ease; } .ds-btn-secondary:hover { background: rgba(36, 16, 77, 0.03); } .ds-btn-secondary:focus-visible { outline: 2px solid #2D1659; outline-offset: 2px; } .ds-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Status NEW",
+      "kind": "chip",
+      "refersTo": "status-new",
+      "description": "Sole gold use — NEW urgency chip.",
+      "html": "<span class=\"ds-status-new\">new</span>",
+      "css": ".ds-status-new { display: inline-flex; align-items: center; border-radius: 6px; padding: 2px 6px; font: 600 10px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(200, 155, 44, 0.15); color: #24104D; box-shadow: inset 0 0 0 1px rgba(200, 155, 44, 0.35); }"
+    },
+    {
+      "name": "Status In Review",
+      "kind": "chip",
+      "refersTo": "status-review",
+      "description": "Lavender + royal chip for in_review.",
+      "html": "<span class=\"ds-status-review\">in review</span>",
+      "css": ".ds-status-review { display: inline-flex; align-items: center; border-radius: 6px; padding: 2px 6px; font: 600 10px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; background: #F3F0FA; color: #2D1659; box-shadow: inset 0 0 0 1px rgba(45, 22, 89, 0.2); }"
+    },
+    {
+      "name": "Ops Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White field with hairline border and royal focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Property title\" value=\"\" />",
+      "css": ".ds-input { width: 100%; box-sizing: border-box; border: 1px solid rgba(36, 16, 77, 0.12); border-radius: 8px; background: #FFFFFF; color: #24104D; padding: 8px 12px; font: 400 13px/1.4 ui-sans-serif, system-ui, sans-serif; outline: none; transition: border-color 150ms ease, box-shadow 150ms ease; } .ds-input:hover { border-color: rgba(36, 16, 77, 0.2); } .ds-input:focus-visible { border-color: rgba(45, 22, 89, 0.4); box-shadow: 0 0 0 2px rgba(45, 22, 89, 0.15); }"
+    },
+    {
+      "name": "Ops Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Square white work surface with hairline border.",
+      "html": "<div class=\"ds-panel\"><div class=\"ds-panel-head\">Needs action</div><div class=\"ds-panel-row\"><span>Ama Mensah</span><strong>GHS 4,200</strong></div></div>",
+      "css": ".ds-panel { border: 1px solid rgba(36, 16, 77, 0.1); background: #FFFFFF; border-radius: 0; box-shadow: 0 1px 2px rgba(36, 16, 77, 0.04); font: 400 13px/1.4 ui-sans-serif, system-ui, sans-serif; color: #24104D; } .ds-panel-head { border-bottom: 1px solid rgba(36, 16, 77, 0.1); padding: 12px 16px; font-weight: 600; font-size: 14px; letter-spacing: -0.01em; } .ds-panel-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid rgba(36, 16, 77, 0.08); } .ds-panel-row:first-of-type { border-top: none; } .ds-panel-row:hover { background: rgba(243, 240, 250, 0.3); }"
+    },
+    {
+      "name": "Rail Nav Active",
+      "kind": "nav",
+      "refersTo": "nav-active",
+      "description": "Active ops-rail item — royal fill.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item ds-rail-item-active\" href=\"#\">Enquiries</a><a class=\"ds-rail-item\" href=\"#\">Bookings</a></nav>",
+      "css": ".ds-rail { display: flex; flex-direction: column; gap: 2px; width: 200px; padding: 12px 8px; background: #FBFAF7; border: 1px solid rgba(36, 16, 77, 0.1); font: 400 13px/1.3 ui-sans-serif, system-ui, sans-serif; } .ds-rail-item { display: block; border-radius: 8px; padding: 8px 10px; color: rgba(36, 16, 77, 0.7); text-decoration: none; transition: background-color 150ms ease, color 150ms ease; } .ds-rail-item:hover { background: rgba(36, 16, 77, 0.04); color: #24104D; } .ds-rail-item-active { background: #2D1659; color: #FFFFFF; box-shadow: 0 1px 2px rgba(45, 22, 89, 0.25); } .ds-rail-item-active:hover { background: #2D1659; color: #FFFFFF; }"
+    },
+    {
+      "name": "Status Tab",
+      "kind": "custom",
+      "refersTo": "tab-active",
+      "description": "Underline status tab with count badge.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab ds-tab-active\" type=\"button\">Open <span class=\"ds-tab-count\">4</span></button><button class=\"ds-tab\" type=\"button\">All <span class=\"ds-tab-count\">12</span></button></div>",
+      "css": ".ds-tabs { display: flex; gap: 4px; border-bottom: 1px solid rgba(36, 16, 77, 0.1); font: 400 13px/1.3 ui-sans-serif, system-ui, sans-serif; } .ds-tab { display: inline-flex; align-items: center; gap: 6px; border: none; border-bottom: 2px solid transparent; background: transparent; padding: 8px 12px; margin-bottom: -1px; color: rgba(36, 16, 77, 0.55); cursor: pointer; } .ds-tab:hover { color: #24104D; } .ds-tab-active { border-bottom-color: #2D1659; color: #2D1659; font-weight: 600; } .ds-tab-count { border-radius: 6px; padding: 2px 6px; font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; background: rgba(36, 16, 77, 0.05); color: rgba(36, 16, 77, 0.45); } .ds-tab-active .ds-tab-count { background: rgba(45, 22, 89, 0.1); color: #2D1659; }"
+    },
+    {
+      "name": "Queue Row",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Dense enquiry queue row with selection hairline.",
+      "html": "<button class=\"ds-queue-row ds-queue-row-active\" type=\"button\"><span class=\"ds-status-new\">new</span><span class=\"ds-queue-meta\"><strong>Kwesi Boateng</strong><small>Labadi Suites</small></span><span class=\"ds-queue-total\">GHS 3,150</span></button>",
+      "css": ".ds-queue-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; width: 100%; border: none; border-left: 2px solid transparent; background: #FFFFFF; padding: 12px; text-align: left; cursor: pointer; font: 400 13px/1.3 ui-sans-serif, system-ui, sans-serif; color: #24104D; } .ds-queue-row:hover { background: rgba(36, 16, 77, 0.025); } .ds-queue-row-active { border-left-color: #2D1659; background: rgba(243, 240, 250, 0.5); } .ds-queue-meta { min-width: 0; display: flex; flex-direction: column; gap: 2px; } .ds-queue-meta strong { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-queue-meta small { font-size: 12px; color: rgba(36, 16, 77, 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-queue-total { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; } .ds-status-new { display: inline-flex; align-self: start; border-radius: 6px; padding: 2px 6px; font: 600 10px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(200, 155, 44, 0.15); color: #24104D; box-shadow: inset 0 0 0 1px rgba(200, 155, 44, 0.35); }"
+    },
+    {
+      "name": "Metric Strip",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Hairline-divided count strip — not SaaS cards.",
+      "html": "<div class=\"ds-metric-strip\"><a class=\"ds-metric\" href=\"#\"><span>Open enquiries</span><strong>4</strong></a><a class=\"ds-metric\" href=\"#\"><span>Bookings</span><strong>12</strong></a><a class=\"ds-metric\" href=\"#\"><span>Published stays</span><strong>8</strong></a><a class=\"ds-metric\" href=\"#\"><span>Confirmed revenue</span><strong>GHS 48k</strong></a></div>",
+      "css": ".ds-metric-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid rgba(36, 16, 77, 0.1); background: #FFFFFF; font: 400 13px/1.3 ui-sans-serif, system-ui, sans-serif; } .ds-metric { display: block; padding: 12px 16px; border-left: 1px solid rgba(36, 16, 77, 0.1); text-decoration: none; color: #24104D; transition: background-color 150ms ease; } .ds-metric:first-child { border-left: none; } .ds-metric:hover { background: rgba(243, 240, 250, 0.4); } .ds-metric span { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(36, 16, 77, 0.45); } .ds-metric strong { display: block; margin-top: 4px; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Concierge phone-sheet",
+    "overview": "This is the internal Request-to-Book ops console for MOJO Apartments — a working tool, not a marketing shell. The metaphor is a concierge desk pad: a slim ops rail, a dense enquiry queue, and a request folio open beside it so approve/decline never loses the list. Surfaces stay paper-flat; brand shows up as royal actions and restrained lavender selection, not as guest-site costume.\n\nDensity is the point. Rows, hairline rules, and tabular totals replace airy cards and SaaS metric tiles. System UI sans is intentional on admin so scanning stays fast; the public site may keep Inter and promotional patterns separately.",
+    "keyCharacteristics": [
+      "Paper stone ground with cream sheet chrome and white work surfaces",
+      "Royal for primary actions and active chrome; gold reserved for NEW urgency",
+      "Hairline brand-ink rules and dense 13px rows — no marketing cards",
+      "Split queue + folio on Enquiries; tables elsewhere",
+      "Soft 6–8px corners on controls; square panels and sheets"
+    ],
+    "rules": [
+      {
+        "name": "The Gold Urgency Rule",
+        "body": "Gold appears only on NEW status chips. Every other accent is royal or lavender.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Metric-Card Rule",
+        "body": "Counts live in hairline-divided strips or tab badges — never in elevated SaaS stat cards with shadows or icon tiles.",
+        "section": "colors"
+      },
+      {
+        "name": "The Workhorse Type Rule",
+        "body": "Admin uses the system UI stack. Do not import Inter, serif display, or marketing display faces into /admin.",
+        "section": "typography"
+      },
+      {
+        "name": "The Queue-Beside-Folio Rule",
+        "body": "Triage never replaces the list with a full-page detail. Selection paints a royal left hairline + lavender wash; the folio updates in place.",
+        "section": "layout"
+      },
+      {
+        "name": "The Hairline Depth Rule",
+        "body": "Prefer borders and paper layers over shadow. No multi-layer drop shadows, glows, or floating cards.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep Enquiries as queue + folio side by side so triage never loses the list.",
+      "Do use royal for primary actions and active chrome; lavender for selection/hover wash.",
+      "Do reserve gold exclusively for NEW status chips.",
+      "Do set admin type to the system UI stack and keep body copy at ~13px dense.",
+      "Do separate surfaces with brand-ink/10 hairlines on paper stone / sheet cream / white."
+    ],
+    "donts": [
+      "Don't build SaaS metric-card dashboards (icon tiles, soft shadows, rounded marketing cards) inside /admin.",
+      "Don't reuse public-site Inter/marketing hero patterns, full-bleed imagery, or gold icon decoration in the ops shell.",
+      "Don't use gold on buttons, nav, or decorative iconography.",
+      "Don't introduce rounded-full pills or multi-layer glow shadows on ops controls.",
+      "Don't open enquiry detail as a full-page takeover that hides the queue."
+    ]
+  }
+}

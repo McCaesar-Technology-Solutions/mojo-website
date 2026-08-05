@@ -1,0 +1,5 @@
+{
+  "approved": true,
+  "combination": "C status tabs + A master-detail split + B folio detail sheet",
+  "notes": "Status filter tabs with counts for triage; left dense enquiry queue; right sheet-dominant request folio with Approve/Decline; slim ops rail nav; no marketing metric-card hero."
+}

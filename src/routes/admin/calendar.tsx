@@ -1,7 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import {
+  OpsAlert,
+  OpsEmpty,
+  OpsInput,
+  OpsPageHeader,
+  OpsPanel,
+  OpsPrimaryButton,
+  OpsSelect,
+} from "@/components/admin/ops-ui";
 import { adminCreateBlock, adminListBlocks, adminListProperties } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 import type { Property } from "@/types/domain";
 
 export const Route = createFileRoute("/admin/calendar")({
@@ -56,7 +66,6 @@ function AdminCalendarPage() {
       const date = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       cells.push({ date, label: d });
     }
-    // pad start for weekday alignment
     const pad = first.getDay();
     return { pad, cells };
   }, [month]);
@@ -68,18 +77,18 @@ function AdminCalendarPage() {
     );
 
   return (
-    <div>
-      <h1 className="text-2xl font-light">Calendar</h1>
-      <p className="text-sm text-gray-600">
-        Month view with manual blocks and conflict-aware holds.
-      </p>
-      {error && <p className="mt-4 text-sm text-amber-800 bg-amber-50 rounded-xl p-3">{error}</p>}
+    <div className="space-y-4">
+      <OpsPageHeader
+        title="Calendar"
+        description="Month view with manual blocks. Approve on an enquiry also blocks these dates."
+      />
+      {error && <OpsAlert>{error}</OpsAlert>}
 
-      <div className="mt-6 grid md:grid-cols-3 gap-4 bg-white rounded-2xl p-5 ring-1 ring-brand-900/5">
-        <label className="text-sm">
+      <OpsPanel className="grid gap-3 p-4 md:grid-cols-3">
+        <label className="text-[12px] font-medium text-brand-900/60">
           Property filter
-          <select
-            className="mt-1 w-full border rounded-xl p-2"
+          <OpsSelect
+            className="mt-1"
             value={propertyId}
             onChange={(e) => setPropertyId(e.target.value)}
           >
@@ -89,107 +98,114 @@ function AdminCalendarPage() {
                 {p.title}
               </option>
             ))}
-          </select>
+          </OpsSelect>
         </label>
-        <label className="text-sm">
+        <label className="text-[12px] font-medium text-brand-900/60">
           Month
-          <input
+          <OpsInput
             type="month"
-            className="mt-1 w-full border rounded-xl p-2"
+            className="mt-1"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
           />
         </label>
-      </div>
+      </OpsPanel>
 
-      <div className="mt-6 grid grid-cols-7 gap-2">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-          <div key={d} className="text-xs text-gray-500 text-center py-1">
-            {d}
-          </div>
-        ))}
-        {Array.from({ length: days.pad }).map((_, i) => (
-          <div key={`pad-${i}`} />
-        ))}
-        {days.cells.map((c) => (
-          <div
-            key={c.date}
-            className={`aspect-square rounded-xl border text-sm flex items-center justify-center ${
-              isBlocked(c.date) ? "bg-royal text-white border-royal" : "bg-white"
-            }`}
-            title={c.date}
-          >
-            {c.label}
-          </div>
-        ))}
-      </div>
-
-      <form
-        className="mt-8 bg-white rounded-2xl p-5 ring-1 ring-brand-900/5 grid md:grid-cols-4 gap-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!propertyId || !start || !end) {
-            setError("Select property and dates");
-            return;
-          }
-          // simple conflict check
-          const conflict = blocks.some(
-            (b) => b.property_id === propertyId && start < b.end_date && b.start_date < end,
-          );
-          if (conflict) {
-            setError("Conflict: overlapping block exists for those dates.");
-            return;
-          }
-          void adminCreateBlock({
-            property_id: propertyId,
-            start_date: start,
-            end_date: end,
-            reason: "manual",
-          })
-            .then(() => reload())
-            .catch((err) => setError(err.message));
-        }}
-      >
-        <h2 className="md:col-span-4 font-medium">Add manual block</h2>
-        <select
-          required
-          className="border rounded-xl p-2 text-sm"
-          value={propertyId}
-          onChange={(e) => setPropertyId(e.target.value)}
-        >
-          <option value="">Property</option>
-          {properties.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title}
-            </option>
+      <OpsPanel className="p-4">
+        <div className="grid grid-cols-7 gap-1">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <div
+              key={d}
+              className="py-1 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-brand-900/40"
+            >
+              {d}
+            </div>
           ))}
-        </select>
-        <input
-          type="date"
-          required
-          className="border rounded-xl p-2 text-sm"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-        />
-        <input
-          type="date"
-          required
-          className="border rounded-xl p-2 text-sm"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-        />
-        <button type="submit" className="rounded-full bg-royal text-white text-sm">
-          Block dates
-        </button>
-      </form>
+          {Array.from({ length: days.pad }).map((_, i) => (
+            <div key={`pad-${i}`} />
+          ))}
+          {days.cells.map((c) => (
+            <div
+              key={c.date}
+              title={c.date}
+              className={cn(
+                "flex aspect-square items-center justify-center border text-[13px] tabular-nums",
+                isBlocked(c.date)
+                  ? "border-royal bg-royal text-white"
+                  : "border-brand-900/8 bg-white text-brand-900/80",
+              )}
+            >
+              {c.label}
+            </div>
+          ))}
+        </div>
+      </OpsPanel>
 
-      <div className="mt-6 space-y-2">
-        {blocks.map((b) => (
-          <div key={b.id} className="text-sm bg-white rounded-xl p-3 ring-1 ring-brand-900/5">
-            {b.property?.title ?? b.property_id}: {b.start_date} → {b.end_date} ({b.reason})
-          </div>
-        ))}
-      </div>
+      <OpsPanel className="p-4">
+        <form
+          className="grid gap-3 md:grid-cols-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!propertyId || !start || !end) {
+              setError("Select property and dates");
+              return;
+            }
+            const conflict = blocks.some(
+              (b) => b.property_id === propertyId && start < b.end_date && b.start_date < end,
+            );
+            if (conflict) {
+              setError("Conflict: overlapping block exists for those dates.");
+              return;
+            }
+            void adminCreateBlock({
+              property_id: propertyId,
+              start_date: start,
+              end_date: end,
+              reason: "manual",
+            })
+              .then(() => reload())
+              .catch((err) => setError(err.message));
+          }}
+        >
+          <h2 className="text-[14px] font-semibold md:col-span-4">Add manual block</h2>
+          <OpsSelect
+            required
+            value={propertyId}
+            onChange={(e) => setPropertyId(e.target.value)}
+          >
+            <option value="">Property</option>
+            {properties.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </OpsSelect>
+          <OpsInput
+            type="date"
+            required
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+          />
+          <OpsInput type="date" required value={end} onChange={(e) => setEnd(e.target.value)} />
+          <OpsPrimaryButton type="submit">Block dates</OpsPrimaryButton>
+        </form>
+      </OpsPanel>
+
+      {blocks.length === 0 ? (
+        <OpsEmpty>No blocks for this filter.</OpsEmpty>
+      ) : (
+        <OpsPanel className="divide-y divide-brand-900/8">
+          {blocks.map((b) => (
+            <div key={b.id} className="px-4 py-3 text-[13px]">
+              <span className="font-medium">{b.property?.title ?? b.property_id}</span>
+              <span className="text-brand-900/50">
+                {" "}
+                · {b.start_date} → {b.end_date} · {b.reason}
+              </span>
+            </div>
+          ))}
+        </OpsPanel>
+      )}
     </div>
   );
 }

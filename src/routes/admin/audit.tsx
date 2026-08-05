@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { OpsAlert, OpsEmpty, OpsPageHeader, OpsPanel } from "@/components/admin/ops-ui";
 import { adminListAuditLogs } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import type { AuditLog } from "@/types/domain";
@@ -24,19 +25,26 @@ function AdminAuditPage() {
   }, []);
 
   return (
-    <div>
-      <h1 className="text-2xl font-light">Audit log</h1>
-      <p className="text-sm text-gray-600">Admin actions for accountability.</p>
-      {error && <p className="mt-4 text-sm text-amber-800 bg-amber-50 rounded-xl p-3">{error}</p>}
-      <div className="mt-6 space-y-2">
-        {items.map((a) => (
-          <div key={a.id} className="bg-white rounded-xl p-3 text-sm ring-1 ring-brand-900/5">
-            <span className="font-medium">{a.action}</span> · {a.entity_type}{" "}
-            {a.entity_id ? `· ${a.entity_id.slice(0, 8)}` : ""} ·{" "}
-            {new Date(a.created_at).toLocaleString()}
-          </div>
-        ))}
-      </div>
+    <div className="space-y-4">
+      <OpsPageHeader title="Audit log" description="Admin actions for accountability." />
+      {error && <OpsAlert>{error}</OpsAlert>}
+      {items.length === 0 ? (
+        <OpsEmpty>No audit events yet.</OpsEmpty>
+      ) : (
+        <OpsPanel className="divide-y divide-brand-900/8">
+          {items.map((a) => (
+            <div key={a.id} className="px-4 py-3 text-[13px]">
+              <span className="font-medium">{a.action}</span>
+              <span className="text-brand-900/50">
+                {" "}
+                · {a.entity_type}
+                {a.entity_id ? ` · ${a.entity_id.slice(0, 8)}` : ""} ·{" "}
+                {new Date(a.created_at).toLocaleString()}
+              </span>
+            </div>
+          ))}
+        </OpsPanel>
+      )}
     </div>
   );
 }

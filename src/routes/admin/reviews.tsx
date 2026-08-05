@@ -1,5 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import {
+  OpsAlert,
+  OpsEmpty,
+  OpsPageHeader,
+  OpsPanel,
+  OpsPrimaryButton,
+  OpsSecondaryButton,
+  OpsStatus,
+} from "@/components/admin/ops-ui";
 import { adminListReviews, adminModerateReview } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Review } from "@/types/domain";
@@ -27,45 +36,54 @@ function AdminReviewsPage() {
   }, []);
 
   return (
-    <div>
-      <h1 className="text-2xl font-light">Reviews</h1>
-      <p className="text-sm text-gray-600">Moderate guest reviews before they go public.</p>
-      {error && <p className="mt-4 text-sm text-amber-800 bg-amber-50 rounded-xl p-3">{error}</p>}
-      <div className="mt-6 space-y-3">
-        {items.map((r) => (
-          <div key={r.id} className="bg-white rounded-2xl p-5 ring-1 ring-brand-900/5">
-            <div className="flex justify-between gap-4">
-              <div>
-                <p className="font-medium">
-                  {(r as Review & { property?: { title: string } }).property?.title ??
-                    r.property_id}
-                </p>
-                <p className="text-sm text-gold">{"★".repeat(r.rating)}</p>
-                <p className="mt-2 text-sm text-gray-700">{r.body}</p>
+    <div className="space-y-4">
+      <OpsPageHeader
+        title="Reviews"
+        description="Moderate guest reviews before they go public."
+      />
+      {error && <OpsAlert>{error}</OpsAlert>}
+      {items.length === 0 ? (
+        <OpsEmpty>No reviews to moderate.</OpsEmpty>
+      ) : (
+        <OpsPanel className="divide-y divide-brand-900/8">
+          {items.map((r) => (
+            <div key={r.id} className="flex flex-wrap items-start justify-between gap-4 px-4 py-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium text-[13px]">
+                    {(r as Review & { property?: { title: string } }).property?.title ??
+                      r.property_id}
+                  </p>
+                  <OpsStatus
+                    status={r.status}
+                    tone={
+                      r.status === "approved" ? "ok" : r.status === "rejected" ? "bad" : "review"
+                    }
+                  />
+                </div>
+                <p className="mt-1 text-[12px] text-gold">{"★".repeat(r.rating)}</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-brand-900/75">{r.body}</p>
               </div>
-              <div className="space-y-2">
-                <span className="text-xs uppercase">{r.status}</span>
-                {r.status === "pending" && (
-                  <div className="flex gap-2">
-                    <button
-                      className="px-3 py-1 rounded-full bg-royal text-white text-xs"
-                      onClick={() => void adminModerateReview(r.id, "approved").then(reload)}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="px-3 py-1 rounded-full border text-xs"
-                      onClick={() => void adminModerateReview(r.id, "rejected").then(reload)}
-                    >
-                      Reject
-                    </button>
-                  </div>
-                )}
-              </div>
+              {r.status === "pending" && (
+                <div className="flex gap-2">
+                  <OpsPrimaryButton
+                    type="button"
+                    onClick={() => void adminModerateReview(r.id, "approved").then(reload)}
+                  >
+                    Approve
+                  </OpsPrimaryButton>
+                  <OpsSecondaryButton
+                    type="button"
+                    onClick={() => void adminModerateReview(r.id, "rejected").then(reload)}
+                  >
+                    Reject
+                  </OpsSecondaryButton>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </OpsPanel>
+      )}
     </div>
   );
 }
