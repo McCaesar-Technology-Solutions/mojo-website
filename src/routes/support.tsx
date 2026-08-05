@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage } from "@/components/layout/legal-page";
 import { getWhatsAppNumber } from "@/lib/env";
 
@@ -11,17 +11,32 @@ function SupportPage() {
   const wa = getWhatsAppNumber();
   return (
     <LegalPage title="Help & Support">
-      <p>Need help with an enquiry or stay? Our concierge team is available daily.</p>
-      <ul className="list-disc pl-5 space-y-2">
+      <p>
+        Need help choosing a stay or following up on a request? Our team is here for guests across
+        Ghana.
+      </p>
+      <ul>
         <li>
           WhatsApp:{" "}
-          <a className="text-royal underline" href={`https://wa.me/${wa}`}>
-            Chat with MOJO
-          </a>
+          {wa ? (
+            <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer">
+              Chat with MOJO
+            </a>
+          ) : (
+            <span>Number not configured — email us below.</span>
+          )}
         </li>
-        <li>Email: support@mojoapartments.com</li>
+        <li>
+          Email:{" "}
+          <a href="mailto:support@mojoapartments.com">support@mojoapartments.com</a>
+        </li>
         <li>Response target: within 24 hours for enquiries</li>
       </ul>
+      <p>
+        Prefer to start a stay request?{" "}
+        <Link to="/properties">Browse properties</Link> and Request to Book — you are not charged
+        when you submit.
+      </p>
     </LegalPage>
   );
 }

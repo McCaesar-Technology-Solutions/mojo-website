@@ -11,6 +11,10 @@ export const Route = createFileRoute("/account/trips")({
   component: TripsPage,
 });
 
+function statusLabel(status: string) {
+  return status.replace(/_/g, " ");
+}
+
 function TripsPage() {
   const { user } = useAuth();
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -30,29 +34,38 @@ function TripsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-light">My trips</h1>
-      <p className="mt-2 text-gray-600">Enquiries and confirmed stays.</p>
+      <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+        My trips
+      </h1>
+      <div className="mt-3 h-px w-12 bg-gold" aria-hidden />
+      <p className="mt-4 text-[1.0625rem] text-brand-900/60">
+        Request to Book enquiries and confirmed stays.
+      </p>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-medium mb-4">Confirmed bookings</h2>
+      <section className="mt-12">
+        <h2 className="text-[1.125rem] font-semibold text-brand-900">Confirmed bookings</h2>
         {bookings.length === 0 ? (
-          <p className="text-sm text-gray-500">No confirmed bookings yet.</p>
+          <p className="mt-4 text-[1rem] text-brand-900/50">No confirmed bookings yet.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="mt-4 space-y-3">
             {bookings.map((b) => (
-              <div key={b.id} className="bg-white rounded-2xl p-5 ring-1 ring-brand-900/5">
-                <div className="flex justify-between gap-4 flex-wrap">
+              <div key={b.id} className="border border-brand-900/10 bg-[#FBFaf7] px-5 py-4">
+                <div className="flex flex-wrap justify-between gap-4">
                   <div>
-                    <p className="font-medium">{b.property?.title ?? "Stay"}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-[1rem] font-medium text-brand-900">
+                      {b.property?.title ?? "Stay"}
+                    </p>
+                    <p className="mt-1 text-[0.875rem] text-brand-900/55">
                       {fmtDate(b.check_in)} — {fmtDate(b.check_out)} · {b.guests} guests
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs uppercase tracking-wide px-2 py-1 rounded-full bg-lavender text-royal">
-                      {b.status}
+                    <span className="inline-block rounded-md bg-lavender px-2 py-1 text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-royal">
+                      {statusLabel(b.status)}
                     </span>
-                    <p className="mt-2 font-semibold">{ghs(b.total)}</p>
+                    <p className="mt-2 text-[1rem] font-semibold tabular-nums text-brand-900">
+                      {ghs(b.total)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -61,31 +74,38 @@ function TripsPage() {
         )}
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-medium mb-4">Enquiries</h2>
+      <section className="mt-12">
+        <h2 className="text-[1.125rem] font-semibold text-brand-900">Enquiries</h2>
         {enquiries.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="mt-4 text-[1rem] text-brand-900/50">
             No enquiries yet.{" "}
-            <Link to="/properties" className="text-gold underline">
+            <Link
+              to="/properties"
+              className="font-medium text-royal underline decoration-gold/70 underline-offset-4"
+            >
               Browse properties
             </Link>
           </p>
         ) : (
-          <div className="space-y-3">
+          <div className="mt-4 space-y-3">
             {enquiries.map((e) => (
-              <div key={e.id} className="bg-white rounded-2xl p-5 ring-1 ring-brand-900/5">
-                <div className="flex justify-between gap-4 flex-wrap">
+              <div key={e.id} className="border border-brand-900/10 bg-[#FBFaf7] px-5 py-4">
+                <div className="flex flex-wrap justify-between gap-4">
                   <div>
-                    <p className="font-medium">{e.property?.title ?? e.property_id}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-[1rem] font-medium text-brand-900">
+                      {e.property?.title ?? e.property_id}
+                    </p>
+                    <p className="mt-1 text-[0.875rem] text-brand-900/55">
                       {fmtDate(e.check_in)} — {fmtDate(e.check_out)} · {e.guests} guests
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs uppercase tracking-wide px-2 py-1 rounded-full bg-lavender text-royal">
-                      {e.status}
+                    <span className="inline-block rounded-md bg-lavender px-2 py-1 text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-royal">
+                      {statusLabel(e.status)}
                     </span>
-                    <p className="mt-2 font-semibold">{ghs(e.total)}</p>
+                    <p className="mt-2 text-[1rem] font-semibold tabular-nums text-brand-900">
+                      {ghs(e.total)}
+                    </p>
                   </div>
                 </div>
               </div>

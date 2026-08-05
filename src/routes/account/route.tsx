@@ -1,7 +1,7 @@
-import { Outlet, createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { SiteNav } from "@/components/layout/site-nav";
-import { SiteFooter } from "@/components/layout/site-footer";
+import { Outlet, createFileRoute, Link, redirect, useRouterState } from "@tanstack/react-router";
+import { GuestShell } from "@/components/layout/guest-shell";
 import { getSupabase } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/account")({
   beforeLoad: async ({ location }) => {
@@ -15,27 +15,39 @@ export const Route = createFileRoute("/account")({
   component: AccountLayout,
 });
 
+const tabs = [
+  { to: "/account/trips" as const, label: "Trips" },
+  { to: "/account/wishlist" as const, label: "Wishlist" },
+  { to: "/account/messages" as const, label: "Messages" },
+];
+
 function AccountLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
   return (
-    <div className="min-h-screen bg-brand-50 text-brand-900">
-      <SiteNav />
-      <main className="pt-24 pb-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-wrap gap-4 mb-8 text-sm font-medium">
-            <Link to="/account/trips" className="hover:text-gold [&.active]:text-gold">
-              Trips
-            </Link>
-            <Link to="/account/wishlist" className="hover:text-gold">
-              Wishlist
-            </Link>
-            <Link to="/account/messages" className="hover:text-gold">
-              Messages
-            </Link>
-          </div>
-          <Outlet />
-        </div>
-      </main>
-      <SiteFooter />
-    </div>
+    <GuestShell>
+      <div className="mx-auto max-w-5xl">
+        <nav className="mb-10 flex flex-wrap gap-1 border-b border-brand-900/10" aria-label="Account">
+          {tabs.map((tab) => {
+            const active = pathname.startsWith(tab.to);
+            return (
+              <Link
+                key={tab.to}
+                to={tab.to}
+                className={cn(
+                  "border-b-2 px-3 py-2.5 text-[0.9375rem] font-medium transition",
+                  active
+                    ? "border-royal text-royal"
+                    : "border-transparent text-brand-900/55 hover:text-brand-900",
+                )}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <Outlet />
+      </div>
+    </GuestShell>
   );
 }
