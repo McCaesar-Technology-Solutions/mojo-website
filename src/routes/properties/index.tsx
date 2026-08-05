@@ -67,7 +67,7 @@ function PropertiesPage() {
           </div>
 
           <form
-            className="grid md:grid-cols-4 gap-3 bg-white p-4 rounded-2xl shadow-sm ring-1 ring-brand-900/5 mb-10"
+            className="mb-10 flex flex-col gap-1 rounded-2xl bg-white p-2 shadow-lg shadow-brand-900/5 ring-1 ring-brand-900/5 md:flex-row md:items-stretch"
             onSubmit={(e) => {
               e.preventDefault();
               const fd = new FormData(e.currentTarget);
@@ -82,56 +82,104 @@ function PropertiesPage() {
               });
             }}
           >
-            <label className="text-sm">
-              <span className="text-xs uppercase tracking-wider text-gray-500">City</span>
-              <select
-                name="city"
-                defaultValue={search.city ?? ""}
-                className="mt-1 w-full border border-brand-900/10 rounded-xl px-3 py-2 bg-transparent"
-              >
-                <option value="">All cities</option>
-                {["Accra", "Kumasi", "Takoradi", "Tema"].map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+            <label className="group flex flex-1 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition hover:bg-lavender/60">
+              <iconify-icon icon="solar:map-point-linear" width="20" style={{ color: "#C89B2C" }} />
+              <div className="min-w-0 flex-1 text-left">
+                <span className="block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                  City
+                </span>
+                <div className="relative mt-0.5">
+                  <select
+                    name="city"
+                    defaultValue={search.city ?? ""}
+                    className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-sm font-medium text-brand-900 focus:outline-none"
+                  >
+                    <option value="">All cities</option>
+                    {["Accra", "Kumasi", "Takoradi", "Tema"].map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                  <iconify-icon
+                    icon="solar:alt-arrow-down-linear"
+                    width="14"
+                    className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-brand-900/40"
+                  />
+                </div>
+              </div>
             </label>
-            <label className="text-sm">
-              <span className="text-xs uppercase tracking-wider text-gray-500">Type</span>
-              <select
-                name="type"
-                defaultValue={search.type ?? ""}
-                className="mt-1 w-full border border-brand-900/10 rounded-xl px-3 py-2 bg-transparent"
-              >
-                <option value="">All types</option>
-                {["Apartment", "Hotel", "Suite", "Serviced"].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+
+            <div className="hidden w-px self-stretch bg-brand-900/8 md:block" aria-hidden />
+
+            <label className="group flex flex-1 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition hover:bg-lavender/60">
+              <iconify-icon icon="solar:buildings-2-linear" width="20" style={{ color: "#C89B2C" }} />
+              <div className="min-w-0 flex-1 text-left">
+                <span className="block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                  Type
+                </span>
+                <div className="relative mt-0.5">
+                  <select
+                    name="type"
+                    defaultValue={search.type ?? ""}
+                    className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-sm font-medium text-brand-900 focus:outline-none"
+                  >
+                    <option value="">All types</option>
+                    {["Apartment", "Hotel", "Suite", "Serviced"].map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                  <iconify-icon
+                    icon="solar:alt-arrow-down-linear"
+                    width="14"
+                    className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-brand-900/40"
+                  />
+                </div>
+              </div>
             </label>
-            <label className="text-sm">
-              <span className="text-xs uppercase tracking-wider text-gray-500">Guests</span>
-              <select
-                name="guests"
-                defaultValue={search.guests ?? ""}
-                className="mt-1 w-full border border-brand-900/10 rounded-xl px-3 py-2 bg-transparent"
-              >
-                <option value="">Any</option>
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>
-                    {n}+
-                  </option>
-                ))}
-              </select>
+
+            <div className="hidden w-px self-stretch bg-brand-900/8 md:block" aria-hidden />
+
+            <label className="group flex flex-1 cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition hover:bg-lavender/60">
+              <iconify-icon
+                icon="solar:users-group-rounded-linear"
+                width="20"
+                style={{ color: "#C89B2C" }}
+              />
+              <div className="min-w-0 flex-1 text-left">
+                <span className="block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                  Guests
+                </span>
+                <div className="relative mt-0.5">
+                  <select
+                    name="guests"
+                    defaultValue={search.guests ?? ""}
+                    className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-sm font-medium text-brand-900 focus:outline-none"
+                  >
+                    <option value="">Any</option>
+                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                      <option key={n} value={n}>
+                        {n}+
+                      </option>
+                    ))}
+                  </select>
+                  <iconify-icon
+                    icon="solar:alt-arrow-down-linear"
+                    width="14"
+                    className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-brand-900/40"
+                  />
+                </div>
+              </div>
             </label>
+
             <button
               type="submit"
-              className="self-end rounded-xl bg-royal text-white py-2.5 font-medium hover:opacity-90 transition"
+              className="flex items-center justify-center gap-2 rounded-xl bg-royal px-6 py-3 font-medium text-white transition hover:opacity-90 md:self-stretch"
             >
-              Search
+              <iconify-icon icon="solar:magnifer-linear" width="18" />
+              <span>Search</span>
             </button>
           </form>
 
