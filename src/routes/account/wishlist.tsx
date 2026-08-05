@@ -42,9 +42,9 @@ function WishlistPage() {
           </Link>
         </p>
       ) : (
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((p) => (
-            <PropertyCard key={p.id} property={p} />
+        <div className="mt-8 flex flex-col gap-6 md:gap-8">
+          {items.map((p, i) => (
+            <PropertyCard key={p.id} property={p} index={i} />
           ))}
         </div>
       )}

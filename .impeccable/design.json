@@ -1,9 +1,24 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-05T14:47:05Z",
-  "title": "Design System: MOJO Ops Console",
+  "generatedAt": "2026-08-05T15:36:08.036085Z",
+  "title": "Design System: MOJO Apartments",
   "extensions": {
     "colorMeta": {
+      "paper-ground": {
+        "role": "neutral",
+        "displayName": "Paper Ground",
+        "canonical": "#F7F5F2",
+        "tonalRamp": [
+          "#2A2723",
+          "#4A4540",
+          "#6E6861",
+          "#938C84",
+          "#B8B1A8",
+          "#D4CFC8",
+          "#E8E4DF",
+          "#F7F5F2"
+        ]
+      },
       "paper-stone": {
         "role": "neutral",
         "displayName": "Paper Stone",
@@ -47,6 +62,21 @@
           "#CCCCCC",
           "#E8E8E8",
           "#FFFFFF"
+        ]
+      },
+      "brand-50": {
+        "role": "neutral",
+        "displayName": "Brand 50",
+        "canonical": "#FAFAFA",
+        "tonalRamp": [
+          "#1A1A1A",
+          "#3D3D3D",
+          "#616161",
+          "#858585",
+          "#A8A8A8",
+          "#CCCCCC",
+          "#E8E8E8",
+          "#FAFAFA"
         ]
       },
       "brand-ink": {
@@ -201,8 +231,48 @@
       }
     },
     "typographyMeta": {
+      "guest-display": {
+        "displayName": "Guest Display",
+        "purpose": "Hero brand lockup MOJO (+ gold Apartments); Bricolage medium ~3.5rem."
+      },
+      "guest-title": {
+        "displayName": "Guest Title",
+        "purpose": "Guest section heads; Bricolage medium clamp ~1.75\u20132.25rem."
+      },
+      "guest-plate": {
+        "displayName": "Guest Plate Title",
+        "purpose": "Editorial property plate titles; Bricolage medium 2rem."
+      },
+      "guest-body": {
+        "displayName": "Guest Body",
+        "purpose": "Hero support and section ledes; Source Sans 3 1.0625rem."
+      },
+      "guest-ui": {
+        "displayName": "Guest UI",
+        "purpose": "Nav, CTAs, desk values, text links; Source Sans 3 0.9375rem medium."
+      },
+      "guest-menu": {
+        "displayName": "Guest Menu",
+        "purpose": "Mobile cinema-split menu rows; 1.125rem medium (gold on royal)."
+      },
+      "guest-base": {
+        "displayName": "Guest Base",
+        "purpose": "Step descriptions and empty states; 1rem."
+      },
+      "guest-small": {
+        "displayName": "Guest Small",
+        "purpose": "Plate location lines; 0.875rem."
+      },
+      "guest-micro": {
+        "displayName": "Guest Micro",
+        "purpose": "Plate price meta and Request to Book link; 0.8125rem."
+      },
+      "guest-tiny": {
+        "displayName": "Guest Tiny Label",
+        "purpose": "Uppercase desk labels and city lines; 0.75rem tracking 0.08em. No type badges."
+      },
       "title": {
-        "displayName": "Page Title",
+        "displayName": "Ops Page Title",
         "purpose": "Ops page headers (OpsPageHeader)."
       },
       "folio-name": {
@@ -210,19 +280,37 @@
         "purpose": "Selected guest name in the request folio only."
       },
       "body": {
-        "displayName": "Body / Controls",
-        "purpose": "Queue rows, tables, buttons, nav, field values — default 13px workhorse."
+        "displayName": "Ops Body / Controls",
+        "purpose": "Queue rows, tables, buttons, nav, field values \u2014 default 13px workhorse."
+      },
+      "caption": {
+        "displayName": "Ops Caption",
+        "purpose": "Muted meta, descriptions, 12px."
       },
       "label": {
-        "displayName": "Section Label",
+        "displayName": "Ops Section Label",
         "purpose": "Uppercase micro labels for folio sections, table thead, metric strip."
       },
       "micro": {
-        "displayName": "Micro Chip",
+        "displayName": "Ops Micro Chip",
         "purpose": "Status chips, tab count badges, stay-fact cell labels."
+      },
+      "guest-price": {
+        "displayName": "Guest Price",
+        "purpose": "Plate nightly rate; Source Sans 3 semibold 1.25rem."
       }
     },
     "shadows": [
+      {
+        "name": "reception-desk",
+        "value": "0 8px 30px rgba(0,0,0,0.25)",
+        "purpose": "Hero reception desk strip lift over the film."
+      },
+      {
+        "name": "guest-nav-scrolled",
+        "value": "0 1px 3px rgba(36,16,77,0.08)",
+        "purpose": "Sticky guest nav after scroll."
+      },
       {
         "name": "rail-active",
         "value": "0 1px 2px rgba(45, 22, 89, 0.25)",
@@ -238,7 +326,17 @@
       {
         "name": "ease-state",
         "value": "transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease",
-        "purpose": "Default Tailwind transition on buttons, rows, and tabs."
+        "purpose": "Default state transitions on buttons, rows, and tabs."
+      },
+      {
+        "name": "plate-image",
+        "value": "transition: transform 700ms ease-out",
+        "purpose": "Property plate cover scale to 1.03 on hover."
+      },
+      {
+        "name": "nav-chrome",
+        "value": "transition: background 300ms, box-shadow 300ms",
+        "purpose": "Guest nav scrolled chrome settle."
       }
     ],
     "breakpoints": [
@@ -258,10 +356,58 @@
   },
   "components": [
     {
+      "name": "Guest Primary Button",
+      "kind": "button",
+      "refersTo": "guest-button-primary",
+      "description": "Royal CTA on Stay Cinema \u2014 Browse stays, Request to Book.",
+      "html": "<button class=\"ds-guest-btn-primary\" type=\"button\">Browse stays</button>",
+      "css": ".ds-guest-btn-primary { display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 8px; background: #2D1659; color: #FFFFFF; padding: 12px 20px; font: 500 0.9375rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms ease; } .ds-guest-btn-primary:hover { background: rgba(45, 22, 89, 0.9); } .ds-guest-btn-primary:focus-visible { outline: 2px solid #2D1659; outline-offset: 2px; }"
+    },
+    {
+      "name": "Guest Ghost Button",
+      "kind": "button",
+      "refersTo": "guest-button-ghost",
+      "description": "Film-over WhatsApp / Contact \u2014 frosted white border.",
+      "html": "<button class=\"ds-guest-btn-ghost\" type=\"button\">WhatsApp</button>",
+      "css": ".ds-guest-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,0.35); border-radius: 8px; background: rgba(255,255,255,0.1); color: #FFFFFF; padding: 12px 20px; font: 500 0.9375rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; backdrop-filter: blur(4px); cursor: pointer; transition: background-color 150ms ease; } .ds-guest-btn-ghost:hover { background: rgba(255,255,255,0.15); } .ds-guest-btn-ghost:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }"
+    },
+    {
+      "name": "Guest Secondary Button",
+      "kind": "button",
+      "refersTo": "guest-button-secondary",
+      "description": "Paper-surface secondary \u2014 WhatsApp beside royal on closing band.",
+      "html": "<button class=\"ds-guest-btn-secondary\" type=\"button\">WhatsApp</button>",
+      "css": ".ds-guest-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(36,16,77,0.15); border-radius: 8px; background: #FFFFFF; color: #24104D; padding: 12px 20px; font: 500 0.9375rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms ease; } .ds-guest-btn-secondary:hover { background: rgba(243,240,250,0.6); } .ds-guest-btn-secondary:focus-visible { outline: 2px solid #2D1659; outline-offset: 2px; }"
+    },
+    {
+      "name": "Site Nav",
+      "kind": "nav",
+      "refersTo": "guest-nav",
+      "description": "Fixed 64px sheet-cream glass; mobile cinema-split (film + royal + gold hairlines).",
+      "html": "<nav class=\"ds-guest-nav\"><span class=\"ds-guest-nav-brand\">MOJO</span><div class=\"ds-guest-nav-links\"><a href=\"#\">Properties</a><a href=\"#\">About</a><a href=\"#\">Contact</a></div><a class=\"ds-guest-nav-cta\" href=\"#\">Request to Book</a></nav>",
+      "css": ".ds-guest-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 64px; padding: 0 24px; background: rgba(251,250,247,0.8); backdrop-filter: blur(12px); font: 500 0.9375rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; color: #24104D; } .ds-guest-nav-brand { font: 500 1.125rem/1 \"Bricolage Grotesque\", ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.02em; color: #24104D; } .ds-guest-nav-links { display: flex; gap: 28px; } .ds-guest-nav-links a { color: #24104D; text-decoration: none; } .ds-guest-nav-links a:hover { color: #2D1659; } .ds-guest-nav-cta { display: inline-flex; align-items: center; border-radius: 8px; background: #2D1659; color: #FFFFFF; padding: 8px 14px; text-decoration: none; } .ds-guest-nav-cta:hover { background: rgba(45,22,89,0.9); }"
+    },
+    {
+      "name": "Reception Desk",
+      "kind": "custom",
+      "refersTo": "guest-reception-desk",
+      "description": "Hero dark floating strip \u2014 field icons, white type, royal Search stays.",
+      "html": "<form class=\"ds-desk\"><label class=\"ds-desk-cell\"><span>City</span><strong>Accra, Ghana</strong></label><label class=\"ds-desk-cell\"><span>Guests</span><strong>2+</strong></label><button class=\"ds-desk-submit\" type=\"button\">Search stays</button></form>",
+      "css": ".ds-desk { display: grid; grid-template-columns: 1fr 1fr auto; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; background: rgba(20,12,36,0.72); backdrop-filter: blur(12px); box-shadow: 0 8px 30px rgba(0,0,0,0.35); font: 500 0.9375rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; color: #FFFFFF; } .ds-desk-cell { display: block; padding: 14px 16px; border-right: 1px solid rgba(255,255,255,0.15); } .ds-desk-cell span { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.45); } .ds-desk-cell strong { display: block; margin-top: 4px; font-weight: 500; color: #FFFFFF; } .ds-desk-submit { border: none; background: #2D1659; color: #FFFFFF; padding: 14px 24px; font: 500 0.9375rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; cursor: pointer; } .ds-desk-submit:hover { background: rgba(45,22,89,0.9); }"
+    },
+    {
+      "name": "Property Plate",
+      "kind": "card",
+      "refersTo": "guest-property-plate",
+      "description": "Alternating editorial split \u2014 photo | cream copy, gold hairline, no badges.",
+      "html": "<a class=\"ds-plate\" href=\"#\"><div class=\"ds-plate-media\"></div><div class=\"ds-plate-body\"><h3>The Gallery</h3><div class=\"ds-plate-rule\"></div><p class=\"ds-plate-loc\">Accra</p><p class=\"ds-plate-price\"><strong>GHS 2,800</strong><span> / night</span></p><span class=\"ds-plate-cta\">Request to Book</span></div></a>",
+      "css": ".ds-plate { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; background: #FBFAF7; color: #24104D; text-decoration: none; } .ds-plate-media { min-height: 320px; background: rgba(36,16,77,0.05); } .ds-plate-body { display: flex; flex-direction: column; justify-content: center; padding: 40px 48px; } .ds-plate-body h3 { margin: 0; font: 500 2rem/1.15 \"Bricolage Grotesque\", ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.02em; } .ds-plate-rule { width: 64px; height: 1px; margin-top: 20px; background: #C89B2C; } .ds-plate-loc { margin: 20px 0 0; font: 600 0.75rem/1.2 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(36,16,77,0.55); } .ds-plate-price { margin: 12px 0 0; font: 600 1.25rem/1.3 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums; } .ds-plate-price span { font-size: 0.8125rem; font-weight: 400; color: rgba(36,16,77,0.5); } .ds-plate-cta { margin-top: 32px; font: 500 0.8125rem/1.3 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; color: #2D1659; text-decoration: underline; text-decoration-color: rgba(200,155,44,0.8); text-underline-offset: 4px; }"
+    },
+    {
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Royal fill CTA — Approve, Inbox, New property.",
+      "description": "Ops royal fill CTA \u2014 Approve, Inbox, New property.",
       "html": "<button class=\"ds-btn-primary\" type=\"button\">Approve</button>",
       "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 8px; background: #2D1659; color: #FFFFFF; padding: 8px 14px; font: 500 13px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; cursor: pointer; transition: background-color 150ms ease; } .ds-btn-primary:hover { background: rgba(45, 22, 89, 0.9); } .ds-btn-primary:focus-visible { outline: 2px solid #2D1659; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
     },
@@ -269,7 +415,7 @@
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Outlined decline / secondary action beside primary.",
+      "description": "Ops outlined decline / secondary action beside primary.",
       "html": "<button class=\"ds-btn-secondary\" type=\"button\">Decline</button>",
       "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(36, 16, 77, 0.15); border-radius: 8px; background: #FFFFFF; color: #24104D; padding: 8px 14px; font: 500 13px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; cursor: pointer; transition: background-color 150ms ease; } .ds-btn-secondary:hover { background: rgba(36, 16, 77, 0.03); } .ds-btn-secondary:focus-visible { outline: 2px solid #2D1659; outline-offset: 2px; } .ds-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }"
     },
@@ -277,7 +423,7 @@
       "name": "Status NEW",
       "kind": "chip",
       "refersTo": "status-new",
-      "description": "Sole gold use — NEW urgency chip.",
+      "description": "Sole ops gold use \u2014 NEW urgency chip.",
       "html": "<span class=\"ds-status-new\">new</span>",
       "css": ".ds-status-new { display: inline-flex; align-items: center; border-radius: 6px; padding: 2px 6px; font: 600 10px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(200, 155, 44, 0.15); color: #24104D; box-shadow: inset 0 0 0 1px rgba(200, 155, 44, 0.35); }"
     },
@@ -309,7 +455,7 @@
       "name": "Rail Nav Active",
       "kind": "nav",
       "refersTo": "nav-active",
-      "description": "Active ops-rail item — royal fill.",
+      "description": "Active ops-rail item \u2014 royal fill.",
       "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item ds-rail-item-active\" href=\"#\">Enquiries</a><a class=\"ds-rail-item\" href=\"#\">Bookings</a></nav>",
       "css": ".ds-rail { display: flex; flex-direction: column; gap: 2px; width: 200px; padding: 12px 8px; background: #FBFAF7; border: 1px solid rgba(36, 16, 77, 0.1); font: 400 13px/1.3 ui-sans-serif, system-ui, sans-serif; } .ds-rail-item { display: block; border-radius: 8px; padding: 8px 10px; color: rgba(36, 16, 77, 0.7); text-decoration: none; transition: background-color 150ms ease, color 150ms ease; } .ds-rail-item:hover { background: rgba(36, 16, 77, 0.04); color: #24104D; } .ds-rail-item-active { background: #2D1659; color: #FFFFFF; box-shadow: 0 1px 2px rgba(45, 22, 89, 0.25); } .ds-rail-item-active:hover { background: #2D1659; color: #FFFFFF; }"
     },
@@ -333,61 +479,80 @@
       "name": "Metric Strip",
       "kind": "custom",
       "refersTo": "panel",
-      "description": "Hairline-divided count strip — not SaaS cards.",
+      "description": "Hairline-divided count strip \u2014 not SaaS cards.",
       "html": "<div class=\"ds-metric-strip\"><a class=\"ds-metric\" href=\"#\"><span>Open enquiries</span><strong>4</strong></a><a class=\"ds-metric\" href=\"#\"><span>Bookings</span><strong>12</strong></a><a class=\"ds-metric\" href=\"#\"><span>Published stays</span><strong>8</strong></a><a class=\"ds-metric\" href=\"#\"><span>Confirmed revenue</span><strong>GHS 48k</strong></a></div>",
       "css": ".ds-metric-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid rgba(36, 16, 77, 0.1); background: #FFFFFF; font: 400 13px/1.3 ui-sans-serif, system-ui, sans-serif; } .ds-metric { display: block; padding: 12px 16px; border-left: 1px solid rgba(36, 16, 77, 0.1); text-decoration: none; color: #24104D; transition: background-color 150ms ease; } .ds-metric:first-child { border-left: none; } .ds-metric:hover { background: rgba(243, 240, 250, 0.4); } .ds-metric span { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(36, 16, 77, 0.45); } .ds-metric strong { display: block; margin-top: 4px; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }"
     }
   ],
   "narrative": {
-    "northStar": "Concierge phone-sheet",
-    "overview": "This is the internal Request-to-Book ops console for MOJO Apartments — a working tool, not a marketing shell. The metaphor is a concierge desk pad: a slim ops rail, a dense enquiry queue, and a request folio open beside it so approve/decline never loses the list. Surfaces stay paper-flat; brand shows up as royal actions and restrained lavender selection, not as guest-site costume.\n\nDensity is the point. Rows, hairline rules, and tabular totals replace airy cards and SaaS metric tiles. System UI sans is intentional on admin so scanning stays fast; the public site may keep Inter and promotional patterns separately.",
+    "northStar": "Stay Cinema + Reception Desk (guest) \u00b7 Concierge phone-sheet (ops)",
+    "overview": "MOJO ships two visual systems that share brand hues but never share costume. The public guest site is Stay Cinema + Reception Desk: a full-bleed hero film, centered brand, dark floating reception desk, sheet-cream nav, royal CTAs, gold as hairline emphasis, Bricolage Grotesque + Source Sans 3, and alternating editorial property plates. The internal `/admin` console is Concierge phone-sheet: a dense ops rail, enquiry queue beside a request folio, system-UI type, and paper-flat work surfaces.\n\nGuest density is editorial and calm; ops density is triage-first. Both refuse purple marketing themes, multi-layer glow shadows, and Instant Book theater.",
     "keyCharacteristics": [
-      "Paper stone ground with cream sheet chrome and white work surfaces",
-      "Royal for primary actions and active chrome; gold reserved for NEW urgency",
-      "Hairline brand-ink rules and dense 13px rows — no marketing cards",
-      "Split queue + folio on Enquiries; tables elsewhere",
-      "Soft 6–8px corners on controls; square panels and sheets"
+      "Guest: full-bleed hero video; paper ground #F7F5F2 + sheet-cream nav chrome; Bricolage + Source Sans 3",
+      "Guest: royal CTAs; gold on brand lockup, plate/menu hairlines, and link underlines \u2014 not fill buttons",
+      "Guest: alternating editorial plates (image|copy / copy|image); dark floating reception desk on the hero",
+      "Ops: paper stone + cream sheet + white panels; system UI; 13px dense rows",
+      "Ops: royal actions; gold only on NEW status chips; queue beside folio"
     ],
     "rules": [
       {
-        "name": "The Gold Urgency Rule",
-        "body": "Gold appears only on NEW status chips. Every other accent is royal or lavender.",
+        "name": "The Gold Hairline Rule (guest)",
+        "body": "Gold accents brand lockup, plate dividers, menu hairlines, and link underlines \u2014 never button fills or decorative icon washes.",
         "section": "colors"
       },
       {
-        "name": "The No Metric-Card Rule",
-        "body": "Counts live in hairline-divided strips or tab badges — never in elevated SaaS stat cards with shadows or icon tiles.",
+        "name": "The Gold Urgency Rule (ops)",
+        "body": "Gold appears only on NEW status chips. Every other ops accent is royal or lavender.",
         "section": "colors"
       },
       {
-        "name": "The Workhorse Type Rule",
-        "body": "Admin uses the system UI stack. Do not import Inter, serif display, or marketing display faces into /admin.",
+        "name": "The No Metric-Card Rule (ops)",
+        "body": "Counts live in hairline-divided strips or tab badges \u2014 never elevated SaaS stat cards.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Stack Rule",
+        "body": "Guest = Bricolage + Source Sans 3. Ops = system UI only. Never cross-pollinate display faces into /admin or revive Inter on guest Stay Cinema chrome.",
         "section": "typography"
       },
       {
-        "name": "The Queue-Beside-Folio Rule",
-        "body": "Triage never replaces the list with a full-page detail. Selection paints a royal left hairline + lavender wash; the folio updates in place.",
+        "name": "The Workhorse Type Rule (ops)",
+        "body": "Admin uses the system UI stack and ~13px dense body. No serif display or marketing faces in the ops shell.",
+        "section": "typography"
+      },
+      {
+        "name": "The Cinema First Rule (guest)",
+        "body": "Hero video is edge-to-edge plane; do not inset it in cards, side panels, or rounded media frames.",
+        "section": "layout"
+      },
+      {
+        "name": "The Queue-Beside-Folio Rule (ops)",
+        "body": "Triage never replaces the list with a full-page detail. Selection = royal left hairline + lavender wash; folio updates in place.",
         "section": "layout"
       },
       {
         "name": "The Hairline Depth Rule",
-        "body": "Prefer borders and paper layers over shadow. No multi-layer drop shadows, glows, or floating cards.",
+        "body": "Prefer borders and paper layers over shadow. No multi-layer drop shadows or glows on either surface.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "Do keep Enquiries as queue + folio side by side so triage never loses the list.",
-      "Do use royal for primary actions and active chrome; lavender for selection/hover wash.",
-      "Do reserve gold exclusively for NEW status chips.",
-      "Do set admin type to the system UI stack and keep body copy at ~13px dense.",
-      "Do separate surfaces with brand-ink/10 hairlines on paper stone / sheet cream / white."
+      "Do keep guest first viewport as cinema + brand + one line + CTAs + reception desk \u2014 no marketplace clutter.",
+      "Do use Bricolage for guest display/title/plate and Source Sans 3 for guest body/UI.",
+      "Do use royal for primary actions on both surfaces; apply gold per surface rule (hairline guest / NEW-only ops).",
+      "Do keep Enquiries as queue + folio side by side.",
+      "Do set ops type to the system UI stack at ~13px dense.",
+      "Do separate surfaces with brand-ink/10 hairlines on paper grounds and sheet cream.",
+      "Do say Request to Book (honest launch language), not Instant Book."
     ],
     "donts": [
-      "Don't build SaaS metric-card dashboards (icon tiles, soft shadows, rounded marketing cards) inside /admin.",
-      "Don't reuse public-site Inter/marketing hero patterns, full-bleed imagery, or gold icon decoration in the ops shell.",
-      "Don't use gold on buttons, nav, or decorative iconography.",
-      "Don't introduce rounded-full pills or multi-layer glow shadows on ops controls.",
-      "Don't open enquiry detail as a full-page takeover that hides the queue."
+      "Don't inset the hero video in cards, side panels, or rounded media frames.",
+      "Don't use gold as a guest CTA fill or as ops chrome decoration outside NEW chips.",
+      "Don't import Bricolage/Inter/marketing heroes into /admin.",
+      "Don't build SaaS metric-card dashboards inside /admin.",
+      "Don't introduce rounded-full pills or multi-layer glow shadows on Stay Cinema or ops controls.",
+      "Don't open enquiry detail as a full-page takeover that hides the queue.",
+      "Don't invent testimonials, ratings, or occupancy claims on guest surfaces."
     ]
   }
 }

@@ -13,11 +13,12 @@ export function SiteFooter() {
             <BrandMark variant="gold" className="!h-9" />
           </Link>
           <p className="mt-4 text-sm text-white/60 leading-relaxed">
-            Premium apartments and hotels thoughtfully managed across Ghana.
+            Trusted apartments and hotels managed by MOJO across Ghana. Request to Book — we
+            confirm.
           </p>
         </div>
         <div>
-          <h4 className="text-white font-medium mb-4">Accommodation</h4>
+          <h4 className="text-white font-medium mb-4">Stays</h4>
           <ul className="space-y-2 text-sm">
             <li>
               <Link

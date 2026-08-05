@@ -1,84 +1,64 @@
 import { Link } from "@tanstack/react-router";
 import { coverUrl } from "@/lib/properties";
-import { locationLabel } from "@/lib/format";
+import { ghs } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Property } from "@/types/domain";
 
 export function PropertyCard({
   property,
-  showDiscount = false,
+  index = 0,
 }: {
   property: Property;
-  showDiscount?: boolean;
+  index?: number;
 }) {
   const img = coverUrl(property);
   const price = property.pricing?.nightly_rate ?? 0;
   const original = property.pricing?.original_nightly_rate;
-  const discount = property.pricing?.discount_label;
+  const flip = index % 2 === 1;
 
   return (
     <Link
       to="/properties/$slug"
       params={{ slug: property.slug }}
-      className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl ring-1 ring-brand-900/5 transition-all duration-300 hover:-translate-y-1"
+      className="guest-site group grid overflow-hidden bg-[#FBFaf7] md:grid-cols-2"
     >
-      <div className={`relative overflow-hidden ${showDiscount ? "aspect-[5/4]" : "aspect-[4/5]"}`}>
+      <div
+        className={cn(
+          "relative min-h-[240px] overflow-hidden bg-brand-900/5 sm:min-h-[320px] md:min-h-[380px]",
+          flip && "md:order-2",
+        )}
+      >
         <img
           src={img}
           alt={property.title}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
         />
-        {showDiscount && discount ? (
-          <span className="absolute top-3 left-3 bg-royal text-white text-xs font-medium px-3 py-1 rounded-full">
-            {discount}
-          </span>
-        ) : (
-          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-medium text-brand-900 shadow-sm">
-            {property.type}
-          </span>
-        )}
-        {!showDiscount && (
-          <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition">
-            <span className="text-white text-sm font-medium underline decoration-gold underline-offset-4 decoration-2">
-              View Details
-            </span>
-          </div>
-        )}
       </div>
-      <div className="p-5 flex-1 flex flex-col">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h3 className="font-medium text-brand-900">{property.title}</h3>
-            <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-              <iconify-icon icon="solar:map-point-linear" width="14" />
-              {locationLabel(property.city, property.area)}
-            </p>
-          </div>
-          {property.rating != null && (
-            <div className="flex items-center gap-1 text-sm">
-              <iconify-icon icon="solar:star-bold" width="14" style={{ color: "#C89B2C" }} />
-              <span className="font-medium">{property.rating}</span>
-            </div>
-          )}
-        </div>
-        <div
-          className={`mt-3 flex items-baseline gap-2 ${showDiscount ? "pt-4 border-t border-gray-100" : ""}`}
-        >
-          <span className="text-lg font-semibold text-brand-900">GHS {price.toLocaleString()}</span>
-          {original ? (
-            <span className="text-sm text-gray-400 line-through underline-offset-4">
-              GHS {original.toLocaleString()}
-            </span>
-          ) : (
-            <span className="text-sm text-gray-500">/ night</span>
-          )}
-        </div>
-        {showDiscount && (
-          <span className="mt-4 w-full py-2.5 rounded-full border border-brand-900/15 text-sm font-medium text-brand-900 text-center group-hover:bg-royal group-hover:text-white group-hover:border-royal transition">
-            Book Now
-          </span>
+      <div
+        className={cn(
+          "flex flex-col justify-center px-6 py-10 sm:px-10 md:px-12 md:py-14",
+          flip && "md:order-1",
         )}
+      >
+        <h3 className="font-[family-name:var(--font-guest-display)] text-[2rem] font-medium leading-[1.15] tracking-[-0.02em] text-brand-900">
+          {property.title}
+        </h3>
+        <div className="mt-5 h-px w-16 bg-gold" aria-hidden />
+        <p className="mt-5 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/55">
+          {property.city}
+        </p>
+        <p className="mt-3 text-[1.25rem] font-semibold tabular-nums text-brand-900">
+          {ghs(price)}
+          <span className="text-[0.8125rem] font-normal text-brand-900/50"> / night</span>
+        </p>
+        {original ? (
+          <p className="mt-1 text-[0.8125rem] text-brand-900/40 line-through">{ghs(original)}</p>
+        ) : null}
+        <span className="mt-8 inline-flex text-[0.8125rem] font-medium text-royal underline decoration-gold/80 underline-offset-4 group-hover:decoration-royal">
+          Request to Book
+        </span>
       </div>
     </Link>
   );

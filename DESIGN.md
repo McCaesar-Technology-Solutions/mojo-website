@@ -1,10 +1,12 @@
 ---
-name: MOJO Ops Console
-description: Concierge phone-sheet admin — enquiry queue beside a request folio on paper stone.
+name: MOJO Apartments
+description: Dual system — guest Stay Cinema + Reception Desk; ops Concierge phone-sheet.
 colors:
+  paper-ground: "#F7F5F2"
   paper-stone: "#F4F2EE"
   sheet-cream: "#FBFAF7"
   white: "#FFFFFF"
+  brand-50: "#FAFAFA"
   brand-ink: "#24104D"
   royal: "#2D1659"
   gold: "#C89B2C"
@@ -16,6 +18,72 @@ colors:
   alert-bg: "#FFFBEB"
   alert-ink: "#451A03"
 typography:
+  guest-display:
+    fontFamily: '"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "3.5rem"
+    fontWeight: 500
+    lineHeight: 1.1
+    letterSpacing: "-0.03em"
+  guest-title:
+    fontFamily: '"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "2.25rem"
+    fontWeight: 500
+    lineHeight: 1.15
+    letterSpacing: "-0.02em"
+  guest-plate:
+    fontFamily: '"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "2rem"
+    fontWeight: 500
+    lineHeight: 1.15
+    letterSpacing: "-0.02em"
+  guest-price:
+    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "1.25rem"
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: "normal"
+  guest-body:
+    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "1.0625rem"
+    fontWeight: 400
+    lineHeight: 1.55
+    letterSpacing: "normal"
+  guest-ui:
+    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "0.9375rem"
+    fontWeight: 500
+    lineHeight: 1.4
+    letterSpacing: "normal"
+  guest-menu:
+    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "1.125rem"
+    fontWeight: 500
+    lineHeight: 1.3
+    letterSpacing: "normal"
+  guest-base:
+    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: "normal"
+  guest-small:
+    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.4
+    letterSpacing: "normal"
+  guest-micro:
+    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "0.8125rem"
+    fontWeight: 500
+    lineHeight: 1.3
+    letterSpacing: "normal"
+  guest-tiny:
+    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "0.75rem"
+    fontWeight: 600
+    lineHeight: 1.2
+    letterSpacing: "0.08em"
   title:
     fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "1.375rem"
@@ -61,16 +129,57 @@ typography:
 rounded:
   md: "6px"
   lg: "8px"
+  xl: "12px"
 spacing:
   xs: "4px"
   sm: "8px"
   md: "12px"
   lg: "16px"
   xl: "20px"
+  guest-gutter: "20px"
+  guest-section-y: "80px"
   rail: "220px"
   row-y: "12px"
   header: "56px"
+  guest-nav: "64px"
 components:
+  guest-button-primary:
+    backgroundColor: "{colors.royal}"
+    textColor: "{colors.white}"
+    typography: "{typography.guest-ui}"
+    rounded: "{rounded.lg}"
+    padding: "12px 20px"
+  guest-button-primary-hover:
+    backgroundColor: "rgba(45, 22, 89, 0.9)"
+    textColor: "{colors.white}"
+  guest-button-ghost:
+    backgroundColor: "rgba(255, 255, 255, 0.1)"
+    textColor: "{colors.white}"
+    typography: "{typography.guest-ui}"
+    rounded: "{rounded.lg}"
+    padding: "12px 20px"
+  guest-button-secondary:
+    backgroundColor: "{colors.white}"
+    textColor: "{colors.brand-ink}"
+    typography: "{typography.guest-ui}"
+    rounded: "{rounded.lg}"
+    padding: "12px 20px"
+  guest-nav:
+    backgroundColor: "rgba(251, 250, 247, 0.8)"
+    textColor: "{colors.brand-ink}"
+    typography: "{typography.guest-ui}"
+    height: "64px"
+  guest-reception-desk:
+    backgroundColor: "rgba(20, 12, 36, 0.72)"
+    textColor: "{colors.white}"
+    typography: "{typography.guest-ui}"
+    rounded: "{rounded.xl}"
+  guest-property-plate:
+    backgroundColor: "{colors.sheet-cream}"
+    textColor: "{colors.brand-ink}"
+    typography: "{typography.guest-plate}"
+    rounded: "0px"
+    padding: "40px 48px"
   button-primary:
     backgroundColor: "{colors.royal}"
     textColor: "{colors.white}"
@@ -124,148 +233,192 @@ components:
     padding: "8px 12px"
 ---
 
-# Design System: MOJO Ops Console
+# Design System: MOJO Apartments
 
 ## Overview
 
-**Creative North Star: "Concierge phone-sheet"**
+**Creative North Star: "Stay Cinema + Reception Desk" (guest) · "Concierge phone-sheet" (ops)**
 
-This is the internal Request-to-Book ops console for MOJO Apartments — a working tool, not a marketing shell. The metaphor is a concierge desk pad: a slim ops rail, a dense enquiry queue, and a request folio open beside it so approve/decline never loses the list. Surfaces stay paper-flat; brand shows up as royal actions and restrained lavender selection, not as guest-site costume.
+MOJO ships two visual systems that share brand hues but never share costume. The public guest site is Stay Cinema + Reception Desk: a full-bleed hero film, paper-cream chrome, royal CTAs, gold as hairline emphasis, Bricolage Grotesque display paired with Source Sans 3, and editorial property plates. The internal `/admin` console is Concierge phone-sheet: a dense ops rail, enquiry queue beside a request folio, system-UI type, and paper-flat work surfaces.
 
-Density is the point. Rows, hairline rules, and tabular totals replace airy cards and SaaS metric tiles. System UI sans is intentional on admin so scanning stays fast; the public site may keep Inter and promotional patterns separately.
+Guest density is editorial and calm; ops density is triage-first. Both refuse purple marketing themes, multi-layer glow shadows, and Instant Book theater. Shared palette (royal, gold, brand ink, lavender) signals MOJO; each surface applies it with different rules.
 
 **Key Characteristics:**
-- Paper stone ground with cream sheet chrome and white work surfaces
-- Royal for primary actions and active chrome; gold reserved for NEW urgency
-- Hairline brand-ink rules and dense 13px rows — no marketing cards
-- Split queue + folio on Enquiries; tables elsewhere
-- Soft 6–8px corners on controls; square panels and sheets
+- Guest: full-bleed hero video; paper ground `#F7F5F2` + sheet-cream nav chrome; Bricolage + Source Sans 3
+- Guest: royal CTAs; gold on brand lockup, plate hairlines, menu hairlines, and link underlines — not fill buttons
+- Guest: alternating editorial plates (image|copy / copy|image); dark floating reception desk on the hero
+- Ops: paper stone + cream sheet + white panels; system UI; 13px dense rows
+- Ops: Enquiries = queue beside request folio; Approve stays with the selected request
+- Shared: brand ink `#24104D`, royal `#2D1659`, gold `#C89B2C`, lavender `#F3F0FA`
+- Ops: royal actions; gold only on NEW status chips; queue beside folio
 
 ## Colors
 
-Ops reuses MOJO brand hues as tool accents on a warm paper field — never as a purple marketing theme.
+Shared MOJO brand hues; role differs by surface.
 
 ### Primary
-- **Deep Royal** (`{colors.royal}`): Primary buttons (Approve, Inbox, New property), active rail item fill, active status-tab underline and label, focus outlines, folio contact links.
-- **Brand Ink** (`{colors.brand-ink}`): Default text, hairline borders at 10–15% alpha, secondary button label.
+- **Deep Royal** (`{colors.royal}`): Guest primary CTAs (Browse stays, Request to Book, Search stays). Ops primary buttons, active rail, focus outlines, folio links.
+- **Brand Ink** (`{colors.brand-ink}`): Default text on light surfaces; hairline borders at ~10–15% alpha; guest body on paper; ops secondary labels.
 
 ### Secondary
-- **Luxury Gold** (`{colors.gold}`): **NEW** status chips only (gold wash + gold ring). Do not use gold for CTAs, icons decoration, or general chrome.
+- **Luxury Gold** (`{colors.gold}`): Guest — “Apartments” in the hero lockup, plate/menu hairlines, underline decoration on text links (`decoration-gold/70–80`). Ops — **NEW** status chips only (gold wash + gold ring). Never a guest CTA fill.
 
 ### Tertiary
-- **Lavender** (`{colors.lavender}`): Selected queue row wash, list/table hover tint, in-review status chip ground.
+- **Lavender** (`{colors.lavender}`): Guest secondary button hover wash on paper. Ops selected queue row, list hover, in-review chips.
 
 ### Neutral
-- **Paper Stone** (`{colors.paper-stone}`): Full console ground behind the rail and main.
-- **Sheet Cream** (`{colors.sheet-cream}`): Ops rail and sticky top bar; queue column sticky header; table thead wash.
-- **White** (`{colors.white}`): Panels, folio sheet, queue/folio split frame, inputs, secondary buttons.
-- **Status OK** (`{colors.status-ok-bg}` / `{colors.status-ok-ink}`): Approved (and similar success) chips.
-- **Status Bad** (`{colors.status-bad-bg}` / `{colors.status-bad-ink}`): Declined / expired chips and decline-reason text.
-- **Alert Amber** (`{colors.alert-bg}` / `{colors.alert-ink}`): Inline ops alerts only.
+- **Paper Ground** (`{colors.paper-ground}`): Guest site page field (`.guest-site` homepage ground).
+- **Paper Stone** (`{colors.paper-stone}`): Ops console ground behind rail and main.
+- **Sheet Cream** (`{colors.sheet-cream}`): Guest nav glass, editorial plate copy panels, “How Request to Book works” band, mobile menu Request to Book fill; ops rail, sticky bars, thead wash.
+- **Brand 50** (`{colors.brand-50}`): Legacy light utility ground (auth/support shells may still use it).
+- **White** (`{colors.white}`): Secondary buttons on paper, ops panels/folio/inputs.
+- **Status OK / Bad / Alert**: Ops chips and inline alerts only (see frontmatter).
 
 ### Named Rules
-**The Gold Urgency Rule.** Gold appears only on NEW status chips. Every other accent is royal or lavender.
+**The Gold Hairline Rule (guest).** Gold accents brand lockup, plate dividers, menu hairlines, and link underlines — never button fills or decorative icon washes.
 
-**The No Metric-Card Rule.** Counts live in hairline-divided strips or tab badges — never in elevated SaaS stat cards with shadows or icon tiles.
+**The Gold Urgency Rule (ops).** Gold appears only on NEW status chips. Every other ops accent is royal or lavender.
+
+**The No Metric-Card Rule (ops).** Counts live in hairline-divided strips or tab badges — never elevated SaaS stat cards.
 
 ## Typography
 
-**Display Font:** none on admin (public marketing may use expressive faces elsewhere)
-**Body Font:** System UI stack (`ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif`)
-**Label/Mono Font:** Same stack for labels; short IDs may use `font-mono` at 11px muted
+**Guest Display Font:** Bricolage Grotesque (`--font-guest-display`)
+**Guest Body Font:** Source Sans 3 (`--font-sans` / `.guest-site`)
+**Ops Body Font:** System UI stack (`ui-sans-serif, system-ui, …`)
+**Label/Mono Font:** Same as surface body; ops short IDs may use `font-mono` at 11px muted
 
-**Character:** Workhorse, slightly condensed tracking on titles, tabular nums on money. No Inter on the ops shell — the shell overrides to system UI even though the global site theme registers Inter.
+**Character:** Guest pairing is editorial — medium Bricolage for brand and section heads, Source Sans 3 for clarity and UI. Ops is workhorse, slightly condensed tracking on titles, tabular nums on money. Do not import Bricolage into `/admin`. Do not put Inter or system-only stacks on new guest marketing chrome.
 
-### Hierarchy
+### Hierarchy — Guest
+- **Display** (`guest-display`, 500, clamp ~2.75–3.5rem, lh ~1.05–1.1, tracking −0.03em): Hero brand lockup “MOJO” (+ gold “Apartments”).
+- **Title** (`guest-title`, 500, clamp ~1.75–2.25rem, tracking −0.02em): Section heads (Managed stays, How Request to Book, Ready when you are).
+- **Plate** (`guest-plate`, 500, 2rem, tracking −0.02em): Editorial property plate titles in Bricolage.
+- **Price** (`guest-price`, 600, 1.25rem): Nightly rate on plates.
+- **Body** (`guest-body`, 400, 1.0625rem, lh ~1.55): Hero support line and section ledes.
+- **UI** (`guest-ui`, 500, 0.9375rem): Nav links, primary/ghost CTAs, desk field values, “View all” links.
+- **Menu** (`guest-menu`, 500, 1.125rem): Mobile cinema-split menu rows (gold on royal).
+- **Base** (`guest-base`, 400, 1rem): How-it-works copy, empty-state copy.
+- **Small** (`guest-small`, 400, 0.875rem): Secondary plate meta when needed.
+- **Micro** (`guest-micro`, 500, 0.8125rem): “/ night”, Request to Book plate link, strikethrough rates.
+- **Tiny** (`guest-tiny`, 600, 0.75rem, uppercase, tracking ~0.08em): Desk field labels (City, Guests), plate city lines.
+
+### Hierarchy — Ops
 - **Title** (600, 1.375rem, tracking −0.02em): Page headers (`OpsPageHeader`).
 - **Folio name** (600, 1.5rem, tracking −0.03em): Selected guest name in the request folio only.
 - **Body** (400–600, 13px): Queue rows, table cells, buttons, field values, nav labels.
-- **Secondary** (400–500, 12px): Descriptions, muted meta under names, header console hint.
-- **Label** (600, 11px, uppercase, tracking ~0.08em): Section eyebrows inside folio (Pricing, Guest notes, Queue), table thead, metric strip labels.
+- **Caption** (400–500, 12px): Descriptions, muted meta, header console hint.
+- **Label** (600, 11px, uppercase, tracking ~0.08em): Folio section eyebrows, table thead, metric strip labels.
 - **Micro** (600, 10px, uppercase, tracking ~0.06em): Status chips, tab count badges, stay-fact cell labels.
 
 ### Named Rules
-**The Workhorse Type Rule.** Admin uses the system UI stack. Do not import Inter, serif display, or marketing display faces into `/admin`.
+**The Two-Stack Rule.** Guest = Bricolage + Source Sans 3. Ops = system UI only. Never cross-pollinate display faces into `/admin` or revive Inter on guest Stay Cinema chrome.
+
+**The Workhorse Type Rule (ops).** Admin uses the system UI stack and ~13px dense body. No serif display or marketing faces in the ops shell.
 
 ## Layout
 
-Slim fixed ops rail (**220px**) with **56px** brand/header bands. Main content pads **16–24px** horizontally and **20px** vertically. Vertical rhythm is tight: **16–20px** between page blocks (`space-y-4` / `space-y-5`).
+### Guest — Stay Cinema + Reception Desk
+First viewport is one composition: full-bleed hero video (`min-h-[100svh]`), brand-ink gradient scrim, **centered** brand lockup + one clarity line + CTA pair mid-frame, then the **reception desk** anchored at the bottom — a dark floating strip (city/guests + royal Search stays; field icons; no dead date cell). Fixed nav **64px**; content max-width **7xl** with horizontal gutters **20–24px**. Below: **alternating editorial plates** (image|copy / copy|image) — never a marketplace card grid. Slim how-it-works band (gold hairline tops, no “Step *n*” kickers), closing CTA. Section vertical rhythm ~**64–96px**.
 
-**Enquiries (signature):** Full-height split (`calc(100vh − 7.5rem)`, min 520px). Status tabs with counts on a hairline rule. Below: white bordered sheet, two columns on large screens — queue (~0.95fr, min 280px) | folio (~1.25fr). Queue rows are dense (**12px** vertical padding), three-column grid (status · identity · total). Folio keeps Approve primary in the header cluster so the queue stays visible.
+### Ops — Concierge phone-sheet
+Slim fixed ops rail (**220px**) with **56px** brand/header bands. Main pads **16–24px** horizontal, **20px** vertical. Tight block rhythm (**16–20px**).
 
-**Secondary boards:** Page header → optional underline tabs → square `OpsPanel` tables with cream thead. Shift board uses a four-cell hairline metric strip, then a “Needs action” list panel — not a dashboard of cards.
+**Enquiries (signature):** Full-height split (`calc(100vh − 7.5rem)`, min 520px). Status tabs with counts. White bordered sheet: queue (~0.95fr, min 280px) | folio (~1.25fr). Dense rows (**12px** vertical padding). Approve stays in the folio header cluster.
 
-**Mobile:** Rail drawers over a brand-ink scrim; queue stacks above folio; metric strip collapses to 2×2.
+**Secondary boards:** Page header → optional underline tabs → square `OpsPanel` tables with cream thead. Shift board uses a four-cell hairline metric strip — not a dashboard of cards.
+
+**Mobile:** Guest — hamburger opens **cinema-split** menu (film strip + royal panel + gold hairlines). Ops — rail drawers over brand-ink scrim; queue stacks above folio.
 
 ### Named Rules
-**The Queue-Beside-Folio Rule.** Triage never replaces the list with a full-page detail. Selection paints a royal left hairline + lavender wash; the folio updates in place.
+**The Cinema First Rule (guest).** Hero video is edge-to-edge plane; do not inset it in cards, side panels, or rounded media frames.
+
+**The Queue-Beside-Folio Rule (ops).** Triage never replaces the list with a full-page detail. Selection = royal left hairline + lavender wash; folio updates in place.
 
 ## Elevation & Depth
 
-Almost flat. Depth is tonal: paper stone → sheet cream → white, separated by **1px** brand-ink/10 hairlines. Shadows are rare and structural, not decorative glow.
+### Guest
+Depth is cinema + paper: video under a brand-ink gradient; nav is sheet-cream glass (`backdrop-blur`, cream at ~80–95%). Reception desk is a dark translucent floating strip (`rgba(20,12,36,0.72)` + soft lift). Property plates are full-bleed editorial splits (no card chrome, no type badges); gold hairline under the title. Authored motion: hero brand/desk settle with blur→sharp (`prefers-reduced-motion` gated); plate media ease-scale on hover (~1.03 over 700ms).
+
+### Ops
+Almost flat. Depth is tonal: paper stone → sheet cream → white, separated by **1px** brand-ink/10 hairlines. Shadows are rare and structural.
 
 ### Shadow Vocabulary
-- **Rail active** (`box-shadow: 0 1px 2px rgba(45, 22, 89, 0.25)`): Active nav pill only.
-- **Panel rest** (`box-shadow: 0 1px 2px rgba(36, 16, 77, 0.04)`): `OpsPanel` resting lift — barely there.
-- **Top bar blur** (`backdrop-filter: blur` + cream at 90%): Sticky header only.
+- **Reception desk** (`box-shadow: 0 8px 30px rgba(0,0,0,0.25)`): Hero desk strip only.
+- **Guest nav scrolled** (`box-shadow: 0 1px 3px rgba(36,16,77,0.08)`): Sticky cream bar after scroll.
+- **Rail active** (`box-shadow: 0 1px 2px rgba(45, 22, 89, 0.25)`): Ops active nav pill only.
+- **Panel rest** (`box-shadow: 0 1px 2px rgba(36, 16, 77, 0.04)`): `OpsPanel` resting lift.
+- **Top bar blur** (`backdrop-filter: blur` + cream at ~90%): Guest nav and ops sticky chrome.
 
 ### Named Rules
-**The Hairline Depth Rule.** Prefer borders and paper layers over shadow. No multi-layer drop shadows, glows, or floating cards.
+**The Hairline Depth Rule.** Prefer borders and paper layers over shadow. No multi-layer drop shadows or glows on either surface.
 
 ## Shapes
 
-Controls use gently rounded corners (**8px** `rounded-lg` on buttons, inputs, nav items; **6px** `rounded-md` on status chips and count badges). Work surfaces — panels, queue/folio frame, metric strip, stay-fact grid — stay **square (0 radius)** so the desk reads as ruled sheets, not app cards. No pills (`rounded-full`).
+**Guest controls:** Soft rectangles (**8px** `rounded-lg`) on CTAs and nav actions. Reception desk uses a soft float (**12px** / `rounded-xl`). **Property plates are square (0 radius)** — editorial sheets, not marketplace cards. No `rounded-full` pills on Stay Cinema chrome.
+
+**Ops controls:** **8px** on buttons, inputs, nav items; **6px** on status chips. Work surfaces — panels, queue/folio frame, metric strip, stay-fact grid — stay **square**. No pills.
 
 ## Components
 
-### Buttons
+### Buttons — Guest
 - **Shape:** Soft rectangle (**8px**).
-- **Primary:** Royal fill, white 13px medium label, padding **8×14px**. Hover royal at 90% opacity. Focus-visible: 2px royal outline, 2px offset.
-- **Secondary / Ghost:** White fill, brand-ink/15 border, brand-ink label; hover brand-ink/3 wash. Decline sits secondary beside Approve primary.
+- **Primary:** Royal fill, white `guest-ui` label, padding ~**12×20px** (nav compact **8×14px**). Hover royal/90.
+- **Ghost (on film):** White/10 fill, white/35 border, backdrop blur; hover white/15.
+- **Secondary (on paper):** White fill, brand-ink/15 border; hover lavender/60.
+- **Text link:** Royal (or brand-ink) with gold underline decoration; hover underline → royal.
+
+### Buttons — Ops
+- **Primary:** Royal fill, white 13px medium, padding **8×14px**. Hover royal/90. Focus-visible: 2px royal outline, 2px offset.
+- **Secondary / Ghost:** White, brand-ink/15 border; hover brand-ink/3. Decline sits secondary beside Approve.
 
 ### Chips
-- **Style:** Micro uppercase, **6px** radius, thin ring (1px).
-- **NEW:** Gold wash + gold ring — sole gold use.
-- **In review:** Lavender + royal text/ring.
-- **Approved / Declined:** Emerald / rose semantic pairs.
-- **Tab counts:** Compact badges; active = royal/10 + royal text; idle = brand-ink/5 muted.
+- **Guest:** Prefer no chips on Stay Cinema plates. Ops owns status chips.
+- **Ops NEW:** Gold wash + gold ring — sole ops gold use.
+- **Ops In review:** Lavender + royal text/ring.
+- **Ops Approved / Declined:** Emerald / rose semantic pairs.
 
 ### Cards / Containers
-- **Corner Style:** Square panels; no card radius on work surfaces.
-- **Background:** White on paper stone; cream for chrome strips.
-- **Shadow Strategy:** Optional 1px panel rest shadow only.
-- **Border:** Brand-ink at ~10% opacity.
-- **Internal Padding:** Row **12–16px**; folio blocks **20px**.
+- **Guest property plate:** Alternating editorial split — full-bleed photo | cream copy panel (or reverse). Gold hairline under Bricolage title; uppercase city; price + “Request to Book” micro link. No borders-as-cards, no type badges.
+- **Ops panels:** Square white on paper stone; optional 1px rest shadow; row padding **12–16px**; folio blocks **20px**.
 
 ### Inputs / Fields
-- **Style:** White, brand-ink/12 border, **8px** radius, 13px text, **8×12px** padding.
-- **Focus:** Border royal/40 + ring royal/15 (2px).
-- **Labels:** 12px medium muted; folio section labels use uppercase micro tracking.
-- **Empty:** Dashed brand-ink/15 border, white/50 fill, centered 13px muted copy.
+- **Guest reception desk:** Dark floating strip; tiny uppercase labels; map/guests icons; white/15 cell dividers; royal submit cell (“Search stays”).
+- **Ops:** White, brand-ink/12 border, **8px** radius, 13px text, **8×12px** padding; focus border royal/40 + ring royal/15.
 
 ### Navigation
-- **Rail:** Cream sheet, hairline right edge, 13px items with **8px** radius. Active = royal fill + white + tiny royal shadow. Enquiries stays slightly heavier when idle (daily job).
-- **Status tabs:** Underline tabs; active = 2px royal bottom border + royal semibold; counts in micro badges.
-- **Top bar:** Cream sticky bar; compact royal Inbox shortcut.
+- **Guest SiteNav:** Fixed **64px** sheet-cream glass; BrandMark `brand` on light; desktop links `guest-ui`; royal Request to Book. Mobile: **cinema-split** — film strip (Explore CTA) | royal panel with gold hairline rows + cream Request to Book.
+- **Ops rail:** Cream sheet, hairline right edge, 13px items **8px** radius. Active = royal fill + white + tiny royal shadow.
+- **Ops status tabs:** Underline; active 2px royal bottom + semibold; micro count badges.
 
-### Request folio (signature)
-Split-sheet detail: status + truncated id, large guest name, property line, Approve/Decline cluster for open states, contact fields, hairline stay-fact grid (check-in/out, nights, guests), pricing dl with total rule, guest notes, internal notes footer. Always paired with the queue.
+### Reception desk (guest signature)
+Hero-bottom dark floating strip: city + guests + Search stays. Field icons, soft lift, no date field. Submits into `/properties` search.
 
-### Metric strip
-Four equal white cells divided by hairlines — uppercase micro labels, **18px**-ish semibold values. Links tint lavender on hover. Not cards.
+### Property plate (guest signature)
+Alternating editorial unit: photo | copy (flips each row). Gold hairline under title, uppercase city, price, Request to Book gold underline. Hover: image scale only.
+
+### Request folio (ops signature)
+Split-sheet detail paired with queue: status + id, guest name, Approve/Decline, stay-fact grid, pricing dl, notes. Never a full-page takeover.
+
+### Metric strip (ops)
+Four equal white cells divided by hairlines — uppercase micro labels, ~18px semibold values. Not cards.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep Enquiries as queue + folio side by side so triage never loses the list.
-- **Do** use royal for primary actions and active chrome; lavender for selection/hover wash.
-- **Do** reserve gold exclusively for NEW status chips.
-- **Do** set admin type to the system UI stack and keep body copy at ~13px dense.
-- **Do** separate surfaces with brand-ink/10 hairlines on paper stone / sheet cream / white.
+- **Do** keep guest first viewport as cinema + brand + one line + CTAs + reception desk — no marketplace clutter.
+- **Do** use Bricolage for guest display/title/plate and Source Sans 3 for guest body/UI.
+- **Do** use royal for primary actions on both surfaces; apply gold per surface rule (hairline guest / NEW-only ops).
+- **Do** keep Enquiries as queue + folio side by side.
+- **Do** set ops type to the system UI stack at ~13px dense.
+- **Do** separate surfaces with brand-ink/10 hairlines on paper grounds and sheet cream.
+- **Do** say Request to Book (honest launch language), not Instant Book.
 
 ### Don't:
-- **Don't** build SaaS metric-card dashboards (icon tiles, soft shadows, rounded marketing cards) inside `/admin`.
-- **Don't** reuse public-site Inter/marketing hero patterns, full-bleed imagery, or gold icon decoration in the ops shell.
-- **Don't** use gold on buttons, nav, or decorative iconography.
-- **Don't** introduce `rounded-full` pills or multi-layer glow shadows on ops controls.
+- **Don't** inset the hero video in cards, side panels, or rounded media frames.
+- **Don't** use gold as a guest CTA fill or as ops chrome decoration outside NEW chips.
+- **Don't** import Bricolage/Inter/marketing heroes into `/admin`.
+- **Don't** build SaaS metric-card dashboards inside `/admin`.
+- **Don't** introduce `rounded-full` pills or multi-layer glow shadows on Stay Cinema or ops controls.
 - **Don't** open enquiry detail as a full-page takeover that hides the queue.
+- **Don't** invent testimonials, ratings, or occupancy claims on guest surfaces.
