@@ -1,4 +1,4 @@
-// Paystack webhook: confirm booking, convert hold → booked, email receipt hook
+// Paystack webhook: verify signature + amount, confirm booking, convert hold → booked
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { createHmac } from "node:crypto";
 
@@ -20,12 +20,40 @@ Deno.serve(async (req) => {
 
     if (event.event === "charge.success") {
       const reference = event.data?.reference as string;
+      const paidAmount = Number(event.data?.amount ?? 0); // pesewas
+      const currency = String(event.data?.currency ?? "").toUpperCase();
+
       const { data: booking } = await admin
         .from("bookings")
         .select("*")
         .eq("paystack_reference", reference)
         .maybeSingle();
       if (!booking) return new Response("ok");
+
+      if (booking.status === "confirmed") {
+        return new Response("ok"); // idempotent
+      }
+
+      const expected = Math.round(Number(booking.total) * 100);
+      if (currency !== "GHS" || paidAmount !== expected) {
+        console.error(
+          JSON.stringify({
+            level: "error",
+            event: "paystack.amount_mismatch",
+            reference,
+            paidAmount,
+            expected,
+            currency,
+          }),
+        );
+        await admin.from("audit_logs").insert({
+          action: "booking.payment_mismatch",
+          entity_type: "booking",
+          entity_id: booking.id,
+          meta: { reference, paidAmount, expected, currency },
+        });
+        return new Response("amount mismatch", { status: 400 });
+      }
 
       await admin.from("bookings").update({ status: "confirmed" }).eq("id", booking.id);
 
@@ -39,10 +67,9 @@ Deno.serve(async (req) => {
         action: "booking.paid",
         entity_type: "booking",
         entity_id: booking.id,
-        meta: { reference },
+        meta: { reference, paidAmount },
       });
 
-      // Best-effort email via notify function
       await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/notify-enquiry`, {
         method: "POST",
         headers: {

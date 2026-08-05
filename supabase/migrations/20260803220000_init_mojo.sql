@@ -13,6 +13,16 @@ begin
 end;
 $$;
 
+-- ---------- profiles (must exist before is_admin / handle_new_user) ----------
+create table if not exists public.profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  full_name text,
+  phone text,
+  role text not null default 'guest' check (role in ('guest', 'admin')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -45,20 +55,12 @@ begin
 end;
 $$;
 
--- ---------- profiles ----------
-create table public.profiles (
-  id uuid primary key references auth.users (id) on delete cascade,
-  full_name text,
-  phone text,
-  role text not null default 'guest' check (role in ('guest', 'admin')),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
+drop trigger if exists profiles_updated_at on public.profiles;
 create trigger profiles_updated_at
 before update on public.profiles
 for each row execute function public.set_updated_at();
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_user();

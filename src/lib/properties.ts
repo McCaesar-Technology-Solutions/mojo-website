@@ -1,4 +1,5 @@
 import { DEMO_PROPERTIES } from "@/data/demo-properties";
+import { getAppEnv } from "@/lib/env";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Property } from "@/types/domain";
 
@@ -29,7 +30,8 @@ type PropertyRow = {
   property_pricing: Property["pricing"] | Property["pricing"][] | null;
   property_media: Property["media"] | null;
   property_amenities:
-    { amenities: { id: string; label: string; icon: string; sort_order: number } | null }[] | null;
+    | { amenities: { id: string; label: string; icon: string; sort_order: number } | null }[]
+    | null;
 };
 
 function mapRow(row: PropertyRow): Property {
@@ -79,6 +81,20 @@ const selectShape = `
   property_amenities ( amenities ( id, label, icon, sort_order ) )
 `;
 
+/** Demo catalog only for local/dev when Supabase env is missing. Never on production builds. */
+function allowDemoFallback() {
+  if (import.meta.env.PROD) return false;
+  return getAppEnv() === "local";
+}
+
+function filterDemo(opts?: { city?: string; featured?: boolean; guests?: number }) {
+  let list = DEMO_PROPERTIES.filter((p) => p.status === "published");
+  if (opts?.city) list = list.filter((p) => p.city.toLowerCase() === opts.city!.toLowerCase());
+  if (opts?.featured) list = list.filter((p) => p.is_featured);
+  if (opts?.guests) list = list.filter((p) => p.max_guests >= opts.guests!);
+  return list;
+}
+
 export async function listPublishedProperties(opts?: {
   city?: string;
   featured?: boolean;
@@ -86,11 +102,10 @@ export async function listPublishedProperties(opts?: {
 }): Promise<{ properties: Property[]; source: "supabase" | "demo" }> {
   const supabase = getSupabase();
   if (!supabase) {
-    let list = DEMO_PROPERTIES.filter((p) => p.status === "published");
-    if (opts?.city) list = list.filter((p) => p.city.toLowerCase() === opts.city!.toLowerCase());
-    if (opts?.featured) list = list.filter((p) => p.is_featured);
-    if (opts?.guests) list = list.filter((p) => p.max_guests >= opts.guests!);
-    return { properties: list, source: "demo" };
+    if (!allowDemoFallback()) {
+      throw new Error("Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
+    }
+    return { properties: filterDemo(opts), source: "demo" };
   }
 
   let query = supabase.from("properties").select(selectShape).eq("status", "published");
@@ -99,14 +114,14 @@ export async function listPublishedProperties(opts?: {
   if (opts?.guests) query = query.gte("max_guests", opts.guests);
 
   const { data, error } = await query.order("created_at", { ascending: false });
-  if (error || !data?.length) {
-    let list = DEMO_PROPERTIES.filter((p) => p.status === "published");
-    if (opts?.city) list = list.filter((p) => p.city.toLowerCase() === opts.city!.toLowerCase());
-    if (opts?.featured) list = list.filter((p) => p.is_featured);
-    if (opts?.guests) list = list.filter((p) => p.max_guests >= opts.guests!);
-    return { properties: list, source: "demo" };
+  if (error) {
+    console.error("listPublishedProperties", error.message);
+    if (!allowDemoFallback()) throw new Error(error.message);
+    return { properties: filterDemo(opts), source: "demo" };
   }
-  return { properties: (data as PropertyRow[]).map(mapRow), source: "supabase" };
+
+  // Empty catalog is valid — never invent demo listings in preview/production
+  return { properties: ((data ?? []) as PropertyRow[]).map(mapRow), source: "supabase" };
 }
 
 export async function getPropertyBySlug(
@@ -114,6 +129,9 @@ export async function getPropertyBySlug(
 ): Promise<{ property: Property | null; source: "supabase" | "demo" }> {
   const supabase = getSupabase();
   if (!supabase) {
+    if (!allowDemoFallback()) {
+      throw new Error("Supabase is not configured.");
+    }
     return {
       property: DEMO_PROPERTIES.find((p) => p.slug === slug) ?? null,
       source: "demo",
@@ -126,12 +144,20 @@ export async function getPropertyBySlug(
     .eq("slug", slug)
     .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
+    console.error("getPropertyBySlug", error.message);
+    if (!allowDemoFallback()) throw new Error(error.message);
     return {
       property: DEMO_PROPERTIES.find((p) => p.slug === slug) ?? null,
       source: "demo",
     };
   }
+
+  if (!data) {
+    // Do not resurrect demo rows for missing live slugs
+    return { property: null, source: "supabase" };
+  }
+
   return { property: mapRow(data as PropertyRow), source: "supabase" };
 }
 

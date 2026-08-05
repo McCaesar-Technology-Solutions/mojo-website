@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PropertyCard } from "@/components/properties/property-card";
 import { getSupabase } from "@/lib/supabase/client";
-import { DEMO_PROPERTIES } from "@/data/demo-properties";
 import { useAuth } from "@/contexts/auth-context";
 import type { Property } from "@/types/domain";
 
@@ -18,7 +17,7 @@ function WishlistPage() {
   useEffect(() => {
     const supabase = getSupabase();
     if (!supabase || !user) {
-      setItems(DEMO_PROPERTIES.slice(0, 2));
+      setItems([]);
       return;
     }
     void supabase

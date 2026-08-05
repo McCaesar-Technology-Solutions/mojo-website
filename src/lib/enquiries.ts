@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { calcStayTotal, nightsBetween } from "@/lib/format";
+import { getAppEnv } from "@/lib/env";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Enquiry, EnquiryInput, Property } from "@/types/domain";
 
 export const enquirySchema = z.object({
-  property_id: z.string().min(1),
+  property_id: z.string().uuid("Invalid property"),
   check_in: z.string().min(1),
   check_out: z.string().min(1),
   guests: z.number().int().min(1).max(20),
@@ -12,7 +13,7 @@ export const enquirySchema = z.object({
   email: z.string().email(),
   phone: z.string().min(7).max(40),
   notes: z.string().max(2000).optional(),
-  website: z.string().max(0).optional(), // honeypot must stay empty
+  website: z.string().max(0).optional(),
 });
 
 export type EnquiryFormValues = z.infer<typeof enquirySchema>;
@@ -45,7 +46,10 @@ export async function submitEnquiry(
   input: EnquiryInput,
   property: Property,
 ): Promise<{ enquiry: Enquiry; source: "supabase" | "demo" }> {
-  const parsed = enquirySchema.parse(input);
+  const parsed = enquirySchema.parse({
+    ...input,
+    property_id: property.id,
+  });
   if (parsed.website) {
     throw new Error("Spam detected");
   }
@@ -57,36 +61,39 @@ export async function submitEnquiry(
   }
 
   const supabase = getSupabase();
-  const payload = {
-    property_id: property.id,
-    check_in: parsed.check_in,
-    check_out: parsed.check_out,
-    guests: parsed.guests,
-    full_name: parsed.full_name,
-    email: parsed.email,
-    phone: parsed.phone,
-    notes: parsed.notes ?? null,
-    nightly_rate: totals.nightly,
-    cleaning_fee: totals.cleaning,
-    service_fee: totals.serviceFee,
-    total: totals.total,
-    currency: "GHS" as const,
-    status: "new" as const,
-  };
+  const isDemoId = property.id.startsWith("p-") || !z.string().uuid().safeParse(property.id).success;
 
-  if (!supabase || property.id.startsWith("p-")) {
+  // Preview/production builds: never fake a successful enquiry
+  if (!supabase || isDemoId) {
+    if (import.meta.env.PROD || getAppEnv() !== "local") {
+      throw new Error(
+        "Booking is temporarily unavailable. This listing is not connected to live inventory.",
+      );
+    }
     const enquiry: Enquiry = {
       id: crypto.randomUUID(),
+      property_id: property.id,
       user_id: null,
+      check_in: parsed.check_in,
+      check_out: parsed.check_out,
+      guests: parsed.guests,
+      full_name: parsed.full_name,
+      email: parsed.email,
+      phone: parsed.phone,
+      notes: parsed.notes ?? null,
+      status: "new",
       admin_notes: null,
       decline_reason: null,
+      nightly_rate: totals.nightly,
+      cleaning_fee: totals.cleaning,
+      service_fee: totals.serviceFee,
+      total: totals.total,
+      currency: "GHS",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      ...payload,
       property,
     };
-    const existing = readDemoEnquiries();
-    writeDemoEnquiries([enquiry, ...existing]);
+    writeDemoEnquiries([enquiry, ...readDemoEnquiries()]);
     return { enquiry, source: "demo" };
   }
 
@@ -94,30 +101,44 @@ export async function submitEnquiry(
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Amounts are recomputed server-side by trigger; client values are display-only hints
   const { data, error } = await supabase
     .from("enquiries")
-    .insert({ ...payload, user_id: user?.id ?? null })
+    .insert({
+      property_id: property.id,
+      user_id: user?.id ?? null,
+      check_in: parsed.check_in,
+      check_out: parsed.check_out,
+      guests: parsed.guests,
+      full_name: parsed.full_name,
+      email: parsed.email,
+      phone: parsed.phone,
+      notes: parsed.notes ?? null,
+      nightly_rate: totals.nightly,
+      cleaning_fee: totals.cleaning,
+      service_fee: totals.serviceFee,
+      total: totals.total,
+      currency: "GHS",
+      status: "new",
+    })
     .select("*")
     .single();
 
   if (error) throw new Error(error.message);
-
-  // Best-effort notification edge function
-  void supabase.functions
-    .invoke("notify-enquiry", { body: { enquiry_id: data.id } })
-    .catch(() => undefined);
 
   return { enquiry: data as Enquiry, source: "supabase" };
 }
 
 export async function listMyEnquiries(): Promise<Enquiry[]> {
   const supabase = getSupabase();
-  if (!supabase) return readDemoEnquiries();
+  if (!supabase) {
+    return getAppEnv() === "local" ? readDemoEnquiries() : [];
+  }
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return readDemoEnquiries();
+  if (!user) return getAppEnv() === "local" ? readDemoEnquiries() : [];
 
   const { data, error } = await supabase
     .from("enquiries")
@@ -125,6 +146,9 @@ export async function listMyEnquiries(): Promise<Enquiry[]> {
     .or(`user_id.eq.${user.id},email.eq.${user.email}`)
     .order("created_at", { ascending: false });
 
-  if (error) return readDemoEnquiries();
+  if (error) {
+    if (getAppEnv() === "local") return readDemoEnquiries();
+    throw new Error(error.message);
+  }
   return (data ?? []) as Enquiry[];
 }

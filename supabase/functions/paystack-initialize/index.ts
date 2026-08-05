@@ -1,5 +1,5 @@
 // Supabase Edge Function: initialize Paystack Instant Book checkout
-// Secrets: PAYSTACK_SECRET_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, APP_URL
+// Secrets: PAYSTACK_SECRET_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, APP_URL
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -10,6 +10,10 @@ const cors = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+
+  let holdId: string | null = null;
+  let bookingId: string | null = null;
+  let admin: ReturnType<typeof createClient> | null = null;
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -23,15 +27,19 @@ Deno.serve(async (req) => {
     const {
       data: { user },
     } = await supabaseUser.auth.getUser();
-    if (!user) throw new Error("Unauthorized");
+    if (!user?.email) throw new Error("Unauthorized");
 
     const body = await req.json();
     const { property_id, check_in, check_out, guests } = body;
     if (!property_id || !check_in || !check_out || !guests) {
       throw new Error("Missing booking fields");
     }
+    const guestCount = Number(guests);
+    if (!Number.isInteger(guestCount) || guestCount < 1) {
+      throw new Error("Invalid guest count");
+    }
 
-    const admin = createClient(
+    admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
@@ -44,6 +52,9 @@ Deno.serve(async (req) => {
       .eq("booking_mode", "instant")
       .single();
     if (pErr || !property) throw new Error("Property not available for Instant Book");
+    if (guestCount > property.max_guests) {
+      throw new Error(`This stay allows up to ${property.max_guests} guests`);
+    }
 
     const { data: available } = await admin.rpc("property_is_available", {
       p_property_id: property_id,
@@ -55,8 +66,13 @@ Deno.serve(async (req) => {
     const pricing = Array.isArray(property.property_pricing)
       ? property.property_pricing[0]
       : property.property_pricing;
-    const nights = (new Date(check_out).getTime() - new Date(check_in).getTime()) / 86400000;
-    if (nights < 1) throw new Error("Invalid dates");
+    if (!pricing) throw new Error("Property has no pricing");
+
+    const nights =
+      (new Date(check_out + "T00:00:00Z").getTime() -
+        new Date(check_in + "T00:00:00Z").getTime()) /
+      86400000;
+    if (!Number.isInteger(nights) || nights < 1) throw new Error("Invalid dates");
 
     const subtotal = Number(pricing.nightly_rate) * nights;
     const cleaning = Number(pricing.cleaning_fee);
@@ -65,8 +81,7 @@ Deno.serve(async (req) => {
     const amountPesewas = Math.round(total * 100);
     const reference = `mojo_${crypto.randomUUID().replace(/-/g, "").slice(0, 18)}`;
 
-    // Temporary hold (15 min window enforced by cleanup job / webhook expiry)
-    const { data: hold } = await admin
+    const { data: hold, error: holdErr } = await admin
       .from("availability_blocks")
       .insert({
         property_id,
@@ -77,6 +92,8 @@ Deno.serve(async (req) => {
       })
       .select("id")
       .single();
+    if (holdErr || !hold) throw new Error(holdErr?.message ?? "Could not hold dates");
+    holdId = hold.id;
 
     const { data: booking, error: bErr } = await admin
       .from("bookings")
@@ -85,7 +102,7 @@ Deno.serve(async (req) => {
         user_id: user.id,
         check_in,
         check_out,
-        guests,
+        guests: guestCount,
         guest_name: user.user_metadata?.full_name ?? user.email,
         guest_email: user.email,
         guest_phone: user.user_metadata?.phone ?? "",
@@ -100,11 +117,10 @@ Deno.serve(async (req) => {
       })
       .select("id")
       .single();
-    if (bErr) throw bErr;
+    if (bErr || !booking) throw new Error(bErr?.message ?? "Could not create booking");
+    bookingId = booking.id;
 
-    if (hold?.id) {
-      await admin.from("availability_blocks").update({ booking_id: booking.id }).eq("id", hold.id);
-    }
+    await admin.from("availability_blocks").update({ booking_id: booking.id }).eq("id", hold.id);
 
     const appUrl = Deno.env.get("APP_URL") ?? "http://localhost:5173";
     const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
@@ -119,7 +135,11 @@ Deno.serve(async (req) => {
         currency: "GHS",
         reference,
         callback_url: `${appUrl}/booking/success?reference=${reference}`,
-        metadata: { booking_id: booking.id, property_id },
+        metadata: {
+          booking_id: booking.id,
+          property_id,
+          expected_amount: amountPesewas,
+        },
       }),
     });
     const paystackJson = await paystackRes.json();
@@ -138,6 +158,7 @@ Deno.serve(async (req) => {
         event: "paystack.initialize",
         booking_id: booking.id,
         reference,
+        amount: amountPesewas,
       }),
     );
 
@@ -150,6 +171,15 @@ Deno.serve(async (req) => {
       { headers: { ...cors, "Content-Type": "application/json" } },
     );
   } catch (e) {
+    // Roll back hold + pending booking if Paystack init fails mid-flow
+    if (admin) {
+      if (bookingId) {
+        await admin.from("bookings").delete().eq("id", bookingId).eq("status", "pending_payment");
+      }
+      if (holdId) {
+        await admin.from("availability_blocks").delete().eq("id", holdId).eq("reason", "hold");
+      }
+    }
     console.error(
       JSON.stringify({ level: "error", event: "paystack.initialize", error: String(e) }),
     );
