@@ -13,7 +13,7 @@ import {
   OpsTextarea,
   enquiryTone,
 } from "@/components/admin/ops-ui";
-import { adminApproveEnquiry, adminDeclineEnquiry, adminListEnquiries } from "@/lib/admin";
+import { adminApproveEnquiry, adminDeclineEnquiry, adminListEnquiries, adminMarkEnquiryInReview, adminUpdateEnquiry } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import { fmtDate, ghs } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,8 @@ function AdminEnquiriesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState(qParam ?? "");
+  const [adminNotes, setAdminNotes] = useState("");
+  const [declineReason, setDeclineReason] = useState("");
 
   const reload = () =>
     adminListEnquiries()
@@ -111,6 +113,11 @@ function AdminEnquiriesPage() {
     }
   }, [filtered, selected]);
 
+  useEffect(() => {
+    setAdminNotes(selected?.admin_notes ?? "");
+    setDeclineReason("");
+  }, [selected?.id]);
+
   const nights = (e: Enquiry) => {
     const a = new Date(e.check_in).getTime();
     const b = new Date(e.check_out).getTime();
@@ -119,23 +126,49 @@ function AdminEnquiriesPage() {
 
   const canAct = selected && ["new", "in_review"].includes(selected.status);
 
+  const saveNotes = () => {
+    if (!selected || !canAct) return;
+    const next = adminNotes.trim();
+    if ((selected.admin_notes ?? "") === next) return;
+    void adminUpdateEnquiry(selected.id, { admin_notes: next || null })
+      .then(() => reload())
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed to save notes"));
+  };
+
+  const markInReview = () => {
+    if (!selected || selected.status !== "new") return;
+    setBusy(true);
+    void adminMarkEnquiryInReview(selected.id)
+      .then(() => reload())
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed"))
+      .finally(() => setBusy(false));
+  };
+
   const decline = () => {
     if (!selected) return;
-    const reason = window.prompt("Decline reason") ?? "";
-    if (!reason.trim()) return;
+    const reason = declineReason.trim();
+    if (!reason) {
+      setError("Decline reason is required.");
+      return;
+    }
     setBusy(true);
-    void adminDeclineEnquiry(selected.id, reason.trim())
-      .then(() => reload())
-      .catch((err) => setError(err.message))
+    setError(null);
+    void adminDeclineEnquiry(selected.id, reason)
+      .then(() => {
+        setDeclineReason("");
+        return reload();
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : "Decline failed"))
       .finally(() => setBusy(false));
   };
 
   const approve = () => {
     if (!selected) return;
     setBusy(true);
-    void adminApproveEnquiry(selected.id)
+    setError(null);
+    void adminApproveEnquiry(selected.id, adminNotes.trim() || undefined)
       .then(() => reload())
-      .catch((err) => setError(err.message))
+      .catch((err) => setError(err instanceof Error ? err.message : "Approve failed"))
       .finally(() => setBusy(false));
   };
 
@@ -364,16 +397,34 @@ function AdminEnquiriesPage() {
                     Internal notes
                     <OpsTextarea
                       className="mt-2 min-h-[72px]"
-                      value={selected.admin_notes ?? ""}
+                      value={adminNotes}
                       placeholder="Visible to the ops team only"
-                      readOnly
+                      readOnly={!canAct}
+                      onChange={(e) => setAdminNotes(e.target.value)}
+                      onBlur={saveNotes}
                     />
                   </label>
+                  {canAct ? (
+                    <label className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
+                      Decline reason (required to decline)
+                      <OpsTextarea
+                        className="mt-2 min-h-[56px]"
+                        value={declineReason}
+                        placeholder="Shared with the guest when declining"
+                        onChange={(e) => setDeclineReason(e.target.value)}
+                      />
+                    </label>
+                  ) : null}
                 </div>
               </div>
 
               {canAct ? (
                 <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t border-brand-900/10 bg-[#FBFaf7] px-5 py-3">
+                  {selected.status === "new" ? (
+                    <OpsSecondaryButton type="button" disabled={busy} onClick={markInReview}>
+                      Mark in review
+                    </OpsSecondaryButton>
+                  ) : null}
                   <OpsSecondaryButton type="button" disabled={busy} onClick={decline}>
                     Decline
                   </OpsSecondaryButton>

@@ -8,7 +8,7 @@ import {
   OpsSelect,
   OpsTextarea,
 } from "@/components/admin/ops-ui";
-import { adminListBookings, adminRefundBooking, adminUpdateBooking } from "@/lib/admin";
+import { adminListBookings, adminUpdateBooking } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import { fmtDate, ghs } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,26 @@ export const Route = createFileRoute("/admin/bookings")({
   head: () => ({ meta: [{ title: "Bookings | Admin" }] }),
   component: AdminBookingsPage,
 });
+
+/** Request-to-book lifecycle. Paystack refund path stays deferred. */
+function nextStatuses(current: BookingStatus): BookingStatus[] {
+  switch (current) {
+    case "pending_payment":
+      return ["pending_payment", "confirmed", "cancelled"];
+    case "confirmed":
+      return ["confirmed", "checked_in", "completed", "cancelled"];
+    case "checked_in":
+      return ["checked_in", "completed", "cancelled"];
+    case "completed":
+      return ["completed"];
+    case "cancelled":
+      return ["cancelled"];
+    case "refunded":
+      return ["refunded"];
+    default:
+      return [current];
+  }
+}
 
 function AdminBookingsPage() {
   const [items, setItems] = useState<Booking[]>([]);
@@ -60,7 +80,7 @@ function AdminBookingsPage() {
     <div className="space-y-4">
       <OpsPageHeader
         title="Bookings"
-        description="Confirmed stays from approved requests. Update status and notes as the stay progresses."
+        description="Confirmed stays from approved requests. Move stays through check-in → completed, or cancel to free the calendar."
       />
 
       <div className="flex flex-wrap items-center gap-1 border-b border-brand-900/10">
@@ -99,72 +119,73 @@ function AdminBookingsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-900/8">
-                {filtered.map((b) => (
-                  <tr key={b.id} className="align-top hover:bg-lavender/25">
-                    <td className="px-4 py-3">
-                      <p className="font-medium">{b.guest_name}</p>
-                      <p className="text-[12px] text-brand-900/50">{b.guest_email}</p>
-                      <p className="mt-1 text-[12px] text-brand-900/45">
-                        {(b.property as { title?: string } | null)?.title ?? b.property_id}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-brand-900/70">
-                      {fmtDate(b.check_in)} → {fmtDate(b.check_out)}
-                    </td>
-                    <td className="px-4 py-3 font-semibold tabular-nums">{ghs(b.total)}</td>
-                    <td className="px-4 py-3">
-                      <OpsSelect
-                        className="max-w-[160px]"
-                        value={b.status}
-                        onChange={(e) =>
-                          void adminUpdateBooking(b.id, {
-                            status: e.target.value as BookingStatus,
-                          })
-                            .then(() => reload())
-                            .catch((err) => setError(err.message))
-                        }
-                      >
-                        {[
-                          "pending_payment",
-                          "confirmed",
-                          "checked_in",
-                          "completed",
-                          "cancelled",
-                          "refunded",
-                        ].map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </OpsSelect>
-                      {b.paystack_reference && b.status === "confirmed" && (
-                        <button
-                          type="button"
-                          className="mt-2 block text-[11px] text-rose-800 underline"
-                          onClick={() =>
-                            void adminRefundBooking(b.id)
+                {filtered.map((b) => {
+                  const options = nextStatuses(b.status);
+                  const locked = options.length === 1;
+                  return (
+                    <tr key={b.id} className="align-top hover:bg-lavender/25">
+                      <td className="px-4 py-3">
+                        <p className="font-medium">{b.guest_name}</p>
+                        <p className="text-[12px] text-brand-900/50">{b.guest_email}</p>
+                        <p className="mt-1 text-[12px] text-brand-900/45">
+                          {(b.property as { title?: string } | null)?.title ?? b.property_id}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3 text-brand-900/70">
+                        {fmtDate(b.check_in)} → {fmtDate(b.check_out)}
+                      </td>
+                      <td className="px-4 py-3 font-semibold tabular-nums">{ghs(b.total)}</td>
+                      <td className="px-4 py-3">
+                        <OpsSelect
+                          className="max-w-[160px]"
+                          value={b.status}
+                          disabled={locked}
+                          onChange={(e) => {
+                            const status = e.target.value as BookingStatus;
+                            if (status === "cancelled") {
+                              const ok = window.confirm(
+                                "Cancel this booking and free the calendar dates?",
+                              );
+                              if (!ok) {
+                                e.target.value = b.status;
+                                return;
+                              }
+                            }
+                            void adminUpdateBooking(b.id, { status })
                               .then(() => reload())
-                              .catch((err) => setError(err.message))
-                          }
+                              .catch((err) =>
+                                setError(err instanceof Error ? err.message : "Update failed"),
+                              );
+                          }}
                         >
-                          Refund via Paystack
-                        </button>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <OpsTextarea
-                        className="min-h-[64px] min-w-[180px]"
-                        placeholder="Admin notes"
-                        defaultValue={b.admin_notes ?? ""}
-                        onBlur={(e) =>
-                          void adminUpdateBooking(b.id, { admin_notes: e.target.value }).catch(
-                            (err) => setError(err.message),
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
+                          {options.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </OpsSelect>
+                        {b.paystack_reference ? (
+                          <p className="mt-2 text-[11px] text-brand-900/45">
+                            Paystack refund deferred until Instant Book launch.
+                          </p>
+                        ) : null}
+                      </td>
+                      <td className="px-4 py-3">
+                        <OpsTextarea
+                          className="min-h-[64px] min-w-[180px]"
+                          placeholder="Admin notes"
+                          defaultValue={b.admin_notes ?? ""}
+                          onBlur={(e) =>
+                            void adminUpdateBooking(b.id, { admin_notes: e.target.value }).catch(
+                              (err) =>
+                                setError(err instanceof Error ? err.message : "Notes failed"),
+                            )
+                          }
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -382,12 +382,36 @@ export async function adminApproveEnquiry(id: string, notes?: string) {
 }
 
 export async function adminDeclineEnquiry(id: string, reason: string) {
+  const trimmed = reason.trim();
+  if (!trimmed) throw new Error("Decline reason is required");
   const supabase = await requireAdminClient();
   const { error } = await supabase.rpc("decline_enquiry", {
     p_enquiry_id: id,
-    p_reason: reason,
+    p_reason: trimmed,
   });
   if (error) throw error;
+}
+
+export async function adminUpdateEnquiry(
+  id: string,
+  patch: Partial<Pick<Enquiry, "admin_notes" | "status">>,
+) {
+  const supabase = await requireAdminClient();
+  if (patch.status && patch.status !== "in_review") {
+    throw new Error("Only in_review status updates are allowed from the inbox");
+  }
+  const { error } = await supabase.from("enquiries").update(patch).eq("id", id);
+  if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: patch.status === "in_review" ? "enquiry.in_review" : "enquiry.notes_updated",
+    entity_type: "enquiry",
+    entity_id: id,
+    meta: patch,
+  });
+}
+
+export async function adminMarkEnquiryInReview(id: string) {
+  return adminUpdateEnquiry(id, { status: "in_review" });
 }
 
 export async function adminListBookings() {
@@ -407,6 +431,11 @@ export async function adminUpdateBooking(
   const supabase = await requireAdminClient();
   const { error } = await supabase.from("bookings").update(patch).eq("id", id);
   if (error) throw error;
+
+  if (patch.status === "cancelled" || patch.status === "refunded") {
+    await supabase.from("availability_blocks").delete().eq("booking_id", id);
+  }
+
   await supabase.from("audit_logs").insert({
     action: "booking.updated",
     entity_type: "booking",
@@ -437,6 +466,27 @@ export async function adminCreateBlock(input: {
   const supabase = await requireAdminClient();
   const { error } = await supabase.from("availability_blocks").insert(input);
   if (error) throw error;
+}
+
+export async function adminDeleteBlock(block: {
+  id: string;
+  reason: string;
+}) {
+  if (block.reason === "booked") {
+    throw new Error("Booked blocks are removed by cancelling the booking");
+  }
+  if (block.reason !== "manual" && block.reason !== "hold") {
+    throw new Error("Only manual or hold blocks can be deleted here");
+  }
+  const supabase = await requireAdminClient();
+  const { error } = await supabase.from("availability_blocks").delete().eq("id", block.id);
+  if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: "availability.block_deleted",
+    entity_type: "availability_block",
+    entity_id: block.id,
+    meta: { reason: block.reason },
+  });
 }
 
 export async function adminListGuests() {
