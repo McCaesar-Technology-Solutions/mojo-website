@@ -1,5 +1,71 @@
 import { getSupabase } from "@/lib/supabase/client";
-import type { AuditLog, Booking, Enquiry, Property, Review } from "@/types/domain";
+import type { AuditLog, Booking, Enquiry, Property, PropertyPricing, Review } from "@/types/domain";
+
+type AdminPropertyRow = Omit<Property, "pricing" | "media" | "amenities"> & {
+  property_pricing?: PropertyPricing | PropertyPricing[] | null;
+};
+
+function normalizePricing(
+  raw: PropertyPricing | PropertyPricing[] | null | undefined,
+): PropertyPricing | null {
+  if (!raw) return null;
+  return Array.isArray(raw) ? (raw[0] ?? null) : raw;
+}
+
+function mapAdminProperty(row: AdminPropertyRow): Property {
+  const { property_pricing: _nested, ...rest } = row;
+  return {
+    ...rest,
+    booking_mode: "request",
+    pricing: normalizePricing(row.property_pricing),
+  };
+}
+
+/** Writable `properties` columns only — never nested joins or client-only fields. */
+function propertyWritePayload(
+  input: Partial<Property> & { title: string; slug: string; city: string; type: Property["type"] },
+  mode: "create" | "update",
+) {
+  const base = {
+    slug: input.slug,
+    title: input.title,
+    type: input.type,
+    status: input.status ?? "draft",
+    booking_mode: "request" as const,
+    city: input.city,
+    area: input.area ?? null,
+    description: input.description ?? null,
+    max_guests: input.max_guests ?? 2,
+    is_featured: Boolean(input.is_featured),
+  };
+
+  if (mode === "create") {
+    return {
+      ...base,
+      country: input.country ?? "Ghana",
+      bedrooms: input.bedrooms ?? 1,
+      bathrooms: input.bathrooms ?? 1,
+      size_sqm: input.size_sqm ?? null,
+      check_in_time: input.check_in_time ?? "15:00",
+      check_out_time: input.check_out_time ?? "11:00",
+      house_rules: input.house_rules ?? [],
+      policies: input.policies ?? [],
+    };
+  }
+
+  // Update: do not default-wipe columns the form does not edit yet
+  return {
+    ...base,
+    ...(input.country !== undefined ? { country: input.country } : {}),
+    ...(input.bedrooms !== undefined ? { bedrooms: input.bedrooms } : {}),
+    ...(input.bathrooms !== undefined ? { bathrooms: input.bathrooms } : {}),
+    ...(input.size_sqm !== undefined ? { size_sqm: input.size_sqm } : {}),
+    ...(input.check_in_time !== undefined ? { check_in_time: input.check_in_time } : {}),
+    ...(input.check_out_time !== undefined ? { check_out_time: input.check_out_time } : {}),
+    ...(input.house_rules !== undefined ? { house_rules: input.house_rules } : {}),
+    ...(input.policies !== undefined ? { policies: input.policies } : {}),
+  };
+}
 
 export async function requireAdminClient() {
   const supabase = getSupabase();
@@ -50,17 +116,25 @@ export async function adminListProperties() {
     .select("*, property_pricing(*)")
     .order("updated_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []) as Property[];
+  return ((data ?? []) as AdminPropertyRow[]).map(mapAdminProperty);
 }
 
 export async function adminUpsertProperty(
   input: Partial<Property> & { title: string; slug: string; city: string; type: Property["type"] },
 ) {
   const supabase = await requireAdminClient();
-  const { data, error } = await supabase.from("properties").upsert(input).select("*").single();
+  const isUpdate = Boolean(input.id);
+  const payload = propertyWritePayload(input, isUpdate ? "update" : "create");
+
+  const query = isUpdate
+    ? supabase.from("properties").update(payload).eq("id", input.id!).select("*").single()
+    : supabase.from("properties").insert(payload).select("*").single();
+
+  const { data, error } = await query;
   if (error) throw error;
+
   await supabase.from("audit_logs").insert({
-    action: input.id ? "property.updated" : "property.created",
+    action: isUpdate ? "property.updated" : "property.created",
     entity_type: "property",
     entity_id: data.id,
     meta: { slug: data.slug },
@@ -79,11 +153,14 @@ export async function adminSavePricing(
   },
 ) {
   const supabase = await requireAdminClient();
-  const { error } = await supabase.from("property_pricing").upsert({
-    property_id: propertyId,
-    currency: "GHS",
-    ...pricing,
-  });
+  const { error } = await supabase.from("property_pricing").upsert(
+    {
+      property_id: propertyId,
+      currency: "GHS",
+      ...pricing,
+    },
+    { onConflict: "property_id" },
+  );
   if (error) throw error;
 }
 

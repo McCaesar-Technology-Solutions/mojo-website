@@ -108,14 +108,7 @@ function AdminPropertiesPage() {
                     />
                   </td>
                   <td className="px-4 py-3 font-semibold tabular-nums">
-                    {ghs(
-                      Number(
-                        (p as Property & { property_pricing?: { nightly_rate: number } })
-                          .property_pricing?.nightly_rate ??
-                          p.pricing?.nightly_rate ??
-                          0,
-                      ),
-                    )}
+                    {ghs(Number(p.pricing?.nightly_rate ?? 0))}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
@@ -269,8 +262,19 @@ function AdminPropertiesPage() {
                 onClick={() => {
                   if (!editing.title || !editing.slug || !editing.city || !editing.type) return;
                   void adminUpsertProperty({
-                    ...(editing as Property),
+                    id: editing.id,
+                    title: editing.title,
+                    slug: editing.slug,
+                    city: editing.city,
+                    area: editing.area,
+                    type: editing.type,
+                    status: editing.status ?? "draft",
                     booking_mode: "request",
+                    description: editing.description,
+                    max_guests: editing.max_guests,
+                    bedrooms: editing.bedrooms,
+                    bathrooms: editing.bathrooms,
+                    is_featured: editing.is_featured,
                   })
                     .then(async (saved) => {
                       await adminSavePricing(saved.id, {
@@ -281,7 +285,7 @@ function AdminPropertiesPage() {
                       setEditing(null);
                       await reload();
                     })
-                    .catch((e) => setError(e.message));
+                    .catch((e) => setError(e instanceof Error ? e.message : "Save failed"));
                 }}
               >
                 Save
