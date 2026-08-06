@@ -9,7 +9,7 @@ import {
   OpsSecondaryButton,
   OpsStatus,
 } from "@/components/admin/ops-ui";
-import { adminListReviews, adminModerateReview } from "@/lib/admin";
+import { adminDeleteReview, adminListReviews, adminModerateReview } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { Review, ReviewStatus } from "@/types/domain";
@@ -144,6 +144,26 @@ function AdminReviewsPage() {
                     Reject
                   </OpsSecondaryButton>
                 </div>
+              ) : r.status === "rejected" ? (
+                <button
+                  type="button"
+                  disabled={busyId === r.id}
+                  className="text-[12px] font-medium text-rose-800 hover:underline disabled:opacity-50"
+                  onClick={() => {
+                    const ok = window.confirm("Permanently delete this rejected review?");
+                    if (!ok) return;
+                    setBusyId(r.id);
+                    setError(null);
+                    void adminDeleteReview(r.id)
+                      .then(() => reload())
+                      .catch((e) =>
+                        setError(e instanceof Error ? e.message : "Delete failed"),
+                      )
+                      .finally(() => setBusyId(null));
+                  }}
+                >
+                  Delete
+                </button>
               ) : null}
             </div>
           ))}

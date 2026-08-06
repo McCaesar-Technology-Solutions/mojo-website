@@ -14,7 +14,9 @@ import {
 } from "@/components/admin/ops-ui";
 import {
   adminAddMedia,
+  adminArchiveProperty,
   adminDeleteMedia,
+  adminDeleteProperty,
   adminListAmenities,
   adminListProperties,
   adminListPropertyMedia,
@@ -273,13 +275,51 @@ function AdminPropertiesPage() {
                     {ghs(Number(p.pricing?.nightly_rate ?? 0))}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      className="text-[13px] font-medium text-royal hover:underline"
-                      onClick={() => openEdit(p)}
-                    >
-                      Edit
-                    </button>
+                    <div className="flex flex-wrap items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        className="text-[13px] font-medium text-royal hover:underline"
+                        onClick={() => openEdit(p)}
+                      >
+                        Edit
+                      </button>
+                      {p.status !== "archived" ? (
+                        <button
+                          type="button"
+                          className="text-[13px] font-medium text-brand-900/60 hover:underline"
+                          onClick={() => {
+                            const ok = window.confirm(
+                              `Archive “${p.title}”? Guests will no longer see it.`,
+                            );
+                            if (!ok) return;
+                            void adminArchiveProperty(p.id)
+                              .then(() => reload())
+                              .catch((e) =>
+                                setError(e instanceof Error ? e.message : "Archive failed"),
+                              );
+                          }}
+                        >
+                          Archive
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="text-[13px] font-medium text-rose-800 hover:underline"
+                        onClick={() => {
+                          const ok = window.confirm(
+                            `Permanently delete “${p.title}”? Only works if it has no enquiries or bookings. Prefer Archive for live inventory.`,
+                          );
+                          if (!ok) return;
+                          void adminDeleteProperty(p.id)
+                            .then(() => reload())
+                            .catch((e) =>
+                              setError(e instanceof Error ? e.message : "Delete failed"),
+                            );
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

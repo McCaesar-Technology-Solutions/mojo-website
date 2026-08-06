@@ -23,6 +23,7 @@ import { Route as AccountMessagesRouteImport } from './routes/account/messages'
 import { Route as AccountTripsRouteImport } from './routes/account/trips'
 import { Route as AccountWishlistRouteImport } from './routes/account/wishlist'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAmenitiesRouteImport } from './routes/admin/amenities'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminAuditRouteImport } from './routes/admin/audit'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
@@ -107,6 +108,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAmenitiesRoute = AdminAmenitiesRouteImport.update({
+  id: '/amenities',
+  path: '/amenities',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/account/messages': typeof AccountMessagesRoute
   '/account/trips': typeof AccountTripsRoute
   '/account/wishlist': typeof AccountWishlistRoute
+  '/admin/amenities': typeof AdminAmenitiesRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/account/messages': typeof AccountMessagesRoute
   '/account/trips': typeof AccountTripsRoute
   '/account/wishlist': typeof AccountWishlistRoute
+  '/admin/amenities': typeof AdminAmenitiesRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/account/messages': typeof AccountMessagesRoute
   '/account/trips': typeof AccountTripsRoute
   '/account/wishlist': typeof AccountWishlistRoute
+  '/admin/amenities': typeof AdminAmenitiesRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/account/messages'
     | '/account/trips'
     | '/account/wishlist'
+    | '/admin/amenities'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/bookings'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/account/messages'
     | '/account/trips'
     | '/account/wishlist'
+    | '/admin/amenities'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/bookings'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/account/messages'
     | '/account/trips'
     | '/account/wishlist'
+    | '/admin/amenities'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/bookings'
@@ -464,6 +476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/amenities': {
+      id: '/admin/amenities'
+      path: '/amenities'
+      fullPath: '/admin/amenities'
+      preLoaderRoute: typeof AdminAmenitiesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/analytics': {
       id: '/admin/analytics'
       path: '/analytics'
@@ -577,6 +596,7 @@ const AccountRouteRouteWithChildren = AccountRouteRoute._addFileChildren(
 )
 
 interface AdminRouteRouteChildren {
+  AdminAmenitiesRoute: typeof AdminAmenitiesRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
@@ -589,6 +609,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAmenitiesRoute: AdminAmenitiesRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminBookingsRoute: AdminBookingsRoute,

@@ -159,6 +159,84 @@ export async function adminListAmenities() {
   return (data ?? []) as Amenity[];
 }
 
+export async function adminCreateAmenity(input: {
+  label: string;
+  icon?: string;
+  sort_order?: number;
+}) {
+  const label = input.label.trim();
+  if (!label) throw new Error("Amenity label is required");
+  const supabase = await requireAdminClient();
+  const { data, error } = await supabase
+    .from("amenities")
+    .insert({
+      label,
+      icon: input.icon?.trim() || "solar:check-circle-bold",
+      sort_order: input.sort_order ?? 0,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: "amenity.created",
+    entity_type: "amenity",
+    entity_id: data.id,
+    meta: { label: data.label },
+  });
+  return data as Amenity;
+}
+
+export async function adminUpdateAmenity(
+  id: string,
+  patch: Partial<Pick<Amenity, "label" | "icon" | "sort_order">>,
+) {
+  const supabase = await requireAdminClient();
+  const payload = {
+    ...(patch.label !== undefined ? { label: patch.label.trim() } : {}),
+    ...(patch.icon !== undefined ? { icon: patch.icon.trim() || "solar:check-circle-bold" } : {}),
+    ...(patch.sort_order !== undefined ? { sort_order: patch.sort_order } : {}),
+  };
+  if (payload.label !== undefined && !payload.label) {
+    throw new Error("Amenity label is required");
+  }
+  const { data, error } = await supabase
+    .from("amenities")
+    .update(payload)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: "amenity.updated",
+    entity_type: "amenity",
+    entity_id: id,
+    meta: payload,
+  });
+  return data as Amenity;
+}
+
+export async function adminDeleteAmenity(id: string) {
+  const supabase = await requireAdminClient();
+  const { count, error: countError } = await supabase
+    .from("property_amenities")
+    .select("property_id", { count: "exact", head: true })
+    .eq("amenity_id", id);
+  if (countError) throw countError;
+  if ((count ?? 0) > 0) {
+    throw new Error(
+      `This amenity is assigned to ${count} propert${count === 1 ? "y" : "ies"}. Unassign it first.`,
+    );
+  }
+  const { error } = await supabase.from("amenities").delete().eq("id", id);
+  if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: "amenity.deleted",
+    entity_type: "amenity",
+    entity_id: id,
+    meta: {},
+  });
+}
+
 export async function adminSetPropertyAmenities(propertyId: string, amenityIds: string[]) {
   const supabase = await requireAdminClient();
   const uniqueIds = [...new Set(amenityIds.filter(Boolean))];
@@ -175,6 +253,75 @@ export async function adminSetPropertyAmenities(propertyId: string, amenityIds: 
     uniqueIds.map((amenity_id) => ({ property_id: propertyId, amenity_id })),
   );
   if (insertError) throw insertError;
+}
+
+export async function adminArchiveProperty(id: string) {
+  const supabase = await requireAdminClient();
+  const { data, error } = await supabase
+    .from("properties")
+    .update({ status: "archived", booking_mode: "request" })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: "property.archived",
+    entity_type: "property",
+    entity_id: id,
+    meta: { slug: data.slug },
+  });
+  return data as Property;
+}
+
+export async function adminDeleteProperty(id: string) {
+  const supabase = await requireAdminClient();
+
+  const [enquiries, bookings] = await Promise.all([
+    supabase
+      .from("enquiries")
+      .select("id", { count: "exact", head: true })
+      .eq("property_id", id),
+    supabase
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("property_id", id),
+  ]);
+  if (enquiries.error) throw enquiries.error;
+  if (bookings.error) throw bookings.error;
+
+  const enquiryCount = enquiries.count ?? 0;
+  const bookingCount = bookings.count ?? 0;
+  if (enquiryCount > 0 || bookingCount > 0) {
+    throw new Error(
+      `Cannot delete: ${enquiryCount} enquir${enquiryCount === 1 ? "y" : "ies"} and ${bookingCount} booking${bookingCount === 1 ? "" : "s"} still reference this property. Archive it instead.`,
+    );
+  }
+
+  const media = await adminListPropertyMedia(id);
+  const storagePaths = media
+    .map((m) => m.storage_path)
+    .filter((p): p is string => Boolean(p));
+
+  const { data: property, error: loadError } = await supabase
+    .from("properties")
+    .select("slug")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError) throw loadError;
+
+  const { error } = await supabase.from("properties").delete().eq("id", id);
+  if (error) throw error;
+
+  if (storagePaths.length > 0) {
+    await supabase.storage.from(MEDIA_BUCKET).remove(storagePaths);
+  }
+
+  await supabase.from("audit_logs").insert({
+    action: "property.deleted",
+    entity_type: "property",
+    entity_id: id,
+    meta: { slug: property?.slug ?? null },
+  });
 }
 
 export async function adminUpsertProperty(
@@ -513,6 +660,18 @@ export async function adminModerateReview(id: string, status: "approved" | "reje
   const supabase = await requireAdminClient();
   const { error } = await supabase.from("reviews").update({ status }).eq("id", id);
   if (error) throw error;
+}
+
+export async function adminDeleteReview(id: string) {
+  const supabase = await requireAdminClient();
+  const { error } = await supabase.from("reviews").delete().eq("id", id);
+  if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: "review.deleted",
+    entity_type: "review",
+    entity_id: id,
+    meta: {},
+  });
 }
 
 export async function adminListAuditLogs() {
