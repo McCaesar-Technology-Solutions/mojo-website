@@ -30,6 +30,7 @@ import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
 import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
 import { Route as AdminEnquiriesRouteImport } from './routes/admin/enquiries'
 import { Route as AdminGuestsRouteImport } from './routes/admin/guests'
+import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
 import { Route as AdminPropertiesRouteImport } from './routes/admin/properties'
 import { Route as AdminReviewsRouteImport } from './routes/admin/reviews'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
@@ -143,6 +144,11 @@ const AdminGuestsRoute = AdminGuestsRouteImport.update({
   path: '/guests',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminMessagesRoute = AdminMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminPropertiesRoute = AdminPropertiesRouteImport.update({
   id: '/properties',
   path: '/properties',
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/guests': typeof AdminGuestsRoute
+  '/admin/messages': typeof AdminMessagesRoute
   '/admin/properties': typeof AdminPropertiesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/guests': typeof AdminGuestsRoute
+  '/admin/messages': typeof AdminMessagesRoute
   '/admin/properties': typeof AdminPropertiesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -258,6 +266,7 @@ export interface FileRoutesById {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/guests': typeof AdminGuestsRoute
+  '/admin/messages': typeof AdminMessagesRoute
   '/admin/properties': typeof AdminPropertiesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -290,6 +299,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/enquiries'
     | '/admin/guests'
+    | '/admin/messages'
     | '/admin/properties'
     | '/admin/reviews'
     | '/auth/sign-in'
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/enquiries'
     | '/admin/guests'
+    | '/admin/messages'
     | '/admin/properties'
     | '/admin/reviews'
     | '/auth/sign-in'
@@ -348,6 +359,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/enquiries'
     | '/admin/guests'
+    | '/admin/messages'
     | '/admin/properties'
     | '/admin/reviews'
     | '/auth/sign-in'
@@ -525,6 +537,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGuestsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/messages': {
+      id: '/admin/messages'
+      path: '/messages'
+      fullPath: '/admin/messages'
+      preLoaderRoute: typeof AdminMessagesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/properties': {
       id: '/admin/properties'
       path: '/properties'
@@ -603,6 +622,7 @@ interface AdminRouteRouteChildren {
   AdminCalendarRoute: typeof AdminCalendarRoute
   AdminEnquiriesRoute: typeof AdminEnquiriesRoute
   AdminGuestsRoute: typeof AdminGuestsRoute
+  AdminMessagesRoute: typeof AdminMessagesRoute
   AdminPropertiesRoute: typeof AdminPropertiesRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -616,6 +636,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCalendarRoute: AdminCalendarRoute,
   AdminEnquiriesRoute: AdminEnquiriesRoute,
   AdminGuestsRoute: AdminGuestsRoute,
+  AdminMessagesRoute: AdminMessagesRoute,
   AdminPropertiesRoute: AdminPropertiesRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminIndexRoute: AdminIndexRoute,

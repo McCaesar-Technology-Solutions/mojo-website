@@ -19,6 +19,7 @@ const links = [
   { to: "/admin/properties", label: "Properties", icon: "solar:buildings-2-linear", exact: false },
   { to: "/admin/amenities", label: "Amenities", icon: "solar:checklist-minimalistic-linear", exact: false },
   { to: "/admin/guests", label: "Guests", icon: "solar:users-group-rounded-linear", exact: false },
+  { to: "/admin/messages", label: "Messages", icon: "solar:chat-round-dots-linear", exact: false },
   { to: "/admin/analytics", label: "Analytics", icon: "solar:chart-linear", exact: false },
   { to: "/admin/reviews", label: "Reviews", icon: "solar:star-linear", exact: false },
   { to: "/admin/audit", label: "Audit", icon: "solar:clipboard-list-linear", exact: false },

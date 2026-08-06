@@ -191,7 +191,12 @@ function AdminEnquiriesPage() {
               onChange={(e) => {
                 const next = e.target.value;
                 setQuery(next);
-                void navigate({ search: (prev) => ({ ...prev, q: next || undefined }) });
+                void navigate({
+                  search: (prev: { focus?: string; q?: string }) => ({
+                    ...prev,
+                    q: next || undefined,
+                  }),
+                });
               }}
             />
           </div>

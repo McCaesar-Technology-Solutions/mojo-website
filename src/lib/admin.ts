@@ -4,6 +4,8 @@ import type {
   AuditLog,
   Booking,
   Enquiry,
+  Message,
+  MessageThread,
   Property,
   PropertyMedia,
   PropertyPricing,
@@ -411,6 +413,12 @@ export async function adminAddMedia(
     .select("*")
     .single();
   if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: "media.added",
+    entity_type: "property",
+    entity_id: propertyId,
+    meta: { media_id: data.id, is_cover: makeCover },
+  });
   return data as PropertyMedia;
 }
 
@@ -499,6 +507,13 @@ export async function adminDeleteMedia(media: PropertyMedia) {
   if (media.storage_path) {
     await supabase.storage.from(MEDIA_BUCKET).remove([media.storage_path]);
   }
+
+  await supabase.from("audit_logs").insert({
+    action: "media.deleted",
+    entity_type: "property",
+    entity_id: media.property_id,
+    meta: { media_id: media.id },
+  });
 
   if (media.is_cover) {
     const remaining = await adminListPropertyMedia(media.property_id);
@@ -611,8 +626,18 @@ export async function adminCreateBlock(input: {
   notes?: string;
 }) {
   const supabase = await requireAdminClient();
-  const { error } = await supabase.from("availability_blocks").insert(input);
+  const { data, error } = await supabase
+    .from("availability_blocks")
+    .insert(input)
+    .select("id")
+    .single();
   if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: "availability.block_created",
+    entity_type: "availability_block",
+    entity_id: data.id,
+    meta: input,
+  });
 }
 
 export async function adminDeleteBlock(block: {
@@ -638,12 +663,133 @@ export async function adminDeleteBlock(block: {
 
 export async function adminListGuests() {
   const supabase = await requireAdminClient();
-  const { data: profiles } = await supabase.from("profiles").select("*").eq("role", "guest");
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name, phone, role, created_at, updated_at")
+    .eq("role", "guest")
+    .order("updated_at", { ascending: false });
   const { data: bookings } = await supabase
     .from("bookings")
     .select("guest_name, guest_email, guest_phone, created_at")
     .order("created_at", { ascending: false });
   return { profiles: profiles ?? [], bookingContacts: bookings ?? [] };
+}
+
+/** Name/phone only — never role. Admin bootstrap stays SQL-only. */
+export async function adminUpdateGuest(
+  id: string,
+  patch: { full_name?: string | null; phone?: string | null },
+) {
+  const supabase = await requireAdminClient();
+  const { data: existing, error: loadError } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError) throw loadError;
+  if (!existing) throw new Error("Guest not found");
+  if (existing.role !== "guest") {
+    throw new Error("Only guest profiles can be edited here");
+  }
+
+  const payload = {
+    ...(patch.full_name !== undefined
+      ? { full_name: patch.full_name?.trim() || null }
+      : {}),
+    ...(patch.phone !== undefined ? { phone: patch.phone?.trim() || null } : {}),
+  };
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .update(payload)
+    .eq("id", id)
+    .eq("role", "guest")
+    .select("id, full_name, phone, role, created_at, updated_at")
+    .single();
+  if (error) throw error;
+
+  await supabase.from("audit_logs").insert({
+    action: "guest.updated",
+    entity_type: "profile",
+    entity_id: id,
+    meta: payload,
+  });
+  return data;
+}
+
+export async function adminListMessageThreads() {
+  const supabase = await requireAdminClient();
+  const { data, error } = await supabase
+    .from("message_threads")
+    .select(
+      "*, messages(*), enquiry:enquiries(id, full_name, email, phone, property:properties(title, slug))",
+    )
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+
+  const threads = (data ?? []) as Array<
+    MessageThread & {
+      enquiry?: {
+        id: string;
+        full_name: string;
+        email: string;
+        phone: string;
+        property?: { title: string; slug: string } | null;
+      } | null;
+      messages?: Message[];
+    }
+  >;
+
+  const guestIds = [
+    ...new Set(threads.map((t) => t.guest_id).filter((id): id is string => Boolean(id))),
+  ];
+  let profilesById: Record<string, { full_name: string | null; phone: string | null }> = {};
+  if (guestIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name, phone")
+      .in("id", guestIds);
+    profilesById = Object.fromEntries(
+      (profiles ?? []).map((p) => [p.id, { full_name: p.full_name, phone: p.phone }]),
+    );
+  }
+
+  return threads.map((t) => ({
+    ...t,
+    messages: (t.messages ?? [])
+      .slice()
+      .sort((a, b) => a.created_at.localeCompare(b.created_at)),
+    guest_profile: t.guest_id ? (profilesById[t.guest_id] ?? null) : null,
+  }));
+}
+
+export async function adminReplyToThread(threadId: string, body: string) {
+  const trimmed = body.trim();
+  if (!trimmed) throw new Error("Message body is required");
+  const supabase = await requireAdminClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const { data, error } = await supabase
+    .from("messages")
+    .insert({
+      thread_id: threadId,
+      sender_id: user.id,
+      body: trimmed,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+
+  await supabase.from("audit_logs").insert({
+    action: "message.replied",
+    entity_type: "message_thread",
+    entity_id: threadId,
+    meta: { message_id: data.id },
+  });
+  return data as Message;
 }
 
 export async function adminListReviews() {
@@ -660,6 +806,12 @@ export async function adminModerateReview(id: string, status: "approved" | "reje
   const supabase = await requireAdminClient();
   const { error } = await supabase.from("reviews").update({ status }).eq("id", id);
   if (error) throw error;
+  await supabase.from("audit_logs").insert({
+    action: status === "approved" ? "review.approved" : "review.rejected",
+    entity_type: "review",
+    entity_id: id,
+    meta: { status },
+  });
 }
 
 export async function adminDeleteReview(id: string) {
@@ -674,13 +826,13 @@ export async function adminDeleteReview(id: string) {
   });
 }
 
-export async function adminListAuditLogs() {
+export async function adminListAuditLogs(limit = 150) {
   const supabase = await requireAdminClient();
   const { data, error } = await supabase
     .from("audit_logs")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(limit);
   if (error) throw error;
   return (data ?? []) as AuditLog[];
 }
