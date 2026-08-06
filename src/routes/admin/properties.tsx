@@ -14,15 +14,21 @@ import {
 } from "@/components/admin/ops-ui";
 import {
   adminAddMedia,
+  adminDeleteMedia,
   adminListAmenities,
   adminListProperties,
+  adminListPropertyMedia,
+  adminReorderMedia,
   adminSavePricing,
+  adminSetMediaCover,
   adminSetPropertyAmenities,
+  adminUpdateMediaAlt,
+  adminUploadMedia,
   adminUpsertProperty,
 } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import { ghs } from "@/lib/format";
-import type { Amenity, Property, PropertyType } from "@/types/domain";
+import type { Amenity, Property, PropertyMedia, PropertyType } from "@/types/domain";
 
 export const Route = createFileRoute("/admin/properties")({
   head: () => ({ meta: [{ title: "Properties | Admin" }] }),
@@ -59,6 +65,8 @@ function AdminPropertiesPage() {
   const [nightly, setNightly] = useState(1500);
   const [cleaning, setCleaning] = useState(200);
   const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaBusy, setMediaBusy] = useState(false);
+  const [mediaAltDrafts, setMediaAltDrafts] = useState<Record<string, string>>({});
 
   const reload = () =>
     Promise.all([adminListProperties(), adminListAmenities()])
@@ -67,6 +75,15 @@ function AdminPropertiesPage() {
         setAmenitiesCatalog(amenities);
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Failed"));
+
+  const refreshEditorMedia = async (propertyId: string) => {
+    const media = await adminListPropertyMedia(propertyId);
+    setEditing((prev) => (prev ? { ...prev, media } : prev));
+    setMediaAltDrafts(
+      Object.fromEntries(media.map((m) => [m.id, m.alt ?? ""])),
+    );
+    return media;
+  };
 
   useEffect(() => {
     if (!getSupabase()) {
@@ -83,18 +100,22 @@ function AdminPropertiesPage() {
     setNightly(1500);
     setCleaning(200);
     setMediaUrl("");
+    setMediaAltDrafts({});
   };
 
   const openEdit = (p: Property) => {
+    const media = p.media ?? [];
     setEditing({
       ...p,
       house_rules: p.house_rules ?? [],
+      media,
     });
     setSelectedAmenityIds((p.amenities ?? []).map((a) => a.id));
     setRuleDraft("");
     setNightly(Number(p.pricing?.nightly_rate ?? 1500));
     setCleaning(Number(p.pricing?.cleaning_fee ?? 200));
     setMediaUrl("");
+    setMediaAltDrafts(Object.fromEntries(media.map((m) => [m.id, m.alt ?? ""])));
   };
 
   const closeEditor = () => {
@@ -102,6 +123,35 @@ function AdminPropertiesPage() {
     setSaving(false);
     setRuleDraft("");
     setMediaUrl("");
+    setMediaBusy(false);
+    setMediaAltDrafts({});
+  };
+
+  const runMediaAction = async (action: () => Promise<unknown>) => {
+    if (!editing?.id) return;
+    setMediaBusy(true);
+    setError(null);
+    try {
+      await action();
+      await refreshEditorMedia(editing.id);
+      await reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Media action failed");
+    } finally {
+      setMediaBusy(false);
+    }
+  };
+
+  const moveMedia = (mediaId: string, direction: -1 | 1) => {
+    const media = [...(editing?.media ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+    const index = media.findIndex((m) => m.id === mediaId);
+    const swapWith = index + direction;
+    if (index < 0 || swapWith < 0 || swapWith >= media.length || !editing?.id) return;
+    const ordered = media.map((m) => m.id);
+    const tmp = ordered[index];
+    ordered[index] = ordered[swapWith];
+    ordered[swapWith] = tmp;
+    void runMediaAction(() => adminReorderMedia(editing.id!, ordered));
   };
 
   const toggleAmenity = (id: string) => {
@@ -204,7 +254,7 @@ function AdminPropertiesPage() {
                     <p className="font-medium">{p.title}</p>
                     <p className="text-[12px] text-brand-900/50">
                       /{p.slug} · {p.city} · {p.type} · {p.bedrooms} bed ·{" "}
-                      {(p.amenities ?? []).length} amenities
+                      {(p.amenities ?? []).length} amenities · {(p.media ?? []).length} photos
                     </p>
                   </td>
                   <td className="px-4 py-3">
@@ -495,37 +545,106 @@ function AdminPropertiesPage() {
                 )}
               </div>
 
-              {editing.id && (
-                <label className="block text-[12px] font-medium text-brand-900/60">
-                  Add media URL
-                  <div className="mt-1 flex gap-2">
-                    <OpsInput
-                      value={mediaUrl}
-                      onChange={(e) => setMediaUrl(e.target.value)}
-                      placeholder="https://…"
-                    />
-                    <OpsSecondaryButton
-                      type="button"
-                      onClick={() => {
-                        if (!editing.id || !mediaUrl) return;
-                        void adminAddMedia(editing.id, mediaUrl, true)
-                          .then(() => setMediaUrl(""))
-                          .catch((e) =>
-                            setError(e instanceof Error ? e.message : "Media add failed"),
-                          );
-                      }}
-                    >
-                      Add
-                    </OpsSecondaryButton>
+              {editing.id ? (
+                <div>
+                  <p className="text-[12px] font-medium text-brand-900/60">Media gallery</p>
+                  {(editing.media ?? []).length === 0 ? (
+                    <p className="mt-2 text-[12px] text-brand-900/45">
+                      No photos yet. Paste a URL or upload an image.
+                    </p>
+                  ) : (
+                    <ul className="mt-2 space-y-2">
+                      {[...(editing.media ?? [])]
+                        .sort((a, b) => a.sort_order - b.sort_order)
+                        .map((item, index, list) => (
+                          <MediaRow
+                            key={item.id}
+                            item={item}
+                            altValue={mediaAltDrafts[item.id] ?? item.alt ?? ""}
+                            busy={mediaBusy}
+                            isFirst={index === 0}
+                            isLast={index === list.length - 1}
+                            onAltChange={(value) =>
+                              setMediaAltDrafts((prev) => ({ ...prev, [item.id]: value }))
+                            }
+                            onAltBlur={() => {
+                              const next = mediaAltDrafts[item.id] ?? "";
+                              if ((item.alt ?? "") === next.trim()) return;
+                              void runMediaAction(() =>
+                                adminUpdateMediaAlt(item.id, next.trim() || null),
+                              );
+                            }}
+                            onCover={() =>
+                              void runMediaAction(() =>
+                                adminSetMediaCover(editing.id!, item.id),
+                              )
+                            }
+                            onUp={() => moveMedia(item.id, -1)}
+                            onDown={() => moveMedia(item.id, 1)}
+                            onDelete={() =>
+                              void runMediaAction(() => adminDeleteMedia(item))
+                            }
+                          />
+                        ))}
+                    </ul>
+                  )}
+
+                  <div className="mt-3 space-y-2">
+                    <label className="block text-[12px] font-medium text-brand-900/60">
+                      Add media URL
+                      <div className="mt-1 flex gap-2">
+                        <OpsInput
+                          value={mediaUrl}
+                          onChange={(e) => setMediaUrl(e.target.value)}
+                          placeholder="https://…"
+                          disabled={mediaBusy}
+                        />
+                        <OpsSecondaryButton
+                          type="button"
+                          disabled={mediaBusy || !mediaUrl.trim()}
+                          onClick={() => {
+                            if (!editing.id || !mediaUrl.trim()) return;
+                            void runMediaAction(async () => {
+                              await adminAddMedia(editing.id!, mediaUrl.trim());
+                              setMediaUrl("");
+                            });
+                          }}
+                        >
+                          Add
+                        </OpsSecondaryButton>
+                      </div>
+                    </label>
+                    <label className="block text-[12px] font-medium text-brand-900/60">
+                      Upload image
+                      <OpsInput
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                        className="mt-1"
+                        disabled={mediaBusy}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (!file || !editing.id) return;
+                          void runMediaAction(() => adminUploadMedia(editing.id!, file));
+                        }}
+                      />
+                      <span className="mt-1 block text-[11px] font-normal text-brand-900/45">
+                        JPG, PNG, WebP, GIF, or AVIF · max 5MB
+                      </span>
+                    </label>
                   </div>
-                </label>
+                </div>
+              ) : (
+                <p className="text-[12px] text-brand-900/45">
+                  Save the property first, then add photos.
+                </p>
               )}
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <OpsSecondaryButton type="button" onClick={closeEditor} disabled={saving}>
                 Cancel
               </OpsSecondaryButton>
-              <OpsPrimaryButton type="button" onClick={save} disabled={saving}>
+              <OpsPrimaryButton type="button" onClick={save} disabled={saving || mediaBusy}>
                 {saving ? "Saving…" : "Save"}
               </OpsPrimaryButton>
             </div>
@@ -533,5 +652,81 @@ function AdminPropertiesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function MediaRow({
+  item,
+  altValue,
+  busy,
+  isFirst,
+  isLast,
+  onAltChange,
+  onAltBlur,
+  onCover,
+  onUp,
+  onDown,
+  onDelete,
+}: {
+  item: PropertyMedia;
+  altValue: string;
+  busy: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+  onAltChange: (value: string) => void;
+  onAltBlur: () => void;
+  onCover: () => void;
+  onUp: () => void;
+  onDown: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <li className="flex gap-3 border border-brand-900/8 bg-[#FBFaf7] p-2.5">
+      <img
+        src={item.url}
+        alt={item.alt ?? ""}
+        className="h-16 w-20 shrink-0 object-cover"
+      />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {item.is_cover ? (
+            <OpsStatus status="cover" tone="ok" />
+          ) : (
+            <button
+              type="button"
+              disabled={busy}
+              className="text-[12px] font-medium text-royal hover:underline disabled:opacity-50"
+              onClick={onCover}
+            >
+              Set cover
+            </button>
+          )}
+          <span className="truncate text-[11px] text-brand-900/45">{item.url}</span>
+        </div>
+        <OpsInput
+          value={altValue}
+          disabled={busy}
+          placeholder="Alt text"
+          onChange={(e) => onAltChange(e.target.value)}
+          onBlur={onAltBlur}
+        />
+        <div className="flex flex-wrap gap-2">
+          <OpsSecondaryButton type="button" disabled={busy || isFirst} onClick={onUp}>
+            Up
+          </OpsSecondaryButton>
+          <OpsSecondaryButton type="button" disabled={busy || isLast} onClick={onDown}>
+            Down
+          </OpsSecondaryButton>
+          <button
+            type="button"
+            disabled={busy}
+            className="text-[12px] font-medium text-rose-800 hover:underline disabled:opacity-50"
+            onClick={onDelete}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </li>
   );
 }

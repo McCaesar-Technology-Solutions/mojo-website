@@ -5,12 +5,16 @@ import type {
   Booking,
   Enquiry,
   Property,
+  PropertyMedia,
   PropertyPricing,
   Review,
 } from "@/types/domain";
 
+const MEDIA_BUCKET = "property-media";
+
 type AdminPropertyRow = Omit<Property, "pricing" | "media" | "amenities"> & {
   property_pricing?: PropertyPricing | PropertyPricing[] | null;
+  property_media?: PropertyMedia[] | null;
   property_amenities?: { amenities: Amenity | null }[] | null;
 };
 
@@ -22,7 +26,12 @@ function normalizePricing(
 }
 
 function mapAdminProperty(row: AdminPropertyRow): Property {
-  const { property_pricing: _pricing, property_amenities: _amenities, ...rest } = row;
+  const {
+    property_pricing: _pricing,
+    property_media: _media,
+    property_amenities: _amenities,
+    ...rest
+  } = row;
   const amenities =
     row.property_amenities
       ?.map((pa) => pa.amenities)
@@ -33,6 +42,9 @@ function mapAdminProperty(row: AdminPropertyRow): Property {
     ...rest,
     booking_mode: "request",
     pricing: normalizePricing(row.property_pricing),
+    media: (row.property_media ?? [])
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order),
     amenities,
   };
 }
@@ -130,7 +142,7 @@ export async function adminListProperties() {
   const { data, error } = await supabase
     .from("properties")
     .select(
-      "*, property_pricing(*), property_amenities ( amenities ( id, label, icon, sort_order ) )",
+      "*, property_pricing(*), property_media(*), property_amenities ( amenities ( id, label, icon, sort_order ) )",
     )
     .order("updated_at", { ascending: false });
   if (error) throw error;
@@ -210,15 +222,143 @@ export async function adminSavePricing(
   if (error) throw error;
 }
 
-export async function adminAddMedia(propertyId: string, url: string, isCover = false) {
+export async function adminAddMedia(
+  propertyId: string,
+  url: string,
+  options: { isCover?: boolean; alt?: string | null; storagePath?: string | null } = {},
+) {
   const supabase = await requireAdminClient();
-  const { error } = await supabase.from("property_media").insert({
-    property_id: propertyId,
-    url,
-    is_cover: isCover,
-    sort_order: 0,
-  });
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) throw new Error("Media URL is required");
+
+  const { data: existing, error: listError } = await supabase
+    .from("property_media")
+    .select("id, sort_order, is_cover")
+    .eq("property_id", propertyId)
+    .order("sort_order", { ascending: true });
+  if (listError) throw listError;
+
+  const rows = existing ?? [];
+  const nextOrder =
+    rows.length === 0 ? 0 : Math.max(...rows.map((r) => r.sort_order)) + 1;
+  const makeCover = Boolean(options.isCover) || rows.length === 0;
+
+  if (makeCover && rows.some((r) => r.is_cover)) {
+    const { error: clearError } = await supabase
+      .from("property_media")
+      .update({ is_cover: false })
+      .eq("property_id", propertyId);
+    if (clearError) throw clearError;
+  }
+
+  const { data, error } = await supabase
+    .from("property_media")
+    .insert({
+      property_id: propertyId,
+      url: trimmedUrl,
+      storage_path: options.storagePath ?? null,
+      is_cover: makeCover,
+      sort_order: nextOrder,
+      alt: options.alt ?? null,
+    })
+    .select("*")
+    .single();
   if (error) throw error;
+  return data as PropertyMedia;
+}
+
+export async function adminListPropertyMedia(propertyId: string) {
+  const supabase = await requireAdminClient();
+  const { data, error } = await supabase
+    .from("property_media")
+    .select("*")
+    .eq("property_id", propertyId)
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as PropertyMedia[];
+}
+
+export async function adminUploadMedia(propertyId: string, file: File, alt?: string | null) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Only image uploads are supported");
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Image must be 5MB or smaller");
+  }
+
+  const supabase = await requireAdminClient();
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const safeExt = ["jpg", "jpeg", "png", "webp", "gif", "avif"].includes(ext) ? ext : "jpg";
+  const storagePath = `${propertyId}/${crypto.randomUUID()}.${safeExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(MEDIA_BUCKET)
+    .upload(storagePath, file, {
+      cacheControl: "3600",
+      contentType: file.type,
+      upsert: false,
+    });
+  if (uploadError) throw uploadError;
+
+  const { data: publicData } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(storagePath);
+  return adminAddMedia(propertyId, publicData.publicUrl, {
+    storagePath,
+    alt: alt ?? null,
+  });
+}
+
+export async function adminSetMediaCover(propertyId: string, mediaId: string) {
+  const supabase = await requireAdminClient();
+  const { error: clearError } = await supabase
+    .from("property_media")
+    .update({ is_cover: false })
+    .eq("property_id", propertyId);
+  if (clearError) throw clearError;
+
+  const { error } = await supabase
+    .from("property_media")
+    .update({ is_cover: true })
+    .eq("id", mediaId)
+    .eq("property_id", propertyId);
+  if (error) throw error;
+}
+
+export async function adminUpdateMediaAlt(mediaId: string, alt: string | null) {
+  const supabase = await requireAdminClient();
+  const { error } = await supabase
+    .from("property_media")
+    .update({ alt: alt?.trim() || null })
+    .eq("id", mediaId);
+  if (error) throw error;
+}
+
+export async function adminReorderMedia(propertyId: string, orderedIds: string[]) {
+  const supabase = await requireAdminClient();
+  for (let i = 0; i < orderedIds.length; i += 1) {
+    const { error } = await supabase
+      .from("property_media")
+      .update({ sort_order: i })
+      .eq("id", orderedIds[i])
+      .eq("property_id", propertyId);
+    if (error) throw error;
+  }
+}
+
+export async function adminDeleteMedia(media: PropertyMedia) {
+  const supabase = await requireAdminClient();
+  const { error } = await supabase.from("property_media").delete().eq("id", media.id);
+  if (error) throw error;
+
+  if (media.storage_path) {
+    await supabase.storage.from(MEDIA_BUCKET).remove([media.storage_path]);
+  }
+
+  if (media.is_cover) {
+    const remaining = await adminListPropertyMedia(media.property_id);
+    if (remaining[0]) {
+      await adminSetMediaCover(media.property_id, remaining[0].id);
+    }
+  }
 }
 
 export async function adminListEnquiries() {
