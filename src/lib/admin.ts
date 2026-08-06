@@ -1,8 +1,17 @@
 import { getSupabase } from "@/lib/supabase/client";
-import type { AuditLog, Booking, Enquiry, Property, PropertyPricing, Review } from "@/types/domain";
+import type {
+  Amenity,
+  AuditLog,
+  Booking,
+  Enquiry,
+  Property,
+  PropertyPricing,
+  Review,
+} from "@/types/domain";
 
 type AdminPropertyRow = Omit<Property, "pricing" | "media" | "amenities"> & {
   property_pricing?: PropertyPricing | PropertyPricing[] | null;
+  property_amenities?: { amenities: Amenity | null }[] | null;
 };
 
 function normalizePricing(
@@ -13,11 +22,18 @@ function normalizePricing(
 }
 
 function mapAdminProperty(row: AdminPropertyRow): Property {
-  const { property_pricing: _nested, ...rest } = row;
+  const { property_pricing: _pricing, property_amenities: _amenities, ...rest } = row;
+  const amenities =
+    row.property_amenities
+      ?.map((pa) => pa.amenities)
+      .filter((a): a is Amenity => Boolean(a))
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)) ?? [];
+
   return {
     ...rest,
     booking_mode: "request",
     pricing: normalizePricing(row.property_pricing),
+    amenities,
   };
 }
 
@@ -113,10 +129,40 @@ export async function adminListProperties() {
   const supabase = await requireAdminClient();
   const { data, error } = await supabase
     .from("properties")
-    .select("*, property_pricing(*)")
+    .select(
+      "*, property_pricing(*), property_amenities ( amenities ( id, label, icon, sort_order ) )",
+    )
     .order("updated_at", { ascending: false });
   if (error) throw error;
   return ((data ?? []) as AdminPropertyRow[]).map(mapAdminProperty);
+}
+
+export async function adminListAmenities() {
+  const supabase = await requireAdminClient();
+  const { data, error } = await supabase
+    .from("amenities")
+    .select("id, label, icon, sort_order")
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as Amenity[];
+}
+
+export async function adminSetPropertyAmenities(propertyId: string, amenityIds: string[]) {
+  const supabase = await requireAdminClient();
+  const uniqueIds = [...new Set(amenityIds.filter(Boolean))];
+
+  const { error: deleteError } = await supabase
+    .from("property_amenities")
+    .delete()
+    .eq("property_id", propertyId);
+  if (deleteError) throw deleteError;
+
+  if (uniqueIds.length === 0) return;
+
+  const { error: insertError } = await supabase.from("property_amenities").insert(
+    uniqueIds.map((amenity_id) => ({ property_id: propertyId, amenity_id })),
+  );
+  if (insertError) throw insertError;
 }
 
 export async function adminUpsertProperty(
