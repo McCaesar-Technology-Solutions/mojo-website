@@ -1,12 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  OpsAlert,
-  OpsEmpty,
-  OpsInput,
-  OpsPageHeader,
-  OpsPanel,
-} from "@/components/admin/ops-ui";
+import { OpsAlert, OpsEmpty, OpsInput, OpsPageHeader, OpsPanel } from "@/components/admin/ops-ui";
 import { adminListAuditLogs } from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import type { AuditLog } from "@/types/domain";

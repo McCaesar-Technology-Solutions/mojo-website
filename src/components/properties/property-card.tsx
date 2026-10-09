@@ -4,13 +4,7 @@ import { ghs } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Property } from "@/types/domain";
 
-export function PropertyCard({
-  property,
-  index = 0,
-}: {
-  property: Property;
-  index?: number;
-}) {
+export function PropertyCard({ property, index = 0 }: { property: Property; index?: number }) {
   const img = coverUrl(property);
   const price = property.pricing?.nightly_rate ?? 0;
   const original = property.pricing?.original_nightly_rate;

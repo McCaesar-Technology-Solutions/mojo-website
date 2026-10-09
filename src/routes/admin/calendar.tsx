@@ -187,11 +187,7 @@ function AdminCalendarPage() {
           }}
         >
           <h2 className="text-[14px] font-semibold md:col-span-5">Add block</h2>
-          <OpsSelect
-            required
-            value={propertyId}
-            onChange={(e) => setPropertyId(e.target.value)}
-          >
+          <OpsSelect required value={propertyId} onChange={(e) => setPropertyId(e.target.value)}>
             <option value="">Property</option>
             {properties.map((p) => (
               <option key={p.id} value={p.id}>
@@ -199,12 +195,7 @@ function AdminCalendarPage() {
               </option>
             ))}
           </OpsSelect>
-          <OpsInput
-            type="date"
-            required
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-          />
+          <OpsInput type="date" required value={start} onChange={(e) => setStart(e.target.value)} />
           <OpsInput type="date" required value={end} onChange={(e) => setEnd(e.target.value)} />
           <OpsSelect
             value={reason}
@@ -235,14 +226,14 @@ function AdminCalendarPage() {
                     <span className="font-medium">{b.property?.title ?? b.property_id}</span>
                     <OpsStatus
                       status={b.reason}
-                      tone={b.reason === "booked" ? "ok" : b.reason === "hold" ? "review" : "neutral"}
+                      tone={
+                        b.reason === "booked" ? "ok" : b.reason === "hold" ? "review" : "neutral"
+                      }
                     />
                   </div>
                   <p className="mt-0.5 text-brand-900/50">
                     {b.start_date} → {b.end_date}
-                    {b.reason === "booked"
-                      ? " · cancel the booking to free these dates"
-                      : null}
+                    {b.reason === "booked" ? " · cancel the booking to free these dates" : null}
                   </p>
                 </div>
                 {canDelete ? (

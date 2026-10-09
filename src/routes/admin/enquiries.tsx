@@ -13,7 +13,13 @@ import {
   OpsTextarea,
   enquiryTone,
 } from "@/components/admin/ops-ui";
-import { adminApproveEnquiry, adminDeclineEnquiry, adminListEnquiries, adminMarkEnquiryInReview, adminUpdateEnquiry } from "@/lib/admin";
+import {
+  adminApproveEnquiry,
+  adminDeclineEnquiry,
+  adminListEnquiries,
+  adminMarkEnquiryInReview,
+  adminUpdateEnquiry,
+} from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import { fmtDate, ghs } from "@/lib/format";
 import { cn } from "@/lib/utils";

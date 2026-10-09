@@ -39,10 +39,7 @@ Deno.serve(async (req) => {
       throw new Error("Invalid guest count");
     }
 
-    admin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     const { data: property, error: pErr } = await admin
       .from("properties")
@@ -69,8 +66,7 @@ Deno.serve(async (req) => {
     if (!pricing) throw new Error("Property has no pricing");
 
     const nights =
-      (new Date(check_out + "T00:00:00Z").getTime() -
-        new Date(check_in + "T00:00:00Z").getTime()) /
+      (new Date(check_out + "T00:00:00Z").getTime() - new Date(check_in + "T00:00:00Z").getTime()) /
       86400000;
     if (!Number.isInteger(nights) || nights < 1) throw new Error("Invalid dates");
 

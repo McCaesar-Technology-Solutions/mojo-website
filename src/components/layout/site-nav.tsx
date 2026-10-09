@@ -53,7 +53,12 @@ export function SiteNav({ wishlistCount = 0 }: { wishlistCount?: number }) {
         )}
       >
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-5 md:px-6">
-          <Link to="/" className="flex items-center" aria-label="MOJO Apartments home" onClick={close}>
+          <Link
+            to="/"
+            className="flex items-center"
+            aria-label="MOJO Apartments home"
+            onClick={close}
+          >
             <BrandMark variant="brand" className="!h-8" />
           </Link>
 
@@ -149,11 +154,7 @@ export function SiteNav({ wishlistCount = 0 }: { wishlistCount?: number }) {
           aria-label="Menu"
         >
           <div className="relative w-[34%] shrink-0 overflow-hidden sm:w-[38%]">
-            <img
-              src={MENU_CINEMA}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+            <img src={MENU_CINEMA} alt="" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-brand-900/55" />
             <div className="relative z-10 flex h-full flex-col justify-between p-3 pt-20 sm:p-4">
               <p className="font-[family-name:var(--font-guest-display)] text-[0.8125rem] font-medium tracking-[-0.02em] text-gold sm:text-[0.9375rem]">

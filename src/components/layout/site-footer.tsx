@@ -30,7 +30,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link to="/properties" search={{ type: "Hotel" }} className="transition hover:text-gold">
+              <Link
+                to="/properties"
+                search={{ type: "Hotel" }}
+                className="transition hover:text-gold"
+              >
                 Hotels
               </Link>
             </li>
