@@ -44,7 +44,7 @@ jobs:
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -- '*.js' '*.jsx' '*.mjs' '*.cjs' '*.ts' '*.tsx'
+            git add -u
             git commit -m "style: format JavaScript and TypeScript for staging CI"
             git push origin HEAD:staging-preflight
           else
