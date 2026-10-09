@@ -2,6 +2,21 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { GuestShell } from "@/components/layout/guest-shell";
 import { useAuth } from "@/contexts/auth-context";
+import { getSupabase } from "@/lib/supabase/client";
+
+async function destinationAfterSignIn(): Promise<"/admin" | "/account/trips"> {
+  const supabase = getSupabase();
+  if (!supabase) return "/account/trips";
+  const { data } = await supabase.auth.getSession();
+  const userId = data.session?.user.id;
+  if (!userId) return "/account/trips";
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+  return profile?.role === "admin" ? "/admin" : "/account/trips";
+}
 
 export const Route = createFileRoute("/auth/sign-in")({
   head: () => ({ meta: [{ title: "Sign In | MOJO Apartments" }] }),
@@ -38,7 +53,8 @@ function SignInPage() {
             setLoading(true);
             setError(null);
             void signIn(email, password)
-              .then(() => navigate({ to: "/account/trips" }))
+              .then(() => destinationAfterSignIn())
+              .then((to) => navigate({ to }))
               .catch((err) => setError(err instanceof Error ? err.message : "Sign in failed"))
               .finally(() => setLoading(false));
           }}

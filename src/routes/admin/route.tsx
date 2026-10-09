@@ -6,7 +6,7 @@ import {
   useNavigate,
   useRouterState,
 } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { getSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -27,24 +27,57 @@ const links = [
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
-    const supabase = getSupabase();
-    if (!supabase) throw redirect({ to: "/auth/sign-in" });
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/auth/sign-in" });
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.session.user.id)
-      .maybeSingle();
-    if (profile?.role !== "admin") throw redirect({ to: "/" });
+    // The anon client has no session during SSR (auth lives in localStorage).
+    // A server redirect here sends every visitor to sign-in, including admins.
+    if (typeof window === "undefined") return;
+    const next = await adminGate();
+    if (next) throw redirect({ to: next });
   },
   component: AdminLayout,
 });
+
+async function adminGate(): Promise<"/auth/sign-in" | "/" | null> {
+  const supabase = getSupabase();
+  if (!supabase) return "/auth/sign-in";
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) return "/auth/sign-in";
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.session.user.id)
+    .maybeSingle();
+  if (profile?.role !== "admin") return "/";
+  return null;
+}
 
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void adminGate().then((next) => {
+      if (cancelled) return;
+      if (next) {
+        void navigate({ to: next });
+        return;
+      }
+      setAllowed(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  if (!allowed) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F4F2EE] text-sm text-brand-900/60">
+        Checking access…
+      </div>
+    );
+  }
 
   return (
     <div
