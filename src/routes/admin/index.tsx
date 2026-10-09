@@ -105,7 +105,9 @@ function AdminDashboard() {
                     {fmtDate(e.check_in)} → {fmtDate(e.check_out)} · {e.guests} guests
                   </p>
                   <OpsStatus status={e.status} tone={enquiryTone(e.status)} />
-                  <p className="text-right text-[13px] font-semibold tabular-nums">{ghs(e.total)}</p>
+                  <p className="text-right text-[13px] font-semibold tabular-nums">
+                    {ghs(e.total)}
+                  </p>
                 </Link>
               </li>
             ))}

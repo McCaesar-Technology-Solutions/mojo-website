@@ -40,10 +40,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const admin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      serviceKey,
-    );
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
     const notify = Deno.env.get("ADMIN_NOTIFY_EMAIL");
 
     if (body.enquiry_id) {

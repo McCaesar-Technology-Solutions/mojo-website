@@ -27,7 +27,10 @@ function AccountLayout() {
   return (
     <GuestShell>
       <div className="mx-auto max-w-5xl">
-        <nav className="mb-10 flex flex-wrap gap-1 border-b border-brand-900/10" aria-label="Account">
+        <nav
+          className="mb-10 flex flex-wrap gap-1 border-b border-brand-900/10"
+          aria-label="Account"
+        >
           {tabs.map((tab) => {
             const active = pathname.startsWith(tab.to);
             return (

@@ -92,7 +92,10 @@ function MessagesPage() {
           <div className="flex min-h-[320px] flex-col border border-brand-900/10 bg-[#FBFaf7] p-5 md:col-span-2">
             <div className="flex-1 space-y-3 overflow-y-auto">
               {(activeThread?.messages ?? []).map((m) => (
-                <div key={m.id} className="bg-lavender/70 px-3 py-2.5 text-[0.9375rem] text-brand-900">
+                <div
+                  key={m.id}
+                  className="bg-lavender/70 px-3 py-2.5 text-[0.9375rem] text-brand-900"
+                >
                   {m.body}
                 </div>
               ))}
@@ -100,7 +103,9 @@ function MessagesPage() {
                 <p className="text-[0.875rem] text-brand-900/45">No messages in this thread yet.</p>
               ) : null}
               {!active ? (
-                <p className="text-[0.875rem] text-brand-900/45">Select a thread to read messages.</p>
+                <p className="text-[0.875rem] text-brand-900/45">
+                  Select a thread to read messages.
+                </p>
               ) : null}
             </div>
             {active ? (

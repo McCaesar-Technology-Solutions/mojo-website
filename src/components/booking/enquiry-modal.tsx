@@ -96,8 +96,8 @@ export function EnquiryModal({
             <iconify-icon icon="solar:check-circle-bold" width="40" className="text-royal" />
             <h4 className="mt-3 text-[1.125rem] font-semibold text-brand-900">Request sent</h4>
             <p className="mt-2 text-[1rem] text-brand-900/60">
-              Our team will confirm availability for {fmtDate(checkIn)} — {fmtDate(checkOut)}{" "}
-              within 24 hours.
+              Our team will confirm availability for {fmtDate(checkIn)} — {fmtDate(checkOut)} within
+              24 hours.
             </p>
             {wa ? (
               <a

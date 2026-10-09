@@ -64,10 +64,7 @@ function AdminReviewsPage() {
 
   return (
     <div className="space-y-4">
-      <OpsPageHeader
-        title="Reviews"
-        description="Moderate guest reviews before they go public."
-      />
+      <OpsPageHeader title="Reviews" description="Moderate guest reviews before they go public." />
 
       <div className="flex flex-wrap items-center gap-1 border-b border-brand-900/10">
         {tabs.map((t) => {
@@ -156,9 +153,7 @@ function AdminReviewsPage() {
                     setError(null);
                     void adminDeleteReview(r.id)
                       .then(() => reload())
-                      .catch((e) =>
-                        setError(e instanceof Error ? e.message : "Delete failed"),
-                      )
+                      .catch((e) => setError(e instanceof Error ? e.message : "Delete failed"))
                       .finally(() => setBusyId(null));
                   }}
                 >

@@ -13,15 +13,15 @@ function AboutPage() {
     <LegalPage title="About MOJO">
       <p>
         MOJO Apartments manages a curated selection of apartments and hotels across Ghana — Accra,
-        Kumasi, Takoradi, Tema, and more. Specific homes we operate, not a marketplace of every stay.
+        Kumasi, Takoradi, Tema, and more. Specific homes we operate, not a marketplace of every
+        stay.
       </p>
       <p>
         Guests Request to Book. Our team confirms availability — usually within 24 hours — and
         follows up to finalize the stay, including on WhatsApp when you prefer.
       </p>
       <p>
-        Browse{" "}
-        <Link to="/properties">managed properties</Link>
+        Browse <Link to="/properties">managed properties</Link>
         {wa ? (
           <>
             , or{" "}
@@ -31,8 +31,7 @@ function AboutPage() {
           </>
         ) : (
           <>
-            , or{" "}
-            <Link to="/support">contact support</Link>
+            , or <Link to="/support">contact support</Link>
           </>
         )}
         .

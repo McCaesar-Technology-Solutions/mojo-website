@@ -81,9 +81,7 @@ function AdminPropertiesPage() {
   const refreshEditorMedia = async (propertyId: string) => {
     const media = await adminListPropertyMedia(propertyId);
     setEditing((prev) => (prev ? { ...prev, media } : prev));
-    setMediaAltDrafts(
-      Object.fromEntries(media.map((m) => [m.id, m.alt ?? ""])),
-    );
+    setMediaAltDrafts(Object.fromEntries(media.map((m) => [m.id, m.alt ?? ""])));
     return media;
   };
 
@@ -418,9 +416,7 @@ function AdminPropertiesPage() {
                     min={0}
                     className="mt-1"
                     value={editing.bedrooms ?? 1}
-                    onChange={(e) =>
-                      setEditing({ ...editing, bedrooms: Number(e.target.value) })
-                    }
+                    onChange={(e) => setEditing({ ...editing, bedrooms: Number(e.target.value) })}
                   />
                 </label>
                 <label className="text-[12px] font-medium text-brand-900/60">
@@ -430,9 +426,7 @@ function AdminPropertiesPage() {
                     min={0}
                     className="mt-1"
                     value={editing.bathrooms ?? 1}
-                    onChange={(e) =>
-                      setEditing({ ...editing, bathrooms: Number(e.target.value) })
-                    }
+                    onChange={(e) => setEditing({ ...editing, bathrooms: Number(e.target.value) })}
                   />
                 </label>
                 <label className="text-[12px] font-medium text-brand-900/60">
@@ -442,9 +436,7 @@ function AdminPropertiesPage() {
                     min={1}
                     className="mt-1"
                     value={editing.max_guests ?? 2}
-                    onChange={(e) =>
-                      setEditing({ ...editing, max_guests: Number(e.target.value) })
-                    }
+                    onChange={(e) => setEditing({ ...editing, max_guests: Number(e.target.value) })}
                   />
                 </label>
                 <label className="text-[12px] font-medium text-brand-900/60">
@@ -470,9 +462,7 @@ function AdminPropertiesPage() {
                   <OpsInput
                     className="mt-1"
                     value={editing.check_in_time ?? "15:00"}
-                    onChange={(e) =>
-                      setEditing({ ...editing, check_in_time: e.target.value })
-                    }
+                    onChange={(e) => setEditing({ ...editing, check_in_time: e.target.value })}
                     placeholder="15:00"
                   />
                 </label>
@@ -481,9 +471,7 @@ function AdminPropertiesPage() {
                   <OpsInput
                     className="mt-1"
                     value={editing.check_out_time ?? "11:00"}
-                    onChange={(e) =>
-                      setEditing({ ...editing, check_out_time: e.target.value })
-                    }
+                    onChange={(e) => setEditing({ ...editing, check_out_time: e.target.value })}
                     placeholder="11:00"
                   />
                 </label>
@@ -615,15 +603,11 @@ function AdminPropertiesPage() {
                               );
                             }}
                             onCover={() =>
-                              void runMediaAction(() =>
-                                adminSetMediaCover(editing.id!, item.id),
-                              )
+                              void runMediaAction(() => adminSetMediaCover(editing.id!, item.id))
                             }
                             onUp={() => moveMedia(item.id, -1)}
                             onDown={() => moveMedia(item.id, 1)}
-                            onDelete={() =>
-                              void runMediaAction(() => adminDeleteMedia(item))
-                            }
+                            onDelete={() => void runMediaAction(() => adminDeleteMedia(item))}
                           />
                         ))}
                     </ul>
@@ -722,11 +706,7 @@ function MediaRow({
 }) {
   return (
     <li className="flex gap-3 border border-brand-900/8 bg-[#FBFaf7] p-2.5">
-      <img
-        src={item.url}
-        alt={item.alt ?? ""}
-        className="h-16 w-20 shrink-0 object-cover"
-      />
+      <img src={item.url} alt={item.alt ?? ""} className="h-16 w-20 shrink-0 object-cover" />
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           {item.is_cover ? (

@@ -77,7 +77,9 @@ function SignUpPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1.5 w-full border border-brand-900/12 bg-white px-3 py-2.5 text-[0.9375rem] text-brand-900 outline-none focus:border-royal/40 focus:ring-2 focus:ring-royal/15"
             />
-            <span className="mt-1 block text-[0.8125rem] text-brand-900/45">At least 8 characters</span>
+            <span className="mt-1 block text-[0.8125rem] text-brand-900/45">
+              At least 8 characters
+            </span>
           </label>
           {error ? <p className="text-[0.875rem] text-red-700">{error}</p> : null}
           <button

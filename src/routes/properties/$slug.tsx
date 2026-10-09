@@ -226,7 +226,10 @@ function PropertyDetailPage() {
                 </h2>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {property.policies.map((p) => (
-                    <div key={p.title} className="border border-brand-900/10 bg-[#FBFaf7] px-5 py-4">
+                    <div
+                      key={p.title}
+                      className="border border-brand-900/10 bg-[#FBFaf7] px-5 py-4"
+                    >
                       <iconify-icon icon={p.icon} width="20" className="text-royal" />
                       <h3 className="mt-2 text-[1rem] font-medium text-brand-900">{p.title}</h3>
                       <p className="mt-1 text-[0.875rem] text-brand-900/60">{p.detail}</p>
@@ -352,7 +355,10 @@ function PropertyDetailPage() {
               </button>
               <p className="mt-3 text-center text-[0.8125rem] text-brand-900/50">
                 You won&apos;t be charged yet — our team confirms availability. See{" "}
-                <Link to="/cancellation" className="underline decoration-gold/70 underline-offset-2">
+                <Link
+                  to="/cancellation"
+                  className="underline decoration-gold/70 underline-offset-2"
+                >
                   cancellation
                 </Link>{" "}
                 &{" "}

@@ -44,9 +44,7 @@ function mapAdminProperty(row: AdminPropertyRow): Property {
     ...rest,
     booking_mode: "request",
     pricing: normalizePricing(row.property_pricing),
-    media: (row.property_media ?? [])
-      .slice()
-      .sort((a, b) => a.sort_order - b.sort_order),
+    media: (row.property_media ?? []).slice().sort((a, b) => a.sort_order - b.sort_order),
     amenities,
   };
 }
@@ -251,9 +249,9 @@ export async function adminSetPropertyAmenities(propertyId: string, amenityIds: 
 
   if (uniqueIds.length === 0) return;
 
-  const { error: insertError } = await supabase.from("property_amenities").insert(
-    uniqueIds.map((amenity_id) => ({ property_id: propertyId, amenity_id })),
-  );
+  const { error: insertError } = await supabase
+    .from("property_amenities")
+    .insert(uniqueIds.map((amenity_id) => ({ property_id: propertyId, amenity_id })));
   if (insertError) throw insertError;
 }
 
@@ -279,14 +277,8 @@ export async function adminDeleteProperty(id: string) {
   const supabase = await requireAdminClient();
 
   const [enquiries, bookings] = await Promise.all([
-    supabase
-      .from("enquiries")
-      .select("id", { count: "exact", head: true })
-      .eq("property_id", id),
-    supabase
-      .from("bookings")
-      .select("id", { count: "exact", head: true })
-      .eq("property_id", id),
+    supabase.from("enquiries").select("id", { count: "exact", head: true }).eq("property_id", id),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("property_id", id),
   ]);
   if (enquiries.error) throw enquiries.error;
   if (bookings.error) throw bookings.error;
@@ -300,9 +292,7 @@ export async function adminDeleteProperty(id: string) {
   }
 
   const media = await adminListPropertyMedia(id);
-  const storagePaths = media
-    .map((m) => m.storage_path)
-    .filter((p): p is string => Boolean(p));
+  const storagePaths = media.map((m) => m.storage_path).filter((p): p is string => Boolean(p));
 
   const { data: property, error: loadError } = await supabase
     .from("properties")
@@ -388,8 +378,7 @@ export async function adminAddMedia(
   if (listError) throw listError;
 
   const rows = existing ?? [];
-  const nextOrder =
-    rows.length === 0 ? 0 : Math.max(...rows.map((r) => r.sort_order)) + 1;
+  const nextOrder = rows.length === 0 ? 0 : Math.max(...rows.map((r) => r.sort_order)) + 1;
   const makeCover = Boolean(options.isCover) || rows.length === 0;
 
   if (makeCover && rows.some((r) => r.is_cover)) {
@@ -640,10 +629,7 @@ export async function adminCreateBlock(input: {
   });
 }
 
-export async function adminDeleteBlock(block: {
-  id: string;
-  reason: string;
-}) {
+export async function adminDeleteBlock(block: { id: string; reason: string }) {
   if (block.reason === "booked") {
     throw new Error("Booked blocks are removed by cancelling the booking");
   }
@@ -693,9 +679,7 @@ export async function adminUpdateGuest(
   }
 
   const payload = {
-    ...(patch.full_name !== undefined
-      ? { full_name: patch.full_name?.trim() || null }
-      : {}),
+    ...(patch.full_name !== undefined ? { full_name: patch.full_name?.trim() || null } : {}),
     ...(patch.phone !== undefined ? { phone: patch.phone?.trim() || null } : {}),
   };
 
@@ -756,9 +740,7 @@ export async function adminListMessageThreads() {
 
   return threads.map((t) => ({
     ...t,
-    messages: (t.messages ?? [])
-      .slice()
-      .sort((a, b) => a.created_at.localeCompare(b.created_at)),
+    messages: (t.messages ?? []).slice().sort((a, b) => a.created_at.localeCompare(b.created_at)),
     guest_profile: t.guest_id ? (profilesById[t.guest_id] ?? null) : null,
   }));
 }

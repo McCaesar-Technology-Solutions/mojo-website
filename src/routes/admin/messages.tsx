@@ -171,9 +171,7 @@ function AdminMessagesPage() {
                   {threadLabel(selected)}
                 </h2>
                 <p className="mt-1 text-[13px] text-brand-900/55">
-                  {selected.enquiry?.property?.title
-                    ? `${selected.enquiry.property.title} · `
-                    : ""}
+                  {selected.enquiry?.property?.title ? `${selected.enquiry.property.title} · ` : ""}
                   {selected.enquiry?.email ?? selected.guest_profile?.phone ?? "No contact on file"}
                 </p>
               </div>
