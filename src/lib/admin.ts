@@ -586,24 +586,26 @@ export async function adminListBookings() {
   return (data ?? []) as Booking[];
 }
 
+function bookingMutationErrorMessage(error: { message?: string }): string {
+  const message = error.message ?? "";
+  if (message.includes("BOOKING_DATES_UNAVAILABLE")) return "Those dates are already taken.";
+  if (message.includes("BOOKING_NOT_AUTHORIZED")) return "Not authorized.";
+  if (message.includes("BOOKING_NOT_FOUND")) return "Booking not found.";
+  if (message.includes("BOOKING_BLOCK_CORRUPT")) return "This booking calendar is inconsistent.";
+  if (message.includes("BOOKING_INVALID")) return "That booking change is not allowed.";
+  return "Booking could not be updated.";
+}
+
 export async function adminUpdateBooking(
   id: string,
   patch: Partial<Pick<Booking, "status" | "admin_notes" | "check_in" | "check_out">>,
 ) {
   const supabase = await requireAdminClient();
-  const { error } = await supabase.from("bookings").update(patch).eq("id", id);
-  if (error) throw error;
-
-  if (patch.status === "cancelled" || patch.status === "refunded") {
-    await supabase.from("availability_blocks").delete().eq("booking_id", id);
-  }
-
-  await supabase.from("audit_logs").insert({
-    action: "booking.updated",
-    entity_type: "booking",
-    entity_id: id,
-    meta: patch,
+  const { error } = await supabase.rpc("admin_update_booking", {
+    p_booking_id: id,
+    p_patch: patch,
   });
+  if (error) throw new Error(bookingMutationErrorMessage(error));
 }
 
 export async function adminListBlocks(propertyId?: string) {
@@ -644,8 +646,12 @@ export async function adminDeleteBlock(block: {
   id: string;
   reason: string;
 }) {
-  if (block.reason === "booked") {
-    throw new Error("Booked blocks are removed by cancelling the booking");
+  if (block.reason === "booked" || block.reason === "pms") {
+    throw new Error(
+      block.reason === "pms"
+        ? "PMS occupancy blocks are managed from the Property Management System"
+        : "Booked blocks are removed by cancelling the booking",
+    );
   }
   if (block.reason !== "manual" && block.reason !== "hold") {
     throw new Error("Only manual or hold blocks can be deleted here");
