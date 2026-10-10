@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import heroVideo from "../assets/hero-bg.mp4.asset.json";
-import heroVideoWebm from "../assets/hero-bg.webm.asset.json";
+import heroNightAerial from "../assets/hero-night-aerial.jpg";
+import heroNightFacade from "../assets/hero-night-facade.jpg";
+import heroNightPool from "../assets/hero-night-pool.jpg";
 import { SiteNav } from "@/components/layout/site-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PropertyCard } from "@/components/properties/property-card";
@@ -30,20 +31,59 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const HERO_POSTER =
-  "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80";
+const HERO_SLIDES = [heroNightAerial, heroNightFacade, heroNightPool];
+
+function HeroSlideshow() {
+  const [index, setIndex] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduceMotion(media.matches);
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % HERO_SLIDES.length);
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [reduceMotion]);
+
+  return (
+    <div className="absolute inset-0 z-0" aria-hidden>
+      {HERO_SLIDES.map((src, slideIndex) => (
+        <img
+          key={src}
+          src={src}
+          alt=""
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
+            slideIndex === index ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
 
 function Index() {
   const navigate = useNavigate();
   const wa = getWhatsAppNumber();
   const [properties, setProperties] = useState<Property[]>([]);
+  const [catalogError, setCatalogError] = useState(false);
   const [city, setCity] = useState("Accra");
   const [guests, setGuests] = useState(2);
 
   useEffect(() => {
     void listPublishedProperties()
       .then(({ properties: list }) => setProperties(list))
-      .catch(() => setProperties([]));
+      .catch(() => {
+        setProperties([]);
+        setCatalogError(true);
+      });
   }, []);
 
   const featured = properties.filter((p) => p.is_featured).slice(0, 4);
@@ -69,27 +109,16 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <SiteNav />
 
       <section className="relative flex min-h-[100svh] w-full flex-col overflow-hidden pt-16">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster={HERO_POSTER}
-          aria-hidden
-          className="absolute inset-0 z-0 h-full w-full object-cover"
-        >
-          <source src={heroVideoWebm.url} type="video/webm" />
-          <source src={heroVideo.url} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-brand-900 via-brand-900/50 to-brand-900/30" />
+        <HeroSlideshow />
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-brand-900/85 via-brand-900/25 to-brand-900/40" />
 
         <div className="relative z-20 flex flex-1 flex-col">
-          <div className="guest-cinema-brand mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-5 text-center md:px-6">
-            <p className="font-[family-name:var(--font-guest-display)] text-[clamp(2.75rem,8vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.03em] text-white">
+          <div className="guest-cinema-brand mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-5 text-center md:px-6">
+            <p className="font-[family-name:var(--font-guest-display)] text-[clamp(3.5rem,10vw,6rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white">
               MOJO
               <span className="text-gold"> Apartments</span>
             </p>
-            <p className="mt-5 max-w-xl text-[1.0625rem] leading-relaxed text-white/85 md:text-[1.125rem]">
+            <p className="mt-6 max-w-3xl text-[clamp(1.25rem,2.4vw,1.75rem)] font-semibold leading-snug text-white">
               Trusted, managed stays across Ghana — specific homes, not a marketplace. Request to
               Book; our team confirms.
             </p>
@@ -210,7 +239,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           </div>
         </div>
 
-        {featuredFallback.length === 0 ? (
+        {catalogError ? (
+          <p className="mx-auto max-w-7xl border border-dashed border-brand-900/15 px-6 py-16 text-center text-[1rem] text-brand-900/70 md:mx-6">
+            Stays could not be loaded. Please try again.
+          </p>
+        ) : featuredFallback.length === 0 ? (
           <p className="mx-auto max-w-7xl border border-dashed border-brand-900/15 px-6 py-16 text-center text-[1rem] text-brand-900/50 md:mx-6">
             No published stays yet. Check back soon, or message us on WhatsApp.
           </p>
