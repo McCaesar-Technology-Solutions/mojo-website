@@ -832,6 +832,19 @@ export async function adminDeleteReview(id: string) {
   });
 }
 
+export async function adminListUnresolvedLatePayments() {
+  const supabase = await requireAdminClient();
+  const { data, error } = await supabase
+    .from("audit_logs")
+    .select("id, action, entity_type, entity_id, meta, created_at")
+    .in("action", ["booking.payment_after_cancel", "booking.payment_unmatched"])
+    .filter("meta->>resolved_at", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  return (data ?? []) as AuditLog[];
+}
+
 export async function adminListAuditLogs(limit = 150) {
   const supabase = await requireAdminClient();
   const { data, error } = await supabase

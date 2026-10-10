@@ -1,12 +1,23 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { refundRetryCallsProvider, type RefundAction } from "../_shared/paystack-recovery.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, "Content-Type": "application/json" },
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  if (Deno.env.get("PAYSTACK_ENABLED") !== "true") {
+    return json({ error: "Paystack is not enabled" }, 403);
+  }
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing auth");
@@ -32,45 +43,89 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (profile?.role !== "admin") throw new Error("Admin only");
 
-    const { booking_id, amount } = await req.json();
-    const { data: booking } = await admin
-      .from("bookings")
-      .select("*")
-      .eq("id", booking_id)
-      .single();
-    if (!booking?.paystack_reference) throw new Error("No Paystack reference");
+    const { booking_id } = await req.json();
+    if (!booking_id) throw new Error("Booking is required");
 
-    const res = await fetch("https://api.paystack.co/refund", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("PAYSTACK_SECRET_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        transaction: booking.paystack_reference,
-        ...(amount ? { amount } : {}),
-      }),
-    });
-    const json = await res.json();
-    if (!json.status) throw new Error(json.message ?? "Refund failed");
+    const claim = await admin.rpc("claim_paystack_refund", { p_booking_id: booking_id });
+    if (claim.error) throw new Error("Refund could not be started");
+    const action = claim.data?.action as RefundAction | undefined;
 
-    await admin.from("bookings").update({ status: "refunded" }).eq("id", booking_id);
-    await admin.from("availability_blocks").delete().eq("booking_id", booking_id);
-    await admin.from("audit_logs").insert({
-      actor_id: user.id,
-      action: "booking.refunded",
-      entity_type: "booking",
-      entity_id: booking_id,
-      meta: json.data ?? {},
-    });
+    if (action === "unknown" || !refundRetryCallsProvider(action ?? "unknown") && action !== "reconcile") {
+      return json(
+        {
+          error:
+            "A refund was already sent and its result was not recorded. Do not send another refund. Reconcile this charge in Paystack, then retry local cleanup only after the database shows the refund as accepted.",
+        },
+        409,
+      );
+    }
 
-    return new Response(JSON.stringify({ ok: true, data: json.data }), {
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
+    if (action === "call_provider") {
+      let paystackResult: "accepted" | "rejected" | "unknown" = "unknown";
+      try {
+        const res = await fetch("https://api.paystack.co/refund", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${Deno.env.get("PAYSTACK_SECRET_KEY")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ transaction: claim.data.reference }),
+        });
+        const body = await res.json();
+        paystackResult = body?.status ? "accepted" : "rejected";
+      } catch {
+        paystackResult = "unknown";
+      }
+
+      if (paystackResult === "unknown") {
+        return json(
+          {
+            error:
+              "Paystack did not return a refund result. The booking was left unchanged and another refund will not be sent automatically.",
+          },
+          502,
+        );
+      }
+
+      if (paystackResult === "rejected") {
+        const aborted = await admin.rpc("abort_paystack_refund", { p_booking_id: booking_id });
+        if (aborted.error) {
+          return json(
+            {
+              error:
+                "Paystack rejected the refund, and the local attempt could not be cleared. Do not send another refund until that state is reconciled.",
+            },
+            502,
+          );
+        }
+        return json({ error: "Paystack rejected the refund. No calendar change was made." }, 400);
+      }
+
+      const marked = await admin.rpc("mark_paystack_refund_accepted", { p_booking_id: booking_id });
+      if (marked.error) {
+        return json(
+          {
+            error:
+              "Paystack accepted the refund, but that acceptance was not saved. Do not send another refund. Reconcile the booking before retrying cleanup.",
+          },
+          502,
+        );
+      }
+    }
+
+    const finalized = await admin.rpc("finalize_paystack_refund", { p_booking_id: booking_id });
+    if (finalized.error) {
+      return json(
+        {
+          error:
+            "The refund is recorded as accepted, but the booking status or calendar could not be updated. Retry cleanup. Another Paystack refund will not be sent.",
+        },
+        502,
+      );
+    }
+
+    return json({ ok: true, occupancyReleased: true });
   } catch (e) {
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Failed" }), {
-      status: 400,
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
+    return json({ error: e instanceof Error ? e.message : "Failed" }, 400);
   }
 });
