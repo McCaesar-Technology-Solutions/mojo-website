@@ -1,0 +1,1 @@
+Temporary CI baseline probe. This file exists only to trigger the existing pull_request lint workflow against main without the booking/payment changes.
