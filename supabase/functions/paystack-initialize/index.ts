@@ -2,17 +2,30 @@
 // Secrets: PAYSTACK_SECRET_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, APP_URL
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { preserveCheckout, type CheckoutOutcome } from "../_shared/paystack-recovery.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function paystackDisabled() {
+  if (Deno.env.get("PAYSTACK_ENABLED") === "true") return null;
+  return new Response(JSON.stringify({ error: "Paystack is not enabled" }), {
+    status: 403,
+    headers: { ...cors, "Content-Type": "application/json" },
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  const disabled = paystackDisabled();
+  if (disabled) return disabled;
 
   let holdId: string | null = null;
   let bookingId: string | null = null;
+  let reference: string | null = null;
+  let checkoutOutcome: CheckoutOutcome = "not_called";
   let admin: ReturnType<typeof createClient> | null = null;
 
   try {
@@ -79,7 +92,7 @@ Deno.serve(async (req) => {
     const service = Math.round(subtotal * Number(pricing.service_fee_rate));
     const total = subtotal + cleaning + service;
     const amountPesewas = Math.round(total * 100);
-    const reference = `mojo_${crypto.randomUUID().replace(/-/g, "").slice(0, 18)}`;
+    reference = `mojo_${crypto.randomUUID().replace(/-/g, "").slice(0, 18)}`;
 
     const { data: hold, error: holdErr } = await admin
       .from("availability_blocks")
@@ -120,10 +133,23 @@ Deno.serve(async (req) => {
     if (bErr || !booking) throw new Error(bErr?.message ?? "Could not create booking");
     bookingId = booking.id;
 
-    await admin.from("availability_blocks").update({ booking_id: booking.id }).eq("id", hold.id);
+    const linked = await admin.rpc("attach_paystack_hold", {
+      p_booking_id: booking.id,
+      p_block_id: hold.id,
+    });
+    if (linked.error) throw new Error("Could not link payment hold");
+
+    const markedUnknown = await admin
+      .from("bookings")
+      .update({ paystack_checkout_state: "provider_unknown" })
+      .eq("id", booking.id);
+    if (markedUnknown.error) throw new Error("Could not record checkout state");
+    checkoutOutcome = "unknown";
 
     const appUrl = Deno.env.get("APP_URL") ?? "http://localhost:5173";
-    const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
+    let paystackRes: Response;
+    try {
+      paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${Deno.env.get("PAYSTACK_SECRET_KEY")}`,
@@ -142,15 +168,27 @@ Deno.serve(async (req) => {
         },
       }),
     });
+    } catch {
+      checkoutOutcome = "unknown";
+      throw new Error("Paystack did not return a checkout result");
+    }
     const paystackJson = await paystackRes.json();
     if (!paystackJson.status) {
+      checkoutOutcome = "rejected";
       throw new Error(paystackJson.message ?? "Paystack init failed");
     }
+    checkoutOutcome = "accepted";
 
-    await admin
+    const accepted = await admin
       .from("bookings")
-      .update({ paystack_access_code: paystackJson.data.access_code })
+      .update({
+        paystack_checkout_state: "provider_accepted",
+        paystack_access_code: paystackJson.data.access_code,
+      })
       .eq("id", booking.id);
+    if (accepted.error) {
+      throw new Error("Paystack accepted the checkout, but the booking could not store it");
+    }
 
     console.log(
       JSON.stringify({
@@ -171,14 +209,25 @@ Deno.serve(async (req) => {
       { headers: { ...cors, "Content-Type": "application/json" } },
     );
   } catch (e) {
-    // Roll back hold + pending booking if Paystack init fails mid-flow
-    if (admin) {
+    // Delete the hold only when Paystack has not been asked, or explicitly rejected the checkout.
+    if (admin && !preserveCheckout(checkoutOutcome)) {
       if (bookingId) {
         await admin.from("bookings").delete().eq("id", bookingId).eq("status", "pending_payment");
       }
       if (holdId) {
         await admin.from("availability_blocks").delete().eq("id", holdId).eq("reason", "hold");
       }
+    }
+    if (preserveCheckout(checkoutOutcome)) {
+      return new Response(
+        JSON.stringify({
+          error: e instanceof Error ? e.message : "Checkout needs reconciliation",
+          booking_id: bookingId,
+          reference,
+          reconciliation: "preserved",
+        }),
+        { status: 502, headers: { ...cors, "Content-Type": "application/json" } },
+      );
     }
     console.error(
       JSON.stringify({ level: "error", event: "paystack.initialize", error: String(e) }),
