@@ -1,6 +1,9 @@
+import { publicReadError } from "@/lib/read-error";
 import { z } from "zod";
 import { calcStayTotal, nightsBetween } from "@/lib/format";
 import { getSupabase } from "@/lib/supabase/client";
+import { submitEnquiryFn } from "@/lib/enquiries.functions";
+import type { EnquiryConfirmation } from "@/lib/enquiry-submission";
 import type { Enquiry, EnquiryInput, Property } from "@/types/domain";
 
 export const enquirySchema = z.object({
@@ -28,7 +31,7 @@ export function buildEnquiryTotals(property: Property, checkIn: string, checkOut
 export async function submitEnquiry(
   input: EnquiryInput,
   property: Property,
-): Promise<{ enquiry: Enquiry; source: "supabase" }> {
+): Promise<{ enquiry: EnquiryConfirmation; source: "supabase" }> {
   const parsed = enquirySchema.parse({
     ...input,
     property_id: property.id,
@@ -49,35 +52,27 @@ export async function submitEnquiry(
   }
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  // Amounts are recomputed server-side by trigger; client values are display-only hints
-  const { data, error } = await supabase
-    .from("enquiries")
-    .insert({
+  // Insert and PMS sync run on the server for this submission only.
+  // A failed PMS sync still returns the saved enquiry.
+  const { enquiry } = await submitEnquiryFn({
+    data: {
       property_id: property.id,
-      user_id: user?.id ?? null,
       check_in: parsed.check_in,
       check_out: parsed.check_out,
       guests: parsed.guests,
       full_name: parsed.full_name,
       email: parsed.email,
       phone: parsed.phone,
-      notes: parsed.notes ?? null,
-      nightly_rate: totals.nightly,
-      cleaning_fee: totals.cleaning,
-      service_fee: totals.serviceFee,
-      total: totals.total,
-      currency: "GHS",
-      status: "new",
-    })
-    .select("*")
-    .single();
+      notes: parsed.notes,
+      website: parsed.website,
+      accessToken: session?.access_token,
+    },
+  });
 
-  if (error) throw new Error(error.message);
-
-  return { enquiry: data as Enquiry, source: "supabase" };
+  return { enquiry, source: "supabase" };
 }
 
 export async function listMyEnquiries(): Promise<Enquiry[]> {
@@ -95,6 +90,6 @@ export async function listMyEnquiries(): Promise<Enquiry[]> {
     .or(`user_id.eq.${user.id},email.eq.${user.email}`)
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) throw publicReadError();
   return (data ?? []) as Enquiry[];
 }
