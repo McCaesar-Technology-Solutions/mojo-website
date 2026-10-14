@@ -1,6 +1,6 @@
 ---
 name: MOJO Apartments
-description: Dual system — guest Stay Cinema + Reception Desk; ops Concierge phone-sheet.
+description: Dual system — guest Stay Stage + Glass Desk; ops Concierge phone-sheet.
 colors:
   paper-ground: "#F7F5F2"
   paper-stone: "#F4F2EE"
@@ -19,67 +19,79 @@ colors:
   alert-ink: "#451A03"
 typography:
   guest-display:
-    fontFamily: '"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "3.5rem"
-    fontWeight: 500
-    lineHeight: 1.1
-    letterSpacing: "-0.03em"
+    fontFamily: '"Marcellus", ui-serif, Georgia, serif'
+    fontSize: "clamp(3.5rem, 8vw, 6rem)"
+    fontWeight: 400
+    lineHeight: 1.15
+    letterSpacing: "0.02em"
+  guest-wordmark:
+    fontFamily: '"Marcellus", ui-serif, Georgia, serif'
+    fontSize: "1.125rem"
+    fontWeight: 400
+    lineHeight: 1
+    letterSpacing: "0.04em"
+  guest-footer-heading:
+    fontFamily: '"Marcellus", ui-serif, Georgia, serif'
+    fontSize: "1.125rem"
+    fontWeight: 400
+    lineHeight: 1.2
+    letterSpacing: "0.02em"
   guest-title:
-    fontFamily: '"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Marcellus", ui-serif, Georgia, serif'
     fontSize: "2.25rem"
-    fontWeight: 500
+    fontWeight: 400
     lineHeight: 1.15
-    letterSpacing: "-0.02em"
+    letterSpacing: "0.01em"
   guest-plate:
-    fontFamily: '"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Marcellus", ui-serif, Georgia, serif'
     fontSize: "2rem"
-    fontWeight: 500
+    fontWeight: 400
     lineHeight: 1.15
-    letterSpacing: "-0.02em"
+    letterSpacing: "0.01em"
   guest-price:
-    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Poppins", ui-sans-serif, system-ui, sans-serif'
     fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "normal"
   guest-body:
-    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Poppins", ui-sans-serif, system-ui, sans-serif'
     fontSize: "1.0625rem"
     fontWeight: 400
     lineHeight: 1.55
     letterSpacing: "normal"
   guest-ui:
-    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Poppins", ui-sans-serif, system-ui, sans-serif'
     fontSize: "0.9375rem"
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: "normal"
   guest-menu:
-    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Poppins", ui-sans-serif, system-ui, sans-serif'
     fontSize: "1.125rem"
     fontWeight: 500
     lineHeight: 1.3
     letterSpacing: "normal"
   guest-base:
-    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Poppins", ui-sans-serif, system-ui, sans-serif'
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: "normal"
   guest-small:
-    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Poppins", ui-sans-serif, system-ui, sans-serif'
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.4
     letterSpacing: "normal"
   guest-micro:
-    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Poppins", ui-sans-serif, system-ui, sans-serif'
     fontSize: "0.8125rem"
     fontWeight: 500
     lineHeight: 1.3
     letterSpacing: "normal"
   guest-tiny:
-    fontFamily: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif'
+    fontFamily: '"Poppins", ui-sans-serif, system-ui, sans-serif'
     fontSize: "0.75rem"
     fontWeight: 600
     lineHeight: 1.2
@@ -165,15 +177,20 @@ components:
     rounded: "{rounded.lg}"
     padding: "12px 20px"
   guest-nav:
-    backgroundColor: "rgba(251, 250, 247, 0.8)"
+    backgroundColor: "{colors.paper-ground}"
     textColor: "{colors.brand-ink}"
     typography: "{typography.guest-ui}"
     height: "64px"
-  guest-reception-desk:
-    backgroundColor: "rgba(20, 12, 36, 0.72)"
-    textColor: "{colors.white}"
+  guest-glass-desk:
+    backgroundColor: "rgba(251, 250, 247, 0.88)"
+    textColor: "{colors.brand-ink}"
     typography: "{typography.guest-ui}"
-    rounded: "{rounded.xl}"
+    rounded: "20px"
+  guest-footer:
+    backgroundColor: "{colors.brand-ink}"
+    textColor: "{colors.white}"
+    typography: "{typography.guest-small}"
+    padding: "64px 20px 32px"
   guest-property-plate:
     backgroundColor: "{colors.sheet-cream}"
     textColor: "{colors.brand-ink}"
@@ -237,16 +254,16 @@ components:
 
 ## Overview
 
-**Creative North Star: "Stay Cinema + Reception Desk" (guest) · "Concierge phone-sheet" (ops)**
+**Creative North Star: "Stay Stage + Glass Desk" (guest) · "Concierge phone-sheet" (ops)**
 
-MOJO ships two visual systems that share brand hues but never share costume. The public guest site is Stay Cinema + Reception Desk: a full-bleed hero film, paper-cream chrome, royal CTAs, gold as hairline emphasis, Bricolage Grotesque display paired with Source Sans 3, and editorial property plates. The internal `/admin` console is Concierge phone-sheet: a dense ops rail, enquiry queue beside a request folio, system-UI type, and paper-flat work surfaces.
+MOJO ships two visual systems that share brand hues but never share costume. The public guest site is Stay Stage + Glass Desk: a paper-ground page with a **full-bleed** media stage under a 64px nav, centered Marcellus headline, gold hairline, Poppins Request-to-Book subline, frosted cream search desk, royal CTAs, and editorial property plates. The internal `/admin` console is Concierge phone-sheet: a dense ops rail, enquiry queue beside a request folio, system-UI type, and paper-flat work surfaces.
 
 Guest density is editorial and calm; ops density is triage-first. Both refuse purple marketing themes, multi-layer glow shadows, and Instant Book theater. Shared palette (royal, gold, brand ink, lavender) signals MOJO; each surface applies it with different rules.
 
 **Key Characteristics:**
-- Guest: full-bleed hero video; paper ground `#F7F5F2` + sheet-cream nav chrome; Bricolage + Source Sans 3
-- Guest: royal CTAs; gold on brand lockup, plate hairlines, menu hairlines, and link underlines — not fill buttons
-- Guest: alternating editorial plates (image|copy / copy|image); dark floating reception desk on the hero
+- Guest: full-bleed stay slideshow on paper ground `#F7F5F2`; paper-ground nav with BrandMark + Marcellus “MOJO”; Marcellus + Poppins
+- Guest: royal CTAs; gold as hairlines (hero rule, plate/menu, active-nav underline, link underlines, footer column rules) — not fill buttons and not a colored word in the headline
+- Guest: alternating editorial plates; frosted cream glass desk (desktop one row; phone 2×2 City|Guests then Check in|Check out, then Search stays)
 - Ops: paper stone + cream sheet + white panels; system UI; 13px dense rows
 - Ops: Enquiries = queue beside request folio; Approve stays with the selected request
 - Shared: brand ink `#24104D`, royal `#2D1659`, gold `#C89B2C`, lavender `#F3F0FA`
@@ -261,7 +278,7 @@ Shared MOJO brand hues; role differs by surface.
 - **Brand Ink** (`{colors.brand-ink}`): Default text on light surfaces; hairline borders at ~10–15% alpha; guest body on paper; ops secondary labels.
 
 ### Secondary
-- **Luxury Gold** (`{colors.gold}`): Guest — “Apartments” in the hero lockup, plate/menu hairlines, underline decoration on text links (`decoration-gold/70–80`). Ops — **NEW** status chips only (gold wash + gold ring). Never a guest CTA fill.
+- **Luxury Gold** (`{colors.gold}`): Guest — 1px hairlines (under hero h1, plate titles, footer column heads), active desktop-nav underline, underline decoration on text links (`decoration-gold/70–80`), BrandMark `gold` on the ink footer. Ops — **NEW** status chips only (gold wash + gold ring). Never a guest CTA fill and never a tinted word inside the hero headline.
 
 ### Tertiary
 - **Lavender** (`{colors.lavender}`): Guest secondary button hover wash on paper. Ops selected queue row, list hover, in-review chips.
@@ -269,7 +286,7 @@ Shared MOJO brand hues; role differs by surface.
 ### Neutral
 - **Paper Ground** (`{colors.paper-ground}`): Guest site page field (`.guest-site` homepage ground).
 - **Paper Stone** (`{colors.paper-stone}`): Ops console ground behind rail and main.
-- **Sheet Cream** (`{colors.sheet-cream}`): Guest nav glass, editorial plate copy panels, “How Request to Book works” band, mobile menu Request to Book fill; ops rail, sticky bars, thead wash.
+- **Sheet Cream** (`{colors.sheet-cream}`): Guest glass-desk frost, editorial plate copy panels, “How Request to Book works” band, mobile menu Request to Book fill; ops rail, sticky bars, thead wash. Guest nav uses paper ground, not cream.
 - **Brand 50** (`{colors.brand-50}`): Legacy light utility ground (auth/support shells may still use it).
 - **White** (`{colors.white}`): Secondary buttons on paper, ops panels/folio/inputs.
 - **Status OK / Bad / Alert**: Ops chips and inline alerts only (see frontmatter).
@@ -283,25 +300,27 @@ Shared MOJO brand hues; role differs by surface.
 
 ## Typography
 
-**Guest Display Font:** Bricolage Grotesque (`--font-guest-display`)
-**Guest Body Font:** Source Sans 3 (`--font-sans` / `.guest-site`)
+**Guest Display Font:** Marcellus (`--font-guest-display`) — single-weight serif for headings
+**Guest Body Font:** Poppins (`--font-sans` / `.guest-site`)
 **Ops Body Font:** System UI stack (`ui-sans-serif, system-ui, …`)
 **Label/Mono Font:** Same as surface body; ops short IDs may use `font-mono` at 11px muted
 
-**Character:** Guest pairing is editorial — medium Bricolage for brand and section heads, Source Sans 3 for clarity and UI. Ops is workhorse, slightly condensed tracking on titles, tabular nums on money. Do not import Bricolage into `/admin`. Do not put Inter or system-only stacks on new guest marketing chrome.
+**Character:** Guest pairing is editorial — Marcellus for headings (regular only; no faux-bold), Poppins for paragraphs and UI. Ops is workhorse, slightly condensed tracking on titles, tabular nums on money. Do not import Marcellus/Poppins into `/admin`. Do not put Inter or system-only stacks on new guest marketing chrome.
 
 ### Hierarchy — Guest
-- **Display** (`guest-display`, 500, clamp ~2.75–3.5rem, lh ~1.05–1.1, tracking −0.03em): Hero brand lockup “MOJO” (+ gold “Apartments”).
-- **Title** (`guest-title`, 500, clamp ~1.75–2.25rem, tracking −0.02em): Section heads (Managed stays, How Request to Book, Ready when you are).
-- **Plate** (`guest-plate`, 500, 2rem, tracking −0.02em): Editorial property plate titles in Bricolage.
+- **Display** (`guest-display`, 400, clamp ~3.5–6rem, lh ~1.15, tracking +0.02em): Centered hero headline (“MOJO stays / across Ghana”) in white over the overlay; gold hairline sits under the block, not on a word.
+- **Wordmark** (`guest-wordmark`, 400, 1.125rem, tracking +0.04em): “MOJO” beside BrandMark in nav and footer.
+- **Title** (`guest-title`, 400, clamp ~1.75–2.25rem, tracking −0.02em): Section heads (Managed stays, How Request to Book, Ready when you are).
+- **Footer heading** (`guest-footer-heading`, 400, 1.125rem): Footer column titles as `h2` (never skipped `h4`).
+- **Plate** (`guest-plate`, 400, 2rem, tracking +0.01em): Editorial property plate titles in Marcellus.
 - **Price** (`guest-price`, 600, 1.25rem): Nightly rate on plates.
 - **Body** (`guest-body`, 400, 1.0625rem, lh ~1.55): Hero support line and section ledes.
-- **UI** (`guest-ui`, 500, 0.9375rem): Nav links, primary/ghost CTAs, desk field values, “View all” links.
+- **UI** (`guest-ui`, 500, 0.9375rem): Nav links, primary CTAs, desk field values, “View all” links.
 - **Menu** (`guest-menu`, 500, 1.125rem): Mobile cinema-split menu rows (gold on royal).
 - **Base** (`guest-base`, 400, 1rem): How-it-works copy, empty-state copy.
-- **Small** (`guest-small`, 400, 0.875rem): Secondary plate meta when needed.
-- **Micro** (`guest-micro`, 500, 0.8125rem): “/ night”, Request to Book plate link, strikethrough rates.
-- **Tiny** (`guest-tiny`, 600, 0.75rem, uppercase, tracking ~0.08em): Desk field labels (City, Guests), plate city lines.
+- **Small** (`guest-small`, 400, 0.875rem): Secondary plate meta when needed; date inputs in the glass desk.
+- **Micro** (`guest-micro`, 500, 0.8125rem): “/ night”, Request to Book plate link, strikethrough rates; glass-desk field labels.
+- **Tiny** (`guest-tiny`, 600, 0.75rem, uppercase, tracking ~0.08em): Plate city lines; legacy uppercase desk labels where still used.
 
 ### Hierarchy — Ops
 - **Title** (600, 1.375rem, tracking −0.02em): Page headers (`OpsPageHeader`).
@@ -312,14 +331,14 @@ Shared MOJO brand hues; role differs by surface.
 - **Micro** (600, 10px, uppercase, tracking ~0.06em): Status chips, tab count badges, stay-fact cell labels.
 
 ### Named Rules
-**The Two-Stack Rule.** Guest = Bricolage + Source Sans 3. Ops = system UI only. Never cross-pollinate display faces into `/admin` or revive Inter on guest Stay Cinema chrome.
+**The Two-Stack Rule.** Guest = Marcellus + Poppins. Ops = system UI only. Never cross-pollinate display faces into `/admin` or revive Inter on guest Stay Stage chrome.
 
 **The Workhorse Type Rule (ops).** Admin uses the system UI stack and ~13px dense body. No serif display or marketing faces in the ops shell.
 
 ## Layout
 
-### Guest — Stay Cinema + Reception Desk
-First viewport is one composition: full-bleed hero video (`min-h-[100svh]`), brand-ink gradient scrim, **centered** brand lockup + one clarity line + CTA pair mid-frame, then the **reception desk** anchored at the bottom — a dark floating strip (city/guests + royal Search stays; field icons; no dead date cell). Fixed nav **64px**; content max-width **7xl** with horizontal gutters **20–24px**. Below: **alternating editorial plates** (image|copy / copy|image) — never a marketplace card grid. Slim how-it-works band (gold hairline tops, no “Step *n*” kickers), closing CTA. Section vertical rhythm ~**64–96px**.
+### Guest — Stay Stage + Glass Desk
+First viewport is one composition: fixed nav **64px** paper ground, then a **full-bleed** stay slideshow (`pt-16`, no stage gutter or radius). Type sits on a **black 55%** overlay plus a soft center radial (`rgba(0,0,0,0.28)`). **Centered** Marcellus headline + gold hairline + Poppins Request-to-Book support line (no savings claims, no hero CTA pair). Bottom of the stage: **frosted cream glass desk**. Desktop: one row City · Check in · Check out · Guests · royal Search stays. Phone: City|Guests, then Check in|Check out, then full-width Search; controls **44×44**. Dates ride URL search into browse and property Request to Book; the list is not Instant Book inventory. Catalog below shows loading, empty, or error+retry — never a demo catalog. Slim how-it-works band (gold hairline tops, no “Step *n*” kickers), closing CTA. Ink **footer** with Marcellus `h2` columns. Section vertical rhythm ~**64–96px**.
 
 ### Ops — Concierge phone-sheet
 Slim fixed ops rail (**220px**) with **56px** brand/header bands. Main pads **16–24px** horizontal, **20px** vertical. Tight block rhythm (**16–20px**).
@@ -328,34 +347,34 @@ Slim fixed ops rail (**220px**) with **56px** brand/header bands. Main pads **16
 
 **Secondary boards:** Page header → optional underline tabs → square `OpsPanel` tables with cream thead. Shift board uses a four-cell hairline metric strip — not a dashboard of cards.
 
-**Mobile:** Guest — hamburger opens **cinema-split** menu (film strip + royal panel + gold hairlines). Ops — rail drawers over brand-ink scrim; queue stacks above folio.
+**Mobile:** Guest — hamburger opens **cinema-split** menu (film strip + royal panel + gold hairlines); glass desk uses the 2×2 + Search layout. Ops — rail drawers over brand-ink scrim; queue stacks above folio.
 
 ### Named Rules
-**The Cinema First Rule (guest).** Hero video is edge-to-edge plane; do not inset it in cards, side panels, or rounded media frames.
+**The Stay Stage Rule (guest).** Homepage hero media is one full-bleed plane under the nav — not a rounded inset card and not a marketplace collage. Overlay exists so white type meets contrast. Keep BrandMark + “MOJO” in the nav; keep the palette and honest Request-to-Book copy. Floating inset stage is deferred.
 
 **The Queue-Beside-Folio Rule (ops).** Triage never replaces the list with a full-page detail. Selection = royal left hairline + lavender wash; folio updates in place.
 
 ## Elevation & Depth
 
 ### Guest
-Depth is cinema + paper: video under a brand-ink gradient; nav is sheet-cream glass (`backdrop-blur`, cream at ~80–95%). Reception desk is a dark translucent floating strip (`rgba(20,12,36,0.72)` + soft lift). Property plates are full-bleed editorial splits (no card chrome, no type badges); gold hairline under the title. Authored motion: hero brand/desk settle with blur→sharp (`prefers-reduced-motion` gated); plate media ease-scale on hover (~1.03 over 700ms).
+Depth is overlay + frost: stay photos under black 55% + radial; nav is paper ground (scrolled: paper/95 + 1px shadow + blur). The glass desk is cream/white frost over the stage (`backdrop-blur` + light border). Property plates are full-bleed editorial splits (no card chrome, no type badges); gold hairline under the title. Authored motion: stage/brand/desk settle with blur→sharp (`prefers-reduced-motion` gated); plate media ease-scale on hover (~1.03 over 700ms).
 
 ### Ops
 Almost flat. Depth is tonal: paper stone → sheet cream → white, separated by **1px** brand-ink/10 hairlines. Shadows are rare and structural.
 
 ### Shadow Vocabulary
-- **Reception desk** (`box-shadow: 0 8px 30px rgba(0,0,0,0.25)`): Hero desk strip only.
-- **Guest nav scrolled** (`box-shadow: 0 1px 3px rgba(36,16,77,0.08)`): Sticky cream bar after scroll.
+- **Glass desk** (`box-shadow: 0 8px 32px rgba(36,16,77,0.12)`): Hero frosted search bar.
+- **Guest nav scrolled** (`box-shadow: 0 1px 3px rgba(36,16,77,0.08)`): Sticky paper bar after scroll.
 - **Rail active** (`box-shadow: 0 1px 2px rgba(45, 22, 89, 0.25)`): Ops active nav pill only.
 - **Panel rest** (`box-shadow: 0 1px 2px rgba(36, 16, 77, 0.04)`): `OpsPanel` resting lift.
-- **Top bar blur** (`backdrop-filter: blur` + cream at ~90%): Guest nav and ops sticky chrome.
+- **Top bar blur** (`backdrop-filter: blur` + paper/95 when scrolled): Guest nav; ops sticky chrome stays cream.
 
 ### Named Rules
 **The Hairline Depth Rule.** Prefer borders and paper layers over shadow. No multi-layer drop shadows or glows on either surface.
 
 ## Shapes
 
-**Guest controls:** Soft rectangles (**8px** `rounded-lg`) on CTAs and nav actions. Reception desk uses a soft float (**12px** / `rounded-xl`). **Property plates are square (0 radius)** — editorial sheets, not marketplace cards. No `rounded-full` pills on Stay Cinema chrome.
+**Guest controls:** Soft rectangles (**8px** `rounded-lg`) on CTAs and nav actions. Hero stage is square (full-bleed). Glass desk ~**20–24px** (phone inner cells **8px**). **Property plates are square (0 radius)** — editorial sheets, not marketplace cards. No `rounded-full` pills on Stay Stage chrome.
 
 **Ops controls:** **8px** on buttons, inputs, nav items; **6px** on status chips. Work surfaces — panels, queue/folio frame, metric strip, stay-fact grid — stay **square**. No pills.
 
@@ -373,26 +392,29 @@ Almost flat. Depth is tonal: paper stone → sheet cream → white, separated by
 - **Secondary / Ghost:** White, brand-ink/15 border; hover brand-ink/3. Decline sits secondary beside Approve.
 
 ### Chips
-- **Guest:** Prefer no chips on Stay Cinema plates. Ops owns status chips.
+- **Guest:** Prefer no chips on Stay Stage plates. Ops owns status chips.
 - **Ops NEW:** Gold wash + gold ring — sole ops gold use.
 - **Ops In review:** Lavender + royal text/ring.
 - **Ops Approved / Declined:** Emerald / rose semantic pairs.
 
 ### Cards / Containers
-- **Guest property plate:** Alternating editorial split — full-bleed photo | cream copy panel (or reverse). Gold hairline under Bricolage title; uppercase city; price + “Request to Book” micro link. No borders-as-cards, no type badges.
+- **Guest property plate:** Alternating editorial split — full-bleed photo | cream copy panel (or reverse). Gold hairline under Marcellus title; uppercase city; price + “Request to Book” micro link. No borders-as-cards, no type badges.
 - **Ops panels:** Square white on paper stone; optional 1px rest shadow; row padding **12–16px**; folio blocks **20px**.
 
 ### Inputs / Fields
-- **Guest reception desk:** Dark floating strip; tiny uppercase labels; map/guests icons; white/15 cell dividers; royal submit cell (“Search stays”).
+- **Guest glass desk:** Frosted cream/white bar; bold labels above values; desktop icons + chevron; brand-ink/10 cell dividers; royal “Search stays”; focus-visible royal rings. Phone drops decorative icons and splits dates into their own labeled cells.
 - **Ops:** White, brand-ink/12 border, **8px** radius, 13px text, **8×12px** padding; focus border royal/40 + ring royal/15.
 
 ### Navigation
-- **Guest SiteNav:** Fixed **64px** sheet-cream glass; BrandMark `brand` on light; desktop links `guest-ui`; royal Request to Book. Mobile: **cinema-split** — film strip (Explore CTA) | royal panel with gold hairline rows + cream Request to Book.
+- **Guest SiteNav:** Fixed **64px** paper ground (`#F7F5F2`); BrandMark `brand` + Marcellus “MOJO”; desktop links centered (`Home` · `Properties` · `About` · `Contact`) with gold hairline active underline; right cluster always shows Request to Book (**44px** min height) plus wishlist and sign-in. Mobile: **cinema-split** — film strip | royal panel with gold hairline rows; Request to Book stays in the bar.
 - **Ops rail:** Cream sheet, hairline right edge, 13px items **8px** radius. Active = royal fill + white + tiny royal shadow.
 - **Ops status tabs:** Underline; active 2px royal bottom + semibold; micro count badges.
 
-### Reception desk (guest signature)
-Hero-bottom dark floating strip: city + guests + Search stays. Field icons, soft lift, no date field. Submits into `/properties` search.
+### Glass desk (guest signature)
+Hero-bottom frosted search bar. Desktop one row; phone 2×2 + Search. Submits into `/properties` with dates carried into property Request to Book.
+
+### Footer (guest)
+Brand-ink field. BrandMark `gold` + Marcellus wordmark. Column titles are Marcellus `h2` with a gold hairline. Links Poppins, gold hover, **44px** min height. No skipped heading levels.
 
 ### Property plate (guest signature)
 Alternating editorial unit: photo | copy (flips each row). Gold hairline under title, uppercase city, price, Request to Book gold underline. Hover: image scale only.
@@ -406,8 +428,8 @@ Four equal white cells divided by hairlines — uppercase micro labels, ~18px se
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep guest first viewport as cinema + brand + one line + CTAs + reception desk — no marketplace clutter.
-- **Do** use Bricolage for guest display/title/plate and Source Sans 3 for guest body/UI.
+- **Do** keep guest first viewport as one full-bleed stage: BrandMark + MOJO in nav, centered headline + gold hairline + subline, frosted desk — no marketplace clutter or fake discount claims.
+- **Do** use Marcellus for guest display/title/plate and Poppins for guest body/UI.
 - **Do** use royal for primary actions on both surfaces; apply gold per surface rule (hairline guest / NEW-only ops).
 - **Do** keep Enquiries as queue + folio side by side.
 - **Do** set ops type to the system UI stack at ~13px dense.
@@ -415,10 +437,10 @@ Four equal white cells divided by hairlines — uppercase micro labels, ~18px se
 - **Do** say Request to Book (honest launch language), not Instant Book.
 
 ### Don't:
-- **Don't** inset the hero video in cards, side panels, or rounded media frames.
+- **Don't** replace the single full-bleed Stay Stage with a collage of small media cards, a purple wash, or a rounded inset card (inset is deferred).
 - **Don't** use gold as a guest CTA fill or as ops chrome decoration outside NEW chips.
-- **Don't** import Bricolage/Inter/marketing heroes into `/admin`.
+- **Don't** import Marcellus/Poppins/Inter/marketing heroes into `/admin`.
 - **Don't** build SaaS metric-card dashboards inside `/admin`.
-- **Don't** introduce `rounded-full` pills or multi-layer glow shadows on Stay Cinema or ops controls.
+- **Don't** introduce `rounded-full` pills or multi-layer glow shadows on Stay Stage or ops controls.
 - **Don't** open enquiry detail as a full-page takeover that hides the queue.
-- **Don't** invent testimonials, ratings, or occupancy claims on guest surfaces.
+- **Don't** invent testimonials, ratings, occupancy claims, or “save up to X%” copy on guest surfaces.

@@ -20,7 +20,7 @@ function SignUpPage() {
   return (
     <GuestShell mainClassName="pt-28">
       <div className="mx-auto max-w-md border border-brand-900/10 bg-[#FBFaf7] px-6 py-8 sm:px-8">
-        <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+        <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
           Create account
         </h1>
         <div className="mt-3 h-px w-12 bg-gold" aria-hidden />
@@ -77,7 +77,9 @@ function SignUpPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1.5 w-full border border-brand-900/12 bg-white px-3 py-2.5 text-[0.9375rem] text-brand-900 outline-none focus:border-royal/40 focus:ring-2 focus:ring-royal/15"
             />
-            <span className="mt-1 block text-[0.8125rem] text-brand-900/45">At least 8 characters</span>
+            <span className="mt-1 block text-[0.8125rem] text-brand-900/45">
+              At least 8 characters
+            </span>
           </label>
           {error ? <p className="text-[0.875rem] text-red-700">{error}</p> : null}
           <button

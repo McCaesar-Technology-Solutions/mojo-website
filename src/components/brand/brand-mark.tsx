@@ -11,16 +11,10 @@ interface BrandMarkProps {
   className?: string;
 }
 
-export function BrandMark({
-  compact = false,
-  variant = "gold",
-  className,
-}: BrandMarkProps) {
+export function BrandMark({ compact = false, variant = "gold", className }: BrandMarkProps) {
   const reactId = useId().replace(/:/g, "");
   const gradientId = `mojo-brand-gradient-${reactId}`;
-  const sizeClass = compact
-    ? "h-[1.375rem] w-[1.375rem] shrink-0"
-    : "h-[30px] w-auto shrink-0";
+  const sizeClass = compact ? "h-[1.375rem] w-[1.375rem] shrink-0" : "h-[30px] w-auto shrink-0";
   const fill = variant === "gold" ? "#D4A62E" : `url(#${gradientId})`;
 
   return (

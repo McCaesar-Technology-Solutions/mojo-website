@@ -27,15 +27,13 @@ function SupportPage() {
           )}
         </li>
         <li>
-          Email:{" "}
-          <a href="mailto:support@mojoapartments.com">support@mojoapartments.com</a>
+          Email: <a href="mailto:support@mojoapartments.com">support@mojoapartments.com</a>
         </li>
         <li>Response target: within 24 hours for enquiries</li>
       </ul>
       <p>
-        Prefer to start a stay request?{" "}
-        <Link to="/properties">Browse properties</Link> and Request to Book — you are not charged
-        when you submit.
+        Prefer to start a stay request? <Link to="/properties">Browse properties</Link> and Request
+        to Book — you are not charged when you submit.
       </p>
     </LegalPage>
   );

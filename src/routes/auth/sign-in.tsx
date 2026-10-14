@@ -35,7 +35,7 @@ function SignInPage() {
   return (
     <GuestShell mainClassName="pt-28">
       <div className="mx-auto max-w-md border border-brand-900/10 bg-[#FBFaf7] px-6 py-8 sm:px-8">
-        <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+        <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
           Sign in
         </h1>
         <div className="mt-3 h-px w-12 bg-gold" aria-hidden />

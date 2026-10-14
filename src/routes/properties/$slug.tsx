@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { GuestShell } from "@/components/layout/guest-shell";
 import { EnquiryModal } from "@/components/booking/enquiry-modal";
 import { getBlockedDates, getPropertyBySlug, coverUrl } from "@/lib/properties";
@@ -8,13 +9,20 @@ import { getSupabase } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import type { Property } from "@/types/domain";
 
+const staySearchSchema = z.object({
+  checkIn: z.string().optional(),
+  checkOut: z.string().optional(),
+  guests: z.coerce.number().optional(),
+});
+
 export const Route = createFileRoute("/properties/$slug")({
+  validateSearch: staySearchSchema,
   loader: async ({ params }) => {
     try {
       const { property, source } = await getPropertyBySlug(params.slug);
-      return { property, source };
+      return { property, source, failed: false as const };
     } catch {
-      return { property: null, source: "supabase" as const };
+      return { property: null, source: "supabase" as const, failed: true as const };
     }
   },
   head: ({ loaderData }) => ({
@@ -38,19 +46,26 @@ export const Route = createFileRoute("/properties/$slug")({
 });
 
 function PropertyDetailPage() {
-  const { property: initial } = Route.useLoaderData();
+  const { property: initial, failed } = Route.useLoaderData();
+  const staySearch = Route.useSearch();
   const { user } = useAuth();
   const [property] = useState<Property | null>(initial);
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState(2);
+  const [checkIn, setCheckIn] = useState(staySearch.checkIn ?? "");
+  const [checkOut, setCheckOut] = useState(staySearch.checkOut ?? "");
+  const [guests, setGuests] = useState(staySearch.guests ?? 2);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [blocked, setBlocked] = useState<string[]>([]);
+  const [calendarError, setCalendarError] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (!property) return;
-    void getBlockedDates(property.id).then(setBlocked);
+    void getBlockedDates(property.id)
+      .then((days) => {
+        setBlocked(days);
+        setCalendarError(false);
+      })
+      .catch(() => setCalendarError(true));
     document.body.style.overflow = enquiryOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
@@ -60,15 +75,29 @@ function PropertyDetailPage() {
   if (!property) {
     return (
       <GuestShell mainClassName="pt-28 text-center">
-        <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em]">
-          Property not found
+        <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em]">
+          {failed ? "This stay could not be loaded" : "Property not found"}
         </h1>
-        <Link
-          to="/properties"
-          className="mt-4 inline-block text-[0.9375rem] font-medium text-royal underline decoration-gold/70 underline-offset-4"
-        >
-          Back to properties
-        </Link>
+        {failed ? (
+          <p className="mt-3 text-[1rem] text-brand-900/60">Please try again.</p>
+        ) : null}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {failed ? (
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="inline-flex min-h-11 items-center justify-center bg-royal px-5 text-[0.9375rem] font-medium text-white transition hover:bg-royal/90"
+            >
+              Try again
+            </button>
+          ) : null}
+          <Link
+            to="/properties"
+            className="inline-flex min-h-11 items-center text-[0.9375rem] font-medium text-royal underline decoration-gold/70 underline-offset-4"
+          >
+            Back to properties
+          </Link>
+        </div>
       </GuestShell>
     );
   }
@@ -121,7 +150,7 @@ function PropertyDetailPage() {
 
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+            <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
               {property.title}
             </h1>
             <div className="mt-3 h-px w-12 bg-gold" aria-hidden />
@@ -173,7 +202,7 @@ function PropertyDetailPage() {
         <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-3">
           <div className="space-y-12 lg:col-span-2">
             <div>
-              <h2 className="font-[family-name:var(--font-guest-display)] text-[1.5rem] font-medium tracking-[-0.02em] text-brand-900">
+              <h2 className="font-[family-name:var(--font-guest-display)] text-[1.5rem] font-normal tracking-[-0.02em] text-brand-900">
                 Managed by MOJO
               </h2>
               <p className="mt-3 text-[1.0625rem] leading-relaxed text-brand-900/65">
@@ -202,7 +231,7 @@ function PropertyDetailPage() {
 
             {amenities.length > 0 ? (
               <div>
-                <h2 className="font-[family-name:var(--font-guest-display)] text-[1.5rem] font-medium tracking-[-0.02em] text-brand-900">
+                <h2 className="font-[family-name:var(--font-guest-display)] text-[1.5rem] font-normal tracking-[-0.02em] text-brand-900">
                   Amenities
                 </h2>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -221,12 +250,15 @@ function PropertyDetailPage() {
 
             {(property.policies?.length ?? 0) > 0 ? (
               <div>
-                <h2 className="font-[family-name:var(--font-guest-display)] text-[1.5rem] font-medium tracking-[-0.02em] text-brand-900">
+                <h2 className="font-[family-name:var(--font-guest-display)] text-[1.5rem] font-normal tracking-[-0.02em] text-brand-900">
                   Policies
                 </h2>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {property.policies.map((p) => (
-                    <div key={p.title} className="border border-brand-900/10 bg-[#FBFaf7] px-5 py-4">
+                    <div
+                      key={p.title}
+                      className="border border-brand-900/10 bg-[#FBFaf7] px-5 py-4"
+                    >
                       <iconify-icon icon={p.icon} width="20" className="text-royal" />
                       <h3 className="mt-2 text-[1rem] font-medium text-brand-900">{p.title}</h3>
                       <p className="mt-1 text-[0.875rem] text-brand-900/60">{p.detail}</p>
@@ -238,7 +270,7 @@ function PropertyDetailPage() {
 
             {(property.house_rules?.length ?? 0) > 0 ? (
               <div>
-                <h2 className="font-[family-name:var(--font-guest-display)] text-[1.5rem] font-medium tracking-[-0.02em] text-brand-900">
+                <h2 className="font-[family-name:var(--font-guest-display)] text-[1.5rem] font-normal tracking-[-0.02em] text-brand-900">
                   House rules
                 </h2>
                 <ul className="mt-4 space-y-2 text-[1rem] text-brand-900/70">
@@ -298,6 +330,11 @@ function PropertyDetailPage() {
                   />
                 </label>
               </div>
+              {calendarError ? (
+                <p className="mt-2 text-[0.8125rem] text-brand-900">
+                  Availability could not be loaded. Please try again before requesting these dates.
+                </p>
+              ) : null}
               {blocked.length > 0 ? (
                 <p className="mt-2 text-[0.8125rem] text-brand-900/55">
                   Some dates are unavailable on this calendar.
@@ -352,7 +389,10 @@ function PropertyDetailPage() {
               </button>
               <p className="mt-3 text-center text-[0.8125rem] text-brand-900/50">
                 You won&apos;t be charged yet — our team confirms availability. See{" "}
-                <Link to="/cancellation" className="underline decoration-gold/70 underline-offset-2">
+                <Link
+                  to="/cancellation"
+                  className="underline decoration-gold/70 underline-offset-2"
+                >
                   cancellation
                 </Link>{" "}
                 &{" "}

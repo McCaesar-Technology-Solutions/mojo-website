@@ -21,6 +21,8 @@ function MessagesPage() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [body, setBody] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -30,14 +32,21 @@ function MessagesPage() {
       .select("id, created_at, messages(id, body, created_at)")
       .eq("guest_id", user.id)
       .order("created_at", { ascending: false })
-      .then(({ data }) => setThreads((data as Thread[]) ?? []));
+      .then(({ data, error }) => {
+        if (error) {
+          setLoadError("Messages could not be loaded. Please try again.");
+          return;
+        }
+        setLoadError(null);
+        setThreads((data as Thread[]) ?? []);
+      });
   }, [user]);
 
   const activeThread = threads.find((t) => t.id === active);
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+      <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
         Messages
       </h1>
       <div className="mt-3 h-px w-12 bg-gold" aria-hidden />
@@ -69,6 +78,8 @@ function MessagesPage() {
           </Link>{" "}
           to view messages.
         </p>
+      ) : loadError ? (
+        <p className="mt-6 text-[1rem] text-brand-900">{loadError}</p>
       ) : threads.length === 0 ? (
         <p className="mt-6 text-[1rem] text-brand-900/50">No message threads yet.</p>
       ) : (
@@ -92,7 +103,10 @@ function MessagesPage() {
           <div className="flex min-h-[320px] flex-col border border-brand-900/10 bg-[#FBFaf7] p-5 md:col-span-2">
             <div className="flex-1 space-y-3 overflow-y-auto">
               {(activeThread?.messages ?? []).map((m) => (
-                <div key={m.id} className="bg-lavender/70 px-3 py-2.5 text-[0.9375rem] text-brand-900">
+                <div
+                  key={m.id}
+                  className="bg-lavender/70 px-3 py-2.5 text-[0.9375rem] text-brand-900"
+                >
                   {m.body}
                 </div>
               ))}
@@ -100,9 +114,12 @@ function MessagesPage() {
                 <p className="text-[0.875rem] text-brand-900/45">No messages in this thread yet.</p>
               ) : null}
               {!active ? (
-                <p className="text-[0.875rem] text-brand-900/45">Select a thread to read messages.</p>
+                <p className="text-[0.875rem] text-brand-900/45">
+                  Select a thread to read messages.
+                </p>
               ) : null}
             </div>
+            {sendError ? <p className="mt-3 text-[0.875rem] text-brand-900">{sendError}</p> : null}
             {active ? (
               <form
                 className="mt-4 flex gap-2"
@@ -110,10 +127,16 @@ function MessagesPage() {
                   e.preventDefault();
                   const supabase = getSupabase();
                   if (!supabase || !body.trim()) return;
+                  const sent = body;
                   void supabase
                     .from("messages")
-                    .insert({ thread_id: active, sender_id: user.id, body })
-                    .then(() => {
+                    .insert({ thread_id: active, sender_id: user.id, body: sent })
+                    .then(({ error }) => {
+                      if (error) {
+                        setSendError("The message could not be sent. Please try again.");
+                        return;
+                      }
+                      setSendError(null);
                       setBody("");
                       setThreads((prev) =>
                         prev.map((t) =>
@@ -124,7 +147,7 @@ function MessagesPage() {
                                   ...(t.messages ?? []),
                                   {
                                     id: crypto.randomUUID(),
-                                    body,
+                                    body: sent,
                                     created_at: new Date().toISOString(),
                                   },
                                 ],

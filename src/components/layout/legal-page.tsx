@@ -5,7 +5,7 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
   return (
     <GuestShell>
       <article className="mx-auto max-w-3xl">
-        <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+        <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
           {title}
         </h1>
         <div className="mt-2 h-px w-16 bg-gold" aria-hidden />
