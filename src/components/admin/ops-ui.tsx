@@ -98,9 +98,7 @@ export function OpsStatus({
   );
 }
 
-export function enquiryTone(
-  status: string,
-): "new" | "review" | "ok" | "bad" | "neutral" {
+export function enquiryTone(status: string): "new" | "review" | "ok" | "bad" | "neutral" {
   if (status === "new") return "new";
   if (status === "in_review") return "review";
   if (status === "approved") return "ok";
@@ -161,13 +159,7 @@ export function OpsTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElem
   );
 }
 
-export function OpsPanel({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function OpsPanel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
       className={cn(

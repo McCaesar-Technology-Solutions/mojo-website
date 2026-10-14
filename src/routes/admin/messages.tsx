@@ -126,7 +126,7 @@ function AdminMessagesPage() {
 
       {error && <OpsAlert>{error}</OpsAlert>}
 
-      {filtered.length === 0 ? (
+      {error && threads.length === 0 ? null : filtered.length === 0 ? (
         <OpsEmpty>No message threads yet.</OpsEmpty>
       ) : (
         <div className="grid min-h-0 flex-1 gap-0 overflow-hidden border border-brand-900/10 bg-white lg:grid-cols-[minmax(260px,0.9fr)_minmax(0,1.3fr)]">
@@ -171,9 +171,7 @@ function AdminMessagesPage() {
                   {threadLabel(selected)}
                 </h2>
                 <p className="mt-1 text-[13px] text-brand-900/55">
-                  {selected.enquiry?.property?.title
-                    ? `${selected.enquiry.property.title} · `
-                    : ""}
+                  {selected.enquiry?.property?.title ? `${selected.enquiry.property.title} · ` : ""}
                   {selected.enquiry?.email ?? selected.guest_profile?.phone ?? "No contact on file"}
                 </p>
               </div>

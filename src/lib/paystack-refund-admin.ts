@@ -13,7 +13,9 @@ export async function adminReconcileLatePayment(bookingId: string) {
   if (error) {
     const context = (error as { context?: { json?: () => Promise<{ error?: string }> } }).context;
     const body = context?.json ? await context.json().catch(() => null) : null;
-    throw new Error(body?.error ?? "The refund was not completed. The late-payment row is still open.");
+    throw new Error(
+      body?.error ?? "The refund was not completed. The late-payment row is still open.",
+    );
   }
   if (payload?.ok !== true) {
     throw new Error("The refund was not completed. The late-payment row is still open.");
@@ -37,7 +39,12 @@ export async function adminRecordRefundVerification(input: {
       evidence: input.evidence,
     },
   });
-  const payload = data as { ok?: boolean; error?: string; outcome?: string; occupancyReleased?: boolean } | null;
+  const payload = data as {
+    ok?: boolean;
+    error?: string;
+    outcome?: string;
+    occupancyReleased?: boolean;
+  } | null;
   if (payload?.error) throw new Error(payload.error);
   if (error) {
     const context = (error as { context?: { json?: () => Promise<{ error?: string }> } }).context;

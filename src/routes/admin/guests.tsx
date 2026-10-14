@@ -123,7 +123,7 @@ function AdminGuestsPage() {
               Signed-up guests · role cannot be changed here
             </p>
           </div>
-          {filteredProfiles.length === 0 ? (
+          {error ? null : filteredProfiles.length === 0 ? (
             <OpsEmpty>No guest accounts.</OpsEmpty>
           ) : (
             <ul className="divide-y divide-brand-900/8">

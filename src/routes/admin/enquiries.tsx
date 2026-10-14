@@ -13,9 +13,17 @@ import {
   OpsTextarea,
   enquiryTone,
 } from "@/components/admin/ops-ui";
-import { adminApproveEnquiry, adminDeclineEnquiry, adminListEnquiries, adminMarkEnquiryInReview, adminUpdateEnquiry } from "@/lib/admin";
+import {
+  adminApproveEnquiry,
+  adminDeclineEnquiry,
+  adminListEnquiries,
+  adminMarkEnquiryInReview,
+  adminUpdateEnquiry,
+} from "@/lib/admin";
 import { getSupabase } from "@/lib/supabase/client";
 import { fmtDate, ghs } from "@/lib/format";
+import { PMS_CONFIRM_PENDING, PMS_DECLINE_PENDING } from "@/lib/enquiry-approval";
+import { describePmsSyncError } from "@/lib/pms-sync-state";
 import { cn } from "@/lib/utils";
 import type { Enquiry, EnquiryStatus } from "@/types/domain";
 
@@ -146,7 +154,7 @@ function AdminEnquiriesPage() {
 
   const decline = () => {
     if (!selected) return;
-    const reason = declineReason.trim();
+    const reason = declineReason.trim() || selected.decline_reason?.trim() || "";
     if (!reason) {
       setError("Decline reason is required.");
       return;
@@ -245,7 +253,7 @@ function AdminEnquiriesPage() {
         })}
       </div>
 
-      {filtered.length === 0 ? (
+      {error && items.length === 0 ? null : filtered.length === 0 ? (
         <OpsEmpty>No enquiries in this view.</OpsEmpty>
       ) : (
         <div className="grid min-h-0 flex-1 gap-0 overflow-hidden border border-brand-900/10 bg-white lg:grid-cols-[minmax(280px,0.95fr)_minmax(0,1.25fr)]">
@@ -309,6 +317,15 @@ function AdminEnquiriesPage() {
                         {(selected.property as { title?: string } | null)?.title ??
                           selected.property_id}
                       </p>
+                      {selected.pms_reservation_id ? (
+                        <p className="mt-1 font-mono text-[11px] text-brand-900/40">
+                          PMS stay {selected.pms_reservation_id.slice(0, 8)}
+                        </p>
+                      ) : selected.pms_sync_error ? (
+                        <p className="mt-1 text-[11px] text-amber-800">
+                          PMS: {describePmsSyncError(selected.pms_sync_error)}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="text-right">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-900/40">
@@ -423,6 +440,20 @@ function AdminEnquiriesPage() {
                 </div>
               </div>
 
+              {selected.status === "approved" && selected.pms_sync_error === PMS_CONFIRM_PENDING ? (
+                <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t border-brand-900/10 bg-[#FBFaf7] px-5 py-3">
+                  <OpsPrimaryButton type="button" disabled={busy} onClick={approve}>
+                    Retry PMS confirmation
+                  </OpsPrimaryButton>
+                </div>
+              ) : null}
+              {selected.status === "declined" && selected.pms_sync_error === PMS_DECLINE_PENDING ? (
+                <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t border-brand-900/10 bg-[#FBFaf7] px-5 py-3">
+                  <OpsPrimaryButton type="button" disabled={busy} onClick={decline}>
+                    Retry PMS release
+                  </OpsPrimaryButton>
+                </div>
+              ) : null}
               {canAct ? (
                 <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t border-brand-900/10 bg-[#FBFaf7] px-5 py-3">
                   {selected.status === "new" ? (

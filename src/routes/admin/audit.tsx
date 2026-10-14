@@ -80,9 +80,10 @@ function AdminAuditPage() {
           <p className="font-medium">Unresolved late payments</p>
           <p className="mt-1 text-brand-900/60">
             A charge needs reconciliation. Refund sends one Paystack refund from the server, then
-            releases the calendar only after that cleanup commits. If the refund is stuck as pending,
-            check the Paystack dashboard and record what you see. Unknown leaves it pending and does
-            not send another refund. Accepted is stored only with the matching reference and a note.
+            releases the calendar only after that cleanup commits. If the refund is stuck as
+            pending, check the Paystack dashboard and record what you see. Unknown leaves it pending
+            and does not send another refund. Accepted is stored only with the matching reference
+            and a note.
           </p>
           {refundNotice && <p className="mt-2 text-brand-900/80">{refundNotice}</p>}
           <ul className="mt-2 space-y-2 font-mono text-[11px]">
@@ -105,10 +106,14 @@ function AdminAuditPage() {
                           void adminReconcileLatePayment(a.entity_id as string)
                             .then(() => {
                               setRefundNotice("Refund recorded and the calendar was released.");
-                              setLatePayments((rows) => rows.filter((row) => row.entity_id !== a.entity_id));
+                              setLatePayments((rows) =>
+                                rows.filter((row) => row.entity_id !== a.entity_id),
+                              );
                             })
                             .catch((e) =>
-                              setRefundNotice(e instanceof Error ? e.message : "Refund was not completed."),
+                              setRefundNotice(
+                                e instanceof Error ? e.message : "Refund was not completed.",
+                              ),
                             )
                             .finally(() => setRefundingId(null));
                         }}
@@ -121,7 +126,9 @@ function AdminAuditPage() {
                           onSubmit={(event) => {
                             event.preventDefault();
                             if (verifyOutcome !== "accepted" && verifyOutcome !== "unknown") {
-                              setRefundNotice("Choose whether the dashboard shows the refund as accepted or still unknown.");
+                              setRefundNotice(
+                                "Choose whether the dashboard shows the refund as accepted or still unknown.",
+                              );
                               return;
                             }
                             setRefundingId(a.id);
@@ -134,10 +141,16 @@ function AdminAuditPage() {
                             })
                               .then((result) => {
                                 if (result.occupancyReleased) {
-                                  setRefundNotice("Verified refund recorded and the calendar was released.");
-                                  setLatePayments((rows) => rows.filter((row) => row.entity_id !== a.entity_id));
+                                  setRefundNotice(
+                                    "Verified refund recorded and the calendar was released.",
+                                  );
+                                  setLatePayments((rows) =>
+                                    rows.filter((row) => row.entity_id !== a.entity_id),
+                                  );
                                 } else {
-                                  setRefundNotice("Recorded as unknown. The refund stays pending and no new refund was sent.");
+                                  setRefundNotice(
+                                    "Recorded as unknown. The refund stays pending and no new refund was sent.",
+                                  );
                                 }
                                 setVerifyId(null);
                                 setVerifyOutcome("");
@@ -145,7 +158,11 @@ function AdminAuditPage() {
                                 setVerifyEvidence("");
                               })
                               .catch((e) =>
-                                setRefundNotice(e instanceof Error ? e.message : "The verification was not recorded."),
+                                setRefundNotice(
+                                  e instanceof Error
+                                    ? e.message
+                                    : "The verification was not recorded.",
+                                ),
                               )
                               .finally(() => setRefundingId(null));
                           }}
@@ -155,11 +172,15 @@ function AdminAuditPage() {
                             <select
                               className="mt-1 w-full rounded-lg border border-brand-900/15 bg-white px-2 py-1.5 text-[13px]"
                               value={verifyOutcome}
-                              onChange={(e) => setVerifyOutcome(e.target.value as "" | ManualRefundOutcome)}
+                              onChange={(e) =>
+                                setVerifyOutcome(e.target.value as "" | ManualRefundOutcome)
+                              }
                             >
                               <option value="">Select what you verified</option>
                               <option value="accepted">Paystack shows this refund succeeded</option>
-                              <option value="unknown">Paystack does not show a confirmed refund</option>
+                              <option value="unknown">
+                                Paystack does not show a confirmed refund
+                              </option>
                             </select>
                           </label>
                           <OpsInput
