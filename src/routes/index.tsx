@@ -255,10 +255,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                       />
                     </span>
                   </label>
-                  <span
-                    className="hidden items-end pb-2 text-brand-900/35 sm:flex"
-                    aria-hidden
-                  >
+                  <span className="hidden items-end pb-2 text-brand-900/35 sm:flex" aria-hidden>
                     –
                   </span>
                   <label

@@ -27,8 +27,7 @@ export type PropertyRow = {
   property_pricing: Property["pricing"] | Property["pricing"][] | null;
   property_media: Property["media"] | NonNullable<Property["media"]>[number] | null;
   property_amenities:
-    | { amenities: { id: string; label: string; icon: string; sort_order: number } | null }[]
-    | null;
+    { amenities: { id: string; label: string; icon: string; sort_order: number } | null }[] | null;
 };
 
 function asList<T>(value: T | T[] | null | undefined): T[] {

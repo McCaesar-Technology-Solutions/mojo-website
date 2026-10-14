@@ -78,9 +78,7 @@ function PropertyDetailPage() {
         <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em]">
           {failed ? "This stay could not be loaded" : "Property not found"}
         </h1>
-        {failed ? (
-          <p className="mt-3 text-[1rem] text-brand-900/60">Please try again.</p>
-        ) : null}
+        {failed ? <p className="mt-3 text-[1rem] text-brand-900/60">Please try again.</p> : null}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           {failed ? (
             <button
