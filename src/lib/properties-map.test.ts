@@ -57,9 +57,9 @@ test("mapRow accepts media and pricing as a single object", () => {
   });
 
   assert.equal(property.pricing?.nightly_rate, 900);
-  assert.equal(property.media.length, 1);
-  assert.equal(property.amenities.length, 1);
-  assert.equal(property.amenities[0]?.label, "Wifi");
+  assert.equal(property.media?.length, 1);
+  assert.equal(property.amenities?.length, 1);
+  assert.equal(property.amenities?.[0]?.label, "Wifi");
   assert.equal(property.booking_mode, "request");
 });
 
