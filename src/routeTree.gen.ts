@@ -38,6 +38,7 @@ import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as BookingSuccessRouteImport } from './routes/booking/success'
 import { Route as PropertiesIndexRouteImport } from './routes/properties/index'
 import { Route as PropertiesSlugRouteImport } from './routes/properties/$slug'
+import { Route as ApiPmsOccupancyRouteImport } from './routes/api/pms/occupancy'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -184,6 +185,11 @@ const PropertiesSlugRoute = PropertiesSlugRouteImport.update({
   path: '/properties/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPmsOccupancyRoute = ApiPmsOccupancyRouteImport.update({
+  id: '/api/pms/occupancy',
+  path: '/api/pms/occupancy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/properties/': typeof PropertiesIndexRoute
+  '/api/pms/occupancy': typeof ApiPmsOccupancyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
   '/properties': typeof PropertiesIndexRoute
+  '/api/pms/occupancy': typeof ApiPmsOccupancyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/properties/': typeof PropertiesIndexRoute
+  '/api/pms/occupancy': typeof ApiPmsOccupancyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/account/'
     | '/admin/'
     | '/properties/'
+    | '/api/pms/occupancy'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/properties'
+    | '/api/pms/occupancy'
   id:
     | '__root__'
     | '/'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/account/'
     | '/admin/'
     | '/properties/'
+    | '/api/pms/occupancy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -386,6 +398,7 @@ export interface RootRouteChildren {
   BookingSuccessRoute: typeof BookingSuccessRoute
   PropertiesSlugRoute: typeof PropertiesSlugRoute
   PropertiesIndexRoute: typeof PropertiesIndexRoute
+  ApiPmsOccupancyRoute: typeof ApiPmsOccupancyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -593,6 +606,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertiesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pms/occupancy': {
+      id: '/api/pms/occupancy'
+      path: '/api/pms/occupancy'
+      fullPath: '/api/pms/occupancy'
+      preLoaderRoute: typeof ApiPmsOccupancyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -661,6 +681,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookingSuccessRoute: BookingSuccessRoute,
   PropertiesSlugRoute: PropertiesSlugRoute,
   PropertiesIndexRoute: PropertiesIndexRoute,
+  ApiPmsOccupancyRoute: ApiPmsOccupancyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

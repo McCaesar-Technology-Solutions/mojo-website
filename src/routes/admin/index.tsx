@@ -19,12 +19,12 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function AdminDashboard() {
-  const [stats, setStats] = useState({
-    publishedProperties: 0,
-    newEnquiries: 0,
-    bookings: 0,
-    revenue: 0,
-  });
+  const [stats, setStats] = useState<{
+    publishedProperties: number;
+    newEnquiries: number;
+    bookings: number;
+    revenue: number;
+  } | null>(null);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +58,7 @@ function AdminDashboard() {
           >
             <iconify-icon icon="solar:inbox-linear" width="14" />
             Enquiry inbox
-            {stats.newEnquiries > 0 ? (
+            {stats && stats.newEnquiries > 0 ? (
               <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px] tabular-nums">
                 {stats.newEnquiries}
               </span>
@@ -74,7 +74,11 @@ function AdminDashboard() {
           <div>
             <h2 className="text-[14px] font-semibold tracking-[-0.01em]">Needs action</h2>
             <p className="text-[12px] text-brand-900/50">
-              {openQueue.length} open · {stats.bookings} bookings · {ghs(stats.revenue)} confirmed
+              {error
+                ? "Booking totals are unavailable."
+                : stats
+                  ? `${openQueue.length} open · ${stats.bookings} bookings · ${ghs(stats.revenue)} confirmed`
+                  : "Loading booking totals."}
             </p>
           </div>
           <Link
@@ -84,7 +88,7 @@ function AdminDashboard() {
             Open inbox
           </Link>
         </div>
-        {openQueue.length === 0 ? (
+        {error ? null : openQueue.length === 0 ? (
           <OpsEmpty>No open enquiries. Inbox is clear.</OpsEmpty>
         ) : (
           <ul className="divide-y divide-brand-900/8">
@@ -105,7 +109,9 @@ function AdminDashboard() {
                     {fmtDate(e.check_in)} → {fmtDate(e.check_out)} · {e.guests} guests
                   </p>
                   <OpsStatus status={e.status} tone={enquiryTone(e.status)} />
-                  <p className="text-right text-[13px] font-semibold tabular-nums">{ghs(e.total)}</p>
+                  <p className="text-right text-[13px] font-semibold tabular-nums">
+                    {ghs(e.total)}
+                  </p>
                 </Link>
               </li>
             ))}
@@ -116,7 +122,7 @@ function AdminDashboard() {
       <p className="text-[12px] text-brand-900/45">
         Also:{" "}
         <Link to="/admin/properties" className="text-royal hover:underline">
-          {stats.publishedProperties} published stays
+          {stats ? `${stats.publishedProperties} published stays` : "published stays"}
         </Link>
         {" · "}
         <Link to="/admin/bookings" className="text-royal hover:underline">

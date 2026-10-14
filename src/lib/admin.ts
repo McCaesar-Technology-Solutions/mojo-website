@@ -1,4 +1,35 @@
+import {
+  amenityDeleteErrorMessage,
+  amenityRpcErrorMessage,
+  amenityWriteErrorMessage,
+} from "@/lib/amenity-consistency";
+import { bookingMutationErrorMessage } from "@/lib/booking-mutation";
+import {
+  PMS_CONFIRM_RECONCILE_MESSAGE,
+  PMS_CONFIRM_RETRY_MESSAGE,
+  PMS_DECLINE_RETRY_MESSAGE,
+  isEnquiryAlreadyApprovedError,
+  mojoApprovalErrorMessage,
+  planWebsiteApproval,
+  planWebsiteDecline,
+  pmsConfirmFailure,
+  syncBlockMessage,
+} from "@/lib/enquiry-approval";
+import {
+  MediaPersistError,
+  PROPERTY_STORAGE_PARTIAL,
+  STORAGE_DELETE_PARTIAL,
+  mediaRpcErrorMessage,
+  shouldDeleteUploadedObject,
+} from "@/lib/media-consistency";
+import { AUDIT_PARTIAL, publicReadError } from "@/lib/read-error";
+import { parseAdminOpsMetrics, reviewMutationErrorMessage } from "@/lib/review-stats";
 import { getSupabase } from "@/lib/supabase/client";
+import {
+  confirmWebsiteEnquiryFn,
+  declineWebsiteEnquiryFn,
+  retryEnquiryPmsSyncFn,
+} from "@/lib/pms.functions";
 import type {
   Amenity,
   AuditLog,
@@ -44,9 +75,7 @@ function mapAdminProperty(row: AdminPropertyRow): Property {
     ...rest,
     booking_mode: "request",
     pricing: normalizePricing(row.property_pricing),
-    media: (row.property_media ?? [])
-      .slice()
-      .sort((a, b) => a.sort_order - b.sort_order),
+    media: (row.property_media ?? []).slice().sort((a, b) => a.sort_order - b.sort_order),
     amenities,
   };
 }
@@ -104,38 +133,30 @@ export async function requireAdminClient() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not signed in");
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
+  if (profileError) throw publicReadError();
   if (profile?.role !== "admin") throw new Error("Admin access required");
   return supabase;
 }
 
-export async function adminDashboardStats() {
+export async function adminOpsMetrics() {
   const supabase = await requireAdminClient();
-  const [props, enquiries, bookings] = await Promise.all([
-    supabase
-      .from("properties")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "published"),
-    supabase.from("enquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
-    supabase.from("bookings").select("id, total, status, check_in, check_out"),
-  ]);
-  const bookingRows = (bookings.data ?? []) as Pick<
-    Booking,
-    "id" | "total" | "status" | "check_in" | "check_out"
-  >[];
-  const confirmed = bookingRows.filter((b) =>
-    ["confirmed", "checked_in", "completed"].includes(b.status),
-  );
-  const revenue = confirmed.reduce((sum, b) => sum + Number(b.total), 0);
+  const { data, error } = await supabase.rpc("admin_ops_metrics");
+  if (error) throw new Error(reviewMutationErrorMessage(error));
+  return parseAdminOpsMetrics(data);
+}
+
+export async function adminDashboardStats() {
+  const metrics = await adminOpsMetrics();
   return {
-    publishedProperties: props.count ?? 0,
-    newEnquiries: enquiries.count ?? 0,
-    bookings: bookingRows.length,
-    revenue,
+    publishedProperties: metrics.publishedProperties,
+    newEnquiries: metrics.newEnquiries,
+    bookings: metrics.bookings,
+    revenue: metrics.revenue,
   };
 }
 
@@ -147,7 +168,7 @@ export async function adminListProperties() {
       "*, property_pricing(*), property_media(*), property_amenities ( amenities ( id, label, icon, sort_order ) )",
     )
     .order("updated_at", { ascending: false });
-  if (error) throw error;
+  if (error) throw publicReadError();
   return ((data ?? []) as AdminPropertyRow[]).map(mapAdminProperty);
 }
 
@@ -157,7 +178,7 @@ export async function adminListAmenities() {
     .from("amenities")
     .select("id, label, icon, sort_order")
     .order("sort_order", { ascending: true });
-  if (error) throw error;
+  if (error) throw publicReadError();
   return (data ?? []) as Amenity[];
 }
 
@@ -178,13 +199,14 @@ export async function adminCreateAmenity(input: {
     })
     .select("*")
     .single();
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
+  if (error) throw new Error(amenityWriteErrorMessage(error.message));
+  const { error: auditError } = await supabase.from("audit_logs").insert({
     action: "amenity.created",
     entity_type: "amenity",
     entity_id: data.id,
     meta: { label: data.label },
   });
+  if (auditError) throw new Error("The amenity was saved, but the audit record failed.");
   return data as Amenity;
 }
 
@@ -207,13 +229,14 @@ export async function adminUpdateAmenity(
     .eq("id", id)
     .select("*")
     .single();
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
+  if (error) throw new Error(amenityWriteErrorMessage(error.message));
+  const { error: auditError } = await supabase.from("audit_logs").insert({
     action: "amenity.updated",
     entity_type: "amenity",
     entity_id: id,
     meta: payload,
   });
+  if (auditError) throw new Error("The amenity was saved, but the audit record failed.");
   return data as Amenity;
 }
 
@@ -230,31 +253,23 @@ export async function adminDeleteAmenity(id: string) {
     );
   }
   const { error } = await supabase.from("amenities").delete().eq("id", id);
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
+  if (error) throw new Error(amenityDeleteErrorMessage(error.message));
+  const { error: auditError } = await supabase.from("audit_logs").insert({
     action: "amenity.deleted",
     entity_type: "amenity",
     entity_id: id,
     meta: {},
   });
+  if (auditError) throw new Error("The amenity was deleted, but the audit record failed.");
 }
 
 export async function adminSetPropertyAmenities(propertyId: string, amenityIds: string[]) {
   const supabase = await requireAdminClient();
-  const uniqueIds = [...new Set(amenityIds.filter(Boolean))];
-
-  const { error: deleteError } = await supabase
-    .from("property_amenities")
-    .delete()
-    .eq("property_id", propertyId);
-  if (deleteError) throw deleteError;
-
-  if (uniqueIds.length === 0) return;
-
-  const { error: insertError } = await supabase.from("property_amenities").insert(
-    uniqueIds.map((amenity_id) => ({ property_id: propertyId, amenity_id })),
-  );
-  if (insertError) throw insertError;
+  const { error } = await supabase.rpc("replace_property_amenities", {
+    p_property_id: propertyId,
+    p_amenity_ids: amenityIds,
+  });
+  if (error) throw new Error(amenityRpcErrorMessage(error.message));
 }
 
 export async function adminArchiveProperty(id: string) {
@@ -265,8 +280,8 @@ export async function adminArchiveProperty(id: string) {
     .eq("id", id)
     .select("*")
     .single();
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
+  if (error) throw publicReadError();
+  await recordAudit(supabase, {
     action: "property.archived",
     entity_type: "property",
     entity_id: id,
@@ -279,14 +294,8 @@ export async function adminDeleteProperty(id: string) {
   const supabase = await requireAdminClient();
 
   const [enquiries, bookings] = await Promise.all([
-    supabase
-      .from("enquiries")
-      .select("id", { count: "exact", head: true })
-      .eq("property_id", id),
-    supabase
-      .from("bookings")
-      .select("id", { count: "exact", head: true })
-      .eq("property_id", id),
+    supabase.from("enquiries").select("id", { count: "exact", head: true }).eq("property_id", id),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("property_id", id),
   ]);
   if (enquiries.error) throw enquiries.error;
   if (bookings.error) throw bookings.error;
@@ -300,9 +309,7 @@ export async function adminDeleteProperty(id: string) {
   }
 
   const media = await adminListPropertyMedia(id);
-  const storagePaths = media
-    .map((m) => m.storage_path)
-    .filter((p): p is string => Boolean(p));
+  const storagePaths = media.map((m) => m.storage_path).filter((p): p is string => Boolean(p));
 
   const { data: property, error: loadError } = await supabase
     .from("properties")
@@ -312,17 +319,31 @@ export async function adminDeleteProperty(id: string) {
   if (loadError) throw loadError;
 
   const { error } = await supabase.from("properties").delete().eq("id", id);
-  if (error) throw error;
+  if (error) throw publicReadError();
 
+  let storageDeleted = storagePaths.length === 0;
   if (storagePaths.length > 0) {
-    await supabase.storage.from(MEDIA_BUCKET).remove(storagePaths);
+    const removed = await supabase.storage.from(MEDIA_BUCKET).remove(storagePaths);
+    storageDeleted = !removed.error;
+    if (removed.error) {
+      console.error(
+        JSON.stringify({
+          level: "error",
+          event: "property.storage_delete_failed",
+          propertyId: id,
+          message: removed.error.message,
+        }),
+      );
+    }
   }
 
-  await supabase.from("audit_logs").insert({
+  if (!storageDeleted) throw new Error(PROPERTY_STORAGE_PARTIAL);
+
+  await recordAudit(supabase, {
     action: "property.deleted",
     entity_type: "property",
     entity_id: id,
-    meta: { slug: property?.slug ?? null },
+    meta: { slug: property?.slug ?? null, storage_deleted: storageDeleted },
   });
 }
 
@@ -338,9 +359,9 @@ export async function adminUpsertProperty(
     : supabase.from("properties").insert(payload).select("*").single();
 
   const { data, error } = await query;
-  if (error) throw error;
+  if (error) throw publicReadError();
 
-  await supabase.from("audit_logs").insert({
+  await recordAudit(supabase, {
     action: isUpdate ? "property.updated" : "property.created",
     entity_type: "property",
     entity_id: data.id,
@@ -368,7 +389,15 @@ export async function adminSavePricing(
     },
     { onConflict: "property_id" },
   );
-  if (error) throw error;
+  if (error) throw publicReadError();
+}
+
+async function recordAudit(
+  supabase: Awaited<ReturnType<typeof requireAdminClient>>,
+  row: { action: string; entity_type: string; entity_id: string; meta: Record<string, unknown> },
+) {
+  const { error } = await supabase.from("audit_logs").insert(row);
+  if (error) throw new Error(AUDIT_PARTIAL);
 }
 
 export async function adminAddMedia(
@@ -388,17 +417,8 @@ export async function adminAddMedia(
   if (listError) throw listError;
 
   const rows = existing ?? [];
-  const nextOrder =
-    rows.length === 0 ? 0 : Math.max(...rows.map((r) => r.sort_order)) + 1;
+  const nextOrder = rows.length === 0 ? 0 : Math.max(...rows.map((r) => r.sort_order)) + 1;
   const makeCover = Boolean(options.isCover) || rows.length === 0;
-
-  if (makeCover && rows.some((r) => r.is_cover)) {
-    const { error: clearError } = await supabase
-      .from("property_media")
-      .update({ is_cover: false })
-      .eq("property_id", propertyId);
-    if (clearError) throw clearError;
-  }
 
   const { data, error } = await supabase
     .from("property_media")
@@ -406,20 +426,34 @@ export async function adminAddMedia(
       property_id: propertyId,
       url: trimmedUrl,
       storage_path: options.storagePath ?? null,
-      is_cover: makeCover,
+      is_cover: false,
       sort_order: nextOrder,
       alt: options.alt ?? null,
     })
     .select("*")
     .single();
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
+  if (error) throw new MediaPersistError("The photo could not be saved.", false);
+
+  if (makeCover) {
+    const { error: coverError } = await supabase.rpc("set_property_cover", {
+      p_property_id: propertyId,
+      p_media_id: data.id,
+    });
+    if (coverError) {
+      throw new MediaPersistError(mediaRpcErrorMessage(coverError.message), true);
+    }
+  }
+
+  const { error: auditError } = await supabase.from("audit_logs").insert({
     action: "media.added",
     entity_type: "property",
     entity_id: propertyId,
     meta: { media_id: data.id, is_cover: makeCover },
   });
-  return data as PropertyMedia;
+  if (auditError) {
+    throw new MediaPersistError("The photo was saved, but the audit record failed.", true);
+  }
+  return { ...(data as PropertyMedia), is_cover: makeCover };
 }
 
 export async function adminListPropertyMedia(propertyId: string) {
@@ -429,7 +463,7 @@ export async function adminListPropertyMedia(propertyId: string) {
     .select("*")
     .eq("property_id", propertyId)
     .order("sort_order", { ascending: true });
-  if (error) throw error;
+  if (error) throw publicReadError();
   return (data ?? []) as PropertyMedia[];
 }
 
@@ -456,26 +490,36 @@ export async function adminUploadMedia(propertyId: string, file: File, alt?: str
   if (uploadError) throw uploadError;
 
   const { data: publicData } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(storagePath);
-  return adminAddMedia(propertyId, publicData.publicUrl, {
-    storagePath,
-    alt: alt ?? null,
-  });
+  try {
+    return await adminAddMedia(propertyId, publicData.publicUrl, {
+      storagePath,
+      alt: alt ?? null,
+    });
+  } catch (error) {
+    if (shouldDeleteUploadedObject(error)) {
+      const removed = await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
+      if (removed.error) {
+        console.error(
+          JSON.stringify({
+            level: "error",
+            event: "media.upload_cleanup_failed",
+            propertyId,
+            message: removed.error.message,
+          }),
+        );
+      }
+    }
+    throw error;
+  }
 }
 
 export async function adminSetMediaCover(propertyId: string, mediaId: string) {
   const supabase = await requireAdminClient();
-  const { error: clearError } = await supabase
-    .from("property_media")
-    .update({ is_cover: false })
-    .eq("property_id", propertyId);
-  if (clearError) throw clearError;
-
-  const { error } = await supabase
-    .from("property_media")
-    .update({ is_cover: true })
-    .eq("id", mediaId)
-    .eq("property_id", propertyId);
-  if (error) throw error;
+  const { error } = await supabase.rpc("set_property_cover", {
+    p_property_id: propertyId,
+    p_media_id: mediaId,
+  });
+  if (error) throw new Error(mediaRpcErrorMessage(error.message));
 }
 
 export async function adminUpdateMediaAlt(mediaId: string, alt: string | null) {
@@ -484,36 +528,29 @@ export async function adminUpdateMediaAlt(mediaId: string, alt: string | null) {
     .from("property_media")
     .update({ alt: alt?.trim() || null })
     .eq("id", mediaId);
-  if (error) throw error;
+  if (error) throw publicReadError();
+  const { error: auditError } = await supabase.from("audit_logs").insert({
+    action: "media.alt_updated",
+    entity_type: "property_media",
+    entity_id: mediaId,
+    meta: {},
+  });
+  if (auditError) throw new Error("The alt text was saved, but the audit record failed.");
 }
 
 export async function adminReorderMedia(propertyId: string, orderedIds: string[]) {
   const supabase = await requireAdminClient();
-  for (let i = 0; i < orderedIds.length; i += 1) {
-    const { error } = await supabase
-      .from("property_media")
-      .update({ sort_order: i })
-      .eq("id", orderedIds[i])
-      .eq("property_id", propertyId);
-    if (error) throw error;
-  }
+  const { error } = await supabase.rpc("reorder_property_media", {
+    p_property_id: propertyId,
+    p_ordered_ids: orderedIds,
+  });
+  if (error) throw new Error(mediaRpcErrorMessage(error.message));
 }
 
 export async function adminDeleteMedia(media: PropertyMedia) {
   const supabase = await requireAdminClient();
   const { error } = await supabase.from("property_media").delete().eq("id", media.id);
-  if (error) throw error;
-
-  if (media.storage_path) {
-    await supabase.storage.from(MEDIA_BUCKET).remove([media.storage_path]);
-  }
-
-  await supabase.from("audit_logs").insert({
-    action: "media.deleted",
-    entity_type: "property",
-    entity_id: media.property_id,
-    meta: { media_id: media.id },
-  });
+  if (error) throw new Error("The photo could not be removed.");
 
   if (media.is_cover) {
     const remaining = await adminListPropertyMedia(media.property_id);
@@ -521,6 +558,32 @@ export async function adminDeleteMedia(media: PropertyMedia) {
       await adminSetMediaCover(media.property_id, remaining[0].id);
     }
   }
+
+  let storageDeleted = !media.storage_path;
+  if (media.storage_path) {
+    const removed = await supabase.storage.from(MEDIA_BUCKET).remove([media.storage_path]);
+    storageDeleted = !removed.error;
+    if (removed.error) {
+      console.error(
+        JSON.stringify({
+          level: "error",
+          event: "media.storage_delete_failed",
+          propertyId: media.property_id,
+          mediaId: media.id,
+          message: removed.error.message,
+        }),
+      );
+    }
+  }
+
+  if (!storageDeleted) throw new Error(STORAGE_DELETE_PARTIAL);
+
+  await recordAudit(supabase, {
+    action: "media.deleted",
+    entity_type: "property",
+    entity_id: media.property_id,
+    meta: { media_id: media.id, storage_deleted: storageDeleted },
+  });
 }
 
 export async function adminListEnquiries() {
@@ -529,29 +592,111 @@ export async function adminListEnquiries() {
     .from("enquiries")
     .select("*, property:properties(title, slug)")
     .order("created_at", { ascending: false });
-  if (error) throw error;
+  if (error) throw publicReadError();
   return (data ?? []) as Enquiry[];
+}
+
+async function adminAccessToken() {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error("Supabase is not configured");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error("Not signed in");
+  return session.access_token;
 }
 
 export async function adminApproveEnquiry(id: string, notes?: string) {
   const supabase = await requireAdminClient();
-  const { data, error } = await supabase.rpc("approve_enquiry", {
-    p_enquiry_id: id,
-    p_admin_notes: notes ?? null,
-  });
-  if (error) throw error;
-  return data as string;
+  const accessToken = await adminAccessToken();
+  const { data: enquiry, error: loadError } = await supabase
+    .from("enquiries")
+    .select("status")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError) throw new Error("Enquiry could not be loaded.");
+  if (!enquiry) throw new Error("Enquiry not found.");
+
+  const plan = planWebsiteApproval(enquiry.status);
+  if (plan === "closed") throw new Error("This enquiry is already closed.");
+
+  const synced = await retryEnquiryPmsSyncFn({ data: { enquiryId: id, accessToken } });
+  if (!synced.ok) {
+    const syncBlock = syncBlockMessage(synced.code);
+    if (syncBlock && plan === "approve_then_confirm") throw new Error(syncBlock);
+  }
+
+  let bookingId: string | null = null;
+  if (plan === "approve_then_confirm") {
+    const { data, error } = await supabase.rpc("approve_enquiry", {
+      p_enquiry_id: id,
+      p_admin_notes: notes ?? null,
+    });
+    if (error) {
+      if (!isEnquiryAlreadyApprovedError(error.message)) {
+        throw new Error(mojoApprovalErrorMessage(error.message));
+      }
+    } else {
+      bookingId = data as string;
+    }
+  }
+
+  if (!bookingId) {
+    const { data: existing, error: bookingError } = await supabase
+      .from("bookings")
+      .select("id")
+      .eq("enquiry_id", id)
+      .maybeSingle();
+    if (bookingError) throw publicReadError();
+    bookingId = existing?.id ?? null;
+  }
+
+  if (synced.ok || plan === "confirm_only") {
+    const confirmed = await confirmWebsiteEnquiryFn({
+      data: { enquiryId: id, accessToken },
+    });
+    const failure = pmsConfirmFailure(
+      confirmed.ok ? undefined : confirmed.code,
+      "skipped" in confirmed ? confirmed.skipped : false,
+    );
+    if (failure === "reconcile") throw new Error(PMS_CONFIRM_RECONCILE_MESSAGE);
+    if (failure === "retry") throw new Error(PMS_CONFIRM_RETRY_MESSAGE);
+  }
+
+  if (!bookingId) throw new Error("Website approval did not create a booking.");
+  return bookingId;
 }
 
 export async function adminDeclineEnquiry(id: string, reason: string) {
   const trimmed = reason.trim();
   if (!trimmed) throw new Error("Decline reason is required");
   const supabase = await requireAdminClient();
-  const { error } = await supabase.rpc("decline_enquiry", {
-    p_enquiry_id: id,
-    p_reason: trimmed,
+  const accessToken = await adminAccessToken();
+  const { data: enquiry, error: loadError } = await supabase
+    .from("enquiries")
+    .select("status")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError) throw new Error("Enquiry could not be loaded.");
+  if (!enquiry) throw new Error("Enquiry not found.");
+
+  const plan = planWebsiteDecline(enquiry.status);
+  if (plan === "closed") throw new Error("This enquiry can no longer be declined.");
+
+  if (plan === "decline_then_release") {
+    const { error } = await supabase.rpc("decline_enquiry", {
+      p_enquiry_id: id,
+      p_reason: trimmed,
+    });
+    if (error) throw new Error("Website decline failed.");
+  }
+
+  const declined = await declineWebsiteEnquiryFn({
+    data: { enquiryId: id, accessToken },
   });
-  if (error) throw error;
+  if (!declined.ok && !("skipped" in declined && declined.skipped)) {
+    throw new Error(PMS_DECLINE_RETRY_MESSAGE);
+  }
 }
 
 export async function adminUpdateEnquiry(
@@ -563,8 +708,8 @@ export async function adminUpdateEnquiry(
     throw new Error("Only in_review status updates are allowed from the inbox");
   }
   const { error } = await supabase.from("enquiries").update(patch).eq("id", id);
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
+  if (error) throw publicReadError();
+  await recordAudit(supabase, {
     action: patch.status === "in_review" ? "enquiry.in_review" : "enquiry.notes_updated",
     entity_type: "enquiry",
     entity_id: id,
@@ -582,7 +727,7 @@ export async function adminListBookings() {
     .from("bookings")
     .select("*, property:properties(title, slug)")
     .order("check_in", { ascending: false });
-  if (error) throw error;
+  if (error) throw publicReadError();
   return (data ?? []) as Booking[];
 }
 
@@ -591,19 +736,11 @@ export async function adminUpdateBooking(
   patch: Partial<Pick<Booking, "status" | "admin_notes" | "check_in" | "check_out">>,
 ) {
   const supabase = await requireAdminClient();
-  const { error } = await supabase.from("bookings").update(patch).eq("id", id);
-  if (error) throw error;
-
-  if (patch.status === "cancelled" || patch.status === "refunded") {
-    await supabase.from("availability_blocks").delete().eq("booking_id", id);
-  }
-
-  await supabase.from("audit_logs").insert({
-    action: "booking.updated",
-    entity_type: "booking",
-    entity_id: id,
-    meta: patch,
+  const { error } = await supabase.rpc("admin_update_booking", {
+    p_booking_id: id,
+    p_patch: patch,
   });
+  if (error) throw new Error(bookingMutationErrorMessage(error));
 }
 
 export async function adminListBlocks(propertyId?: string) {
@@ -614,7 +751,7 @@ export async function adminListBlocks(propertyId?: string) {
     .order("start_date");
   if (propertyId) q = q.eq("property_id", propertyId);
   const { data, error } = await q;
-  if (error) throw error;
+  if (error) throw publicReadError();
   return data ?? [];
 }
 
@@ -631,8 +768,8 @@ export async function adminCreateBlock(input: {
     .insert(input)
     .select("id")
     .single();
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
+  if (error) throw publicReadError();
+  await recordAudit(supabase, {
     action: "availability.block_created",
     entity_type: "availability_block",
     entity_id: data.id,
@@ -640,20 +777,21 @@ export async function adminCreateBlock(input: {
   });
 }
 
-export async function adminDeleteBlock(block: {
-  id: string;
-  reason: string;
-}) {
-  if (block.reason === "booked") {
-    throw new Error("Booked blocks are removed by cancelling the booking");
+export async function adminDeleteBlock(block: { id: string; reason: string }) {
+  if (block.reason === "booked" || block.reason === "pms") {
+    throw new Error(
+      block.reason === "pms"
+        ? "PMS occupancy blocks are managed from the Property Management System"
+        : "Booked blocks are removed by cancelling the booking",
+    );
   }
   if (block.reason !== "manual" && block.reason !== "hold") {
     throw new Error("Only manual or hold blocks can be deleted here");
   }
   const supabase = await requireAdminClient();
   const { error } = await supabase.from("availability_blocks").delete().eq("id", block.id);
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
+  if (error) throw publicReadError();
+  await recordAudit(supabase, {
     action: "availability.block_deleted",
     entity_type: "availability_block",
     entity_id: block.id,
@@ -663,15 +801,16 @@ export async function adminDeleteBlock(block: {
 
 export async function adminListGuests() {
   const supabase = await requireAdminClient();
-  const { data: profiles } = await supabase
+  const { data: profiles, error: profileError } = await supabase
     .from("profiles")
     .select("id, full_name, phone, role, created_at, updated_at")
     .eq("role", "guest")
     .order("updated_at", { ascending: false });
-  const { data: bookings } = await supabase
+  const { data: bookings, error: bookingError } = await supabase
     .from("bookings")
     .select("guest_name, guest_email, guest_phone, created_at")
     .order("created_at", { ascending: false });
+  if (profileError || bookingError) throw publicReadError();
   return { profiles: profiles ?? [], bookingContacts: bookings ?? [] };
 }
 
@@ -693,9 +832,7 @@ export async function adminUpdateGuest(
   }
 
   const payload = {
-    ...(patch.full_name !== undefined
-      ? { full_name: patch.full_name?.trim() || null }
-      : {}),
+    ...(patch.full_name !== undefined ? { full_name: patch.full_name?.trim() || null } : {}),
     ...(patch.phone !== undefined ? { phone: patch.phone?.trim() || null } : {}),
   };
 
@@ -706,9 +843,9 @@ export async function adminUpdateGuest(
     .eq("role", "guest")
     .select("id, full_name, phone, role, created_at, updated_at")
     .single();
-  if (error) throw error;
+  if (error) throw publicReadError();
 
-  await supabase.from("audit_logs").insert({
+  await recordAudit(supabase, {
     action: "guest.updated",
     entity_type: "profile",
     entity_id: id,
@@ -725,7 +862,7 @@ export async function adminListMessageThreads() {
       "*, messages(*), enquiry:enquiries(id, full_name, email, phone, property:properties(title, slug))",
     )
     .order("created_at", { ascending: false });
-  if (error) throw error;
+  if (error) throw publicReadError();
 
   const threads = (data ?? []) as Array<
     MessageThread & {
@@ -745,10 +882,11 @@ export async function adminListMessageThreads() {
   ];
   let profilesById: Record<string, { full_name: string | null; phone: string | null }> = {};
   if (guestIds.length > 0) {
-    const { data: profiles } = await supabase
+    const { data: profiles, error: profileError } = await supabase
       .from("profiles")
       .select("id, full_name, phone")
       .in("id", guestIds);
+    if (profileError) throw publicReadError();
     profilesById = Object.fromEntries(
       (profiles ?? []).map((p) => [p.id, { full_name: p.full_name, phone: p.phone }]),
     );
@@ -756,9 +894,7 @@ export async function adminListMessageThreads() {
 
   return threads.map((t) => ({
     ...t,
-    messages: (t.messages ?? [])
-      .slice()
-      .sort((a, b) => a.created_at.localeCompare(b.created_at)),
+    messages: (t.messages ?? []).slice().sort((a, b) => a.created_at.localeCompare(b.created_at)),
     guest_profile: t.guest_id ? (profilesById[t.guest_id] ?? null) : null,
   }));
 }
@@ -781,9 +917,9 @@ export async function adminReplyToThread(threadId: string, body: string) {
     })
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) throw publicReadError();
 
-  await supabase.from("audit_logs").insert({
+  await recordAudit(supabase, {
     action: "message.replied",
     entity_type: "message_thread",
     entity_id: threadId,
@@ -798,32 +934,36 @@ export async function adminListReviews() {
     .from("reviews")
     .select("*, property:properties(title)")
     .order("created_at", { ascending: false });
-  if (error) throw error;
+  if (error) throw publicReadError();
   return (data ?? []) as Review[];
 }
 
 export async function adminModerateReview(id: string, status: "approved" | "rejected") {
   const supabase = await requireAdminClient();
-  const { error } = await supabase.from("reviews").update({ status }).eq("id", id);
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
-    action: status === "approved" ? "review.approved" : "review.rejected",
-    entity_type: "review",
-    entity_id: id,
-    meta: { status },
+  const { error } = await supabase.rpc("moderate_review", {
+    p_review_id: id,
+    p_status: status,
   });
+  if (error) throw new Error(reviewMutationErrorMessage(error));
 }
 
 export async function adminDeleteReview(id: string) {
   const supabase = await requireAdminClient();
-  const { error } = await supabase.from("reviews").delete().eq("id", id);
-  if (error) throw error;
-  await supabase.from("audit_logs").insert({
-    action: "review.deleted",
-    entity_type: "review",
-    entity_id: id,
-    meta: {},
-  });
+  const { error } = await supabase.rpc("delete_review", { p_review_id: id });
+  if (error) throw new Error(reviewMutationErrorMessage(error));
+}
+
+export async function adminListUnresolvedLatePayments() {
+  const supabase = await requireAdminClient();
+  const { data, error } = await supabase
+    .from("audit_logs")
+    .select("id, action, entity_type, entity_id, meta, created_at")
+    .in("action", ["booking.payment_after_cancel", "booking.payment_unmatched"])
+    .filter("meta->>resolved_at", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw publicReadError();
+  return (data ?? []) as AuditLog[];
 }
 
 export async function adminListAuditLogs(limit = 150) {
@@ -833,15 +973,10 @@ export async function adminListAuditLogs(limit = 150) {
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);
-  if (error) throw error;
+  if (error) throw publicReadError();
   return (data ?? []) as AuditLog[];
 }
 
-export async function adminRefundBooking(bookingId: string, amountPesewas?: number) {
-  const supabase = await requireAdminClient();
-  const { data, error } = await supabase.functions.invoke("paystack-refund", {
-    body: { booking_id: bookingId, amount: amountPesewas },
-  });
-  if (error) throw error;
-  return data;
+export async function adminRefundBooking(_bookingId: string, _amountPesewas?: number) {
+  throw new Error("Paystack refunds are deferred until Instant Book.");
 }

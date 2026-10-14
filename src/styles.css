@@ -3,8 +3,8 @@
 @import "tw-animate-css";
 
 @theme {
-  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  --font-guest-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-guest-display: "Marcellus", ui-serif, Georgia, serif;
   --color-brand-50: #FAFAFA;
   --color-brand-900: #24104D;
   --color-gold: #C89B2C;
@@ -13,8 +13,8 @@
 }
 
 html { scroll-behavior: smooth; }
-body { font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif; }
-.guest-site { font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif; }
+body { font-family: "Poppins", ui-sans-serif, system-ui, sans-serif; }
+.guest-site { font-family: "Poppins", ui-sans-serif, system-ui, sans-serif; }
 
 @keyframes guest-cinema-settle {
   from {
@@ -30,12 +30,24 @@ body { font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .guest-cinema-stage {
+    animation: guest-cinema-settle 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
   .guest-cinema-brand {
-    animation: guest-cinema-settle 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: guest-cinema-settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
   }
   .guest-cinema-desk {
-    animation: guest-cinema-settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+    animation: guest-cinema-settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
   }
+}
+
+.guest-cinema-desk input[type="date"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.guest-cinema-desk input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 @custom-variant dark (&:is(.dark *));

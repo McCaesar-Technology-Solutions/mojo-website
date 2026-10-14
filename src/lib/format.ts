@@ -9,6 +9,23 @@ export const fmtDate = (v: string) =>
       })
     : "Select date";
 
+export function toDateInputValue(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/** Tomorrow check-in and a short stay — for search prefill only. */
+export function defaultStayDates(nights = 3) {
+  const checkIn = new Date();
+  checkIn.setHours(0, 0, 0, 0);
+  checkIn.setDate(checkIn.getDate() + 1);
+  const checkOut = new Date(checkIn);
+  checkOut.setDate(checkOut.getDate() + nights);
+  return { checkIn: toDateInputValue(checkIn), checkOut: toDateInputValue(checkOut) };
+}
+
 export function nightsBetween(checkIn: string, checkOut: string) {
   if (!checkIn || !checkOut) return 0;
   const ms = new Date(checkOut + "T00:00:00").getTime() - new Date(checkIn + "T00:00:00").getTime();

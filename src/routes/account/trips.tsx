@@ -19,9 +19,12 @@ function TripsPage() {
   const { user } = useAuth();
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    void listMyEnquiries().then(setEnquiries);
+    void listMyEnquiries()
+      .then(setEnquiries)
+      .catch(() => setLoadError("Your trips could not be loaded. Please try again."));
     const supabase = getSupabase();
     if (!supabase || !user) return;
     void supabase
@@ -29,22 +32,29 @@ function TripsPage() {
       .select("*, property:properties(*)")
       .or(`user_id.eq.${user.id},guest_email.eq.${user.email}`)
       .order("check_in", { ascending: false })
-      .then(({ data }) => setBookings((data as Booking[]) ?? []));
+      .then(({ data, error }) => {
+        if (error) {
+          setLoadError("Your trips could not be loaded. Please try again.");
+          return;
+        }
+        setBookings((data as Booking[]) ?? []);
+      });
   }, [user]);
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+      <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
         My trips
       </h1>
       <div className="mt-3 h-px w-12 bg-gold" aria-hidden />
       <p className="mt-4 text-[1.0625rem] text-brand-900/60">
         Request to Book enquiries and confirmed stays.
       </p>
+      {loadError ? <p className="mt-4 text-[1rem] text-brand-900">{loadError}</p> : null}
 
       <section className="mt-12">
         <h2 className="text-[1.125rem] font-semibold text-brand-900">Confirmed bookings</h2>
-        {bookings.length === 0 ? (
+        {loadError ? null : bookings.length === 0 ? (
           <p className="mt-4 text-[1rem] text-brand-900/50">No confirmed bookings yet.</p>
         ) : (
           <div className="mt-4 space-y-3">
@@ -76,7 +86,7 @@ function TripsPage() {
 
       <section className="mt-12">
         <h2 className="text-[1.125rem] font-semibold text-brand-900">Enquiries</h2>
-        {enquiries.length === 0 ? (
+        {loadError ? null : enquiries.length === 0 ? (
           <p className="mt-4 text-[1rem] text-brand-900/50">
             No enquiries yet.{" "}
             <Link

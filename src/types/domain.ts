@@ -9,7 +9,7 @@ export type EnquiryStatus = "new" | "in_review" | "approved" | "declined" | "exp
 export type BookingStatus =
   "pending_payment" | "confirmed" | "checked_in" | "completed" | "cancelled" | "refunded";
 
-export type BlockReason = "booked" | "manual" | "hold";
+export type BlockReason = "booked" | "manual" | "hold" | "pms";
 
 export type ReviewStatus = "pending" | "approved" | "rejected";
 
@@ -108,6 +108,8 @@ export interface Enquiry {
   service_fee: number;
   total: number;
   currency: "GHS";
+  pms_reservation_id?: string | null;
+  pms_sync_error?: string | null;
   created_at: string;
   updated_at: string;
   property?: Property | null;

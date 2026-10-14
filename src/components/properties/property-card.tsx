@@ -4,12 +4,20 @@ import { ghs } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Property } from "@/types/domain";
 
+type StaySearch = {
+  checkIn?: string;
+  checkOut?: string;
+  guests?: number;
+};
+
 export function PropertyCard({
   property,
   index = 0,
+  stay,
 }: {
   property: Property;
   index?: number;
+  stay?: StaySearch;
 }) {
   const img = coverUrl(property);
   const price = property.pricing?.nightly_rate ?? 0;
@@ -20,7 +28,12 @@ export function PropertyCard({
     <Link
       to="/properties/$slug"
       params={{ slug: property.slug }}
-      className="guest-site group grid overflow-hidden bg-[#FBFaf7] md:grid-cols-2"
+      search={{
+        checkIn: stay?.checkIn || undefined,
+        checkOut: stay?.checkOut || undefined,
+        guests: stay?.guests || undefined,
+      }}
+      className="guest-site group grid overflow-hidden bg-[#FBFaf7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal/40 focus-visible:ring-offset-4 focus-visible:ring-offset-[#F7F5F2] md:grid-cols-2"
     >
       <div
         className={cn(
@@ -42,7 +55,7 @@ export function PropertyCard({
           flip && "md:order-1",
         )}
       >
-        <h3 className="font-[family-name:var(--font-guest-display)] text-[2rem] font-medium leading-[1.15] tracking-[-0.02em] text-brand-900">
+        <h3 className="font-[family-name:var(--font-guest-display)] text-[2rem] font-normal leading-[1.15] tracking-[-0.02em] text-brand-900">
           {property.title}
         </h3>
         <div className="mt-5 h-px w-16 bg-gold" aria-hidden />

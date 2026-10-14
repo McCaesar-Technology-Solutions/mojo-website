@@ -58,7 +58,7 @@ function BookingSuccessPage() {
         {status === "loading" && reference ? (
           <>
             <iconify-icon icon="solar:refresh-bold" width="40" className="text-royal" />
-            <h1 className="mt-4 font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+            <h1 className="mt-4 font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
               Confirming booking…
             </h1>
             <p className="mt-3 text-[1.0625rem] text-brand-900/60">
@@ -70,7 +70,7 @@ function BookingSuccessPage() {
         {status === "confirmed" ? (
           <>
             <iconify-icon icon="solar:check-circle-bold" width="48" className="text-royal" />
-            <h1 className="mt-4 font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+            <h1 className="mt-4 font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
               Booking confirmed
             </h1>
             <p className="mt-3 text-[1.0625rem] text-brand-900/60">
@@ -89,7 +89,7 @@ function BookingSuccessPage() {
         {status === "pending" ? (
           <>
             <iconify-icon icon="solar:hourglass-bold" width="48" className="text-royal" />
-            <h1 className="mt-4 font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+            <h1 className="mt-4 font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
               Almost there
             </h1>
             <p className="mt-3 text-[1.0625rem] text-brand-900/60">
@@ -115,7 +115,7 @@ function BookingSuccessPage() {
 
         {status === "missing" ? (
           <>
-            <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-brand-900">
+            <h1 className="font-[family-name:var(--font-guest-display)] text-[clamp(1.75rem,4vw,2.25rem)] font-normal tracking-[-0.02em] text-brand-900">
               Looking for your stay?
             </h1>
             <div className="mx-auto mt-3 h-px w-12 bg-gold" aria-hidden />
