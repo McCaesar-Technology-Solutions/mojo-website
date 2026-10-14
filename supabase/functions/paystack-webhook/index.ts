@@ -38,7 +38,8 @@ Deno.serve(async (req) => {
           p_amount: paidAmount,
           p_currency: currency,
         });
-        if (recorded.error) return new Response("unmatched payment was not recorded", { status: 500 });
+        if (recorded.error)
+          return new Response("unmatched payment was not recorded", { status: 500 });
         console.error(
           JSON.stringify({
             level: "error",

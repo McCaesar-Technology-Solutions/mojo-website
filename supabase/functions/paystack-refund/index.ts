@@ -50,7 +50,10 @@ Deno.serve(async (req) => {
     if (claim.error) throw new Error("Refund could not be started");
     const action = claim.data?.action as RefundAction | undefined;
 
-    if (action === "unknown" || !refundRetryCallsProvider(action ?? "unknown") && action !== "reconcile") {
+    if (
+      action === "unknown" ||
+      (!refundRetryCallsProvider(action ?? "unknown") && action !== "reconcile")
+    ) {
       return json(
         {
           error:

@@ -20,8 +20,18 @@ test("a refund retry calls Paystack only for a fresh claim", () => {
 });
 
 test("manual verification requires an explicit outcome, reference, and note", () => {
-  assert.equal(parseManualRefundVerification({ outcome: undefined, reference: "mojo_a", evidence: "seen in dashboard" }).ok, false);
-  assert.equal(parseManualRefundVerification({ outcome: "accepted", reference: " ", evidence: "short" }).ok, false);
+  assert.equal(
+    parseManualRefundVerification({
+      outcome: undefined,
+      reference: "mojo_a",
+      evidence: "seen in dashboard",
+    }).ok,
+    false,
+  );
+  assert.equal(
+    parseManualRefundVerification({ outcome: "accepted", reference: " ", evidence: "short" }).ok,
+    false,
+  );
   const unknown = parseManualRefundVerification({
     outcome: "unknown",
     reference: " mojo_a ",

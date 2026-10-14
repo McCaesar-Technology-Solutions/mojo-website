@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 export function CatalogUnavailable({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="border border-dashed border-brand-900/15 px-6 py-16 text-center">
-      <p className="text-[1.0625rem] text-brand-900">Stays could not be loaded. Please try again.</p>
+      <p className="text-[1.0625rem] text-brand-900">
+        Stays could not be loaded. Please try again.
+      </p>
       <button
         type="button"
         onClick={onRetry}

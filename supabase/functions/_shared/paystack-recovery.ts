@@ -25,14 +25,18 @@ export function parseManualRefundVerification(input: {
   | { ok: true; outcome: ManualRefundOutcome; reference: string; evidence: string }
   | { ok: false; error: string } {
   if (input.outcome !== "accepted" && input.outcome !== "unknown") {
-    return { ok: false, error: "Record whether the Paystack dashboard shows the refund as accepted or still unknown." };
+    return {
+      ok: false,
+      error: "Record whether the Paystack dashboard shows the refund as accepted or still unknown.",
+    };
   }
   const reference = typeof input.reference === "string" ? input.reference.trim() : "";
   const evidence = typeof input.evidence === "string" ? input.evidence.trim() : "";
   if (!reference || evidence.length < 8) {
     return {
       ok: false,
-      error: "Enter the Paystack reference you checked and a note of at least 8 characters describing what you saw.",
+      error:
+        "Enter the Paystack reference you checked and a note of at least 8 characters describing what you saw.",
     };
   }
   return { ok: true, outcome: input.outcome, reference, evidence };

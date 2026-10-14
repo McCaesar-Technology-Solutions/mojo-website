@@ -14,7 +14,11 @@ export function SiteFooter() {
     <footer className="guest-site bg-brand-900 px-5 pb-8 pt-16 text-white md:px-6">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-10 md:grid-cols-4">
         <div className="col-span-2 md:col-span-1">
-          <Link to="/" className="inline-flex items-center gap-2.5" aria-label="MOJO Apartments home">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2.5"
+            aria-label="MOJO Apartments home"
+          >
             <BrandMark variant="gold" className="!h-9" />
             <span className="font-[family-name:var(--font-guest-display)] text-[1.125rem] font-normal tracking-[0.04em] text-white">
               MOJO
@@ -102,7 +106,10 @@ export function SiteFooter() {
               <iconify-icon icon="solar:chat-round-dots-linear" width="16" /> WhatsApp
             </a>
           ) : (
-            <Link to="/support" className="inline-flex min-h-11 items-center gap-2 transition hover:text-gold">
+            <Link
+              to="/support"
+              className="inline-flex min-h-11 items-center gap-2 transition hover:text-gold"
+            >
               <iconify-icon icon="solar:chat-round-dots-linear" width="16" /> Contact
             </Link>
           )}

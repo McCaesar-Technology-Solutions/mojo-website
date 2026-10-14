@@ -52,10 +52,7 @@ Deno.serve(async (req) => {
       throw new Error("Invalid guest count");
     }
 
-    admin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     const { data: property, error: pErr } = await admin
       .from("properties")
@@ -82,8 +79,7 @@ Deno.serve(async (req) => {
     if (!pricing) throw new Error("Property has no pricing");
 
     const nights =
-      (new Date(check_out + "T00:00:00Z").getTime() -
-        new Date(check_in + "T00:00:00Z").getTime()) /
+      (new Date(check_out + "T00:00:00Z").getTime() - new Date(check_in + "T00:00:00Z").getTime()) /
       86400000;
     if (!Number.isInteger(nights) || nights < 1) throw new Error("Invalid dates");
 
@@ -150,24 +146,24 @@ Deno.serve(async (req) => {
     let paystackRes: Response;
     try {
       paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("PAYSTACK_SECRET_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: user.email,
-        amount: amountPesewas,
-        currency: "GHS",
-        reference,
-        callback_url: `${appUrl}/booking/success?reference=${reference}`,
-        metadata: {
-          booking_id: booking.id,
-          property_id,
-          expected_amount: amountPesewas,
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("PAYSTACK_SECRET_KEY")}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          email: user.email,
+          amount: amountPesewas,
+          currency: "GHS",
+          reference,
+          callback_url: `${appUrl}/booking/success?reference=${reference}`,
+          metadata: {
+            booking_id: booking.id,
+            property_id,
+            expected_amount: amountPesewas,
+          },
+        }),
+      });
     } catch {
       checkoutOutcome = "unknown";
       throw new Error("Paystack did not return a checkout result");
