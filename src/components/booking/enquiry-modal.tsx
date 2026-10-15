@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { enquirySchema, submitEnquiry, type EnquiryFormValues } from "@/lib/enquiries";
-import { fmtDate, ghs, whatsappEnquiryLink } from "@/lib/format";
+import { fmtDate, ghs, toDateInputValue, whatsappEnquiryLink } from "@/lib/format";
+import { StayDateRange, StaySelect } from "@/components/guest/stay-pickers";
 import { getWhatsAppNumber } from "@/lib/env";
 import { calcStayTotal, nightsBetween } from "@/lib/format";
 import type { Property } from "@/types/domain";
@@ -131,48 +132,37 @@ export function EnquiryModal({
             })}
             className="space-y-4 px-6 py-6"
           >
-            <div className="grid grid-cols-2 overflow-hidden border border-brand-900/10 bg-white">
-              <label className="block cursor-text border-r border-brand-900/10 p-3">
-                <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
-                  Check-in
-                </span>
-                <input
-                  type="date"
-                  value={checkIn}
-                  onChange={(e) => onCheckInChange(e.target.value)}
-                  className="mt-1 w-full bg-transparent text-[0.9375rem] font-medium outline-none"
-                />
-              </label>
-              <label className="block cursor-text p-3">
-                <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
-                  Check-out
-                </span>
-                <input
-                  type="date"
-                  min={checkIn}
-                  value={checkOut}
-                  onChange={(e) => onCheckOutChange(e.target.value)}
-                  className="mt-1 w-full bg-transparent text-[0.9375rem] font-medium outline-none"
-                />
-              </label>
-            </div>
+            <StayDateRange
+              checkIn={checkIn}
+              checkOut={checkOut}
+              minDate={toDateInputValue(new Date())}
+              onCheckIn={onCheckInChange}
+              onCheckOut={onCheckOutChange}
+              inId="enquiry-check-in"
+              outId="enquiry-check-out"
+              inLabel="Check-in"
+              outLabel="Check-out"
+              showDash={false}
+              clusterClassName="grid grid-cols-2 overflow-hidden border border-brand-900/10 bg-white"
+              fieldClassName="block w-full p-3 text-left first:border-r first:border-brand-900/10"
+              labelClassName="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45"
+              valueClassName="mt-1 flex min-h-11 items-center text-[0.9375rem] font-medium text-brand-900"
+            />
 
-            <label className="block border border-brand-900/10 bg-white p-3">
+            <div className="block border border-brand-900/10 bg-white p-3">
               <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
                 Guests
               </span>
-              <select
-                value={guests}
-                onChange={(e) => onGuestsChange(Number(e.target.value))}
-                className="mt-1 w-full appearance-none bg-transparent text-[0.9375rem] font-medium outline-none"
-              >
-                {Array.from({ length: property.max_guests }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>
-                    {n} {n === 1 ? "guest" : "guests"}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <StaySelect
+                id="enquiry-guests"
+                value={String(guests)}
+                onValueChange={(value) => onGuestsChange(Number(value))}
+                options={Array.from({ length: property.max_guests }, (_, i) => i + 1).map((n) => ({
+                  value: String(n),
+                  label: `${n} ${n === 1 ? "guest" : "guests"}`,
+                }))}
+              />
+            </div>
 
             <input
               type="text"

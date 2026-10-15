@@ -29,6 +29,19 @@ body { font-family: "Poppins", ui-sans-serif, system-ui, sans-serif; }
   }
 }
 
+@keyframes guest-cinema-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+.guest-cinema-slide {
+  transform-origin: 72% center;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .guest-cinema-stage {
     animation: guest-cinema-settle 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -38,6 +51,12 @@ body { font-family: "Poppins", ui-sans-serif, system-ui, sans-serif; }
   }
   .guest-cinema-desk {
     animation: guest-cinema-settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
+  }
+  .guest-cinema-slide {
+    transform: scale(1.08);
+  }
+  .guest-cinema-slide.is-active {
+    animation: guest-cinema-kenburns 6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 

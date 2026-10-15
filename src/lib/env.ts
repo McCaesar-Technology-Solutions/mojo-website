@@ -1,3 +1,5 @@
+import { MOJO_WHATSAPP_DEFAULT } from "@/lib/contact";
+
 export type AppEnv = "local" | "preview" | "staging" | "production";
 
 /**
@@ -27,9 +29,10 @@ export function getAppUrl() {
   return (import.meta.env.VITE_APP_URL as string | undefined)?.replace(/\/$/, "") || "";
 }
 
-/** Digits only, country code included (e.g. 233XXXXXXXXX). Empty if unset. */
+/** Digits only, country code included (e.g. 233XXXXXXXXX). Falls back to the public enquiry line. */
 export function getWhatsAppNumber() {
   const raw = (import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined)?.trim() ?? "";
   const digits = raw.replace(/\D/g, "");
-  return digits.length >= 10 ? digits : "";
+  if (digits.length >= 10) return digits;
+  return MOJO_WHATSAPP_DEFAULT;
 }

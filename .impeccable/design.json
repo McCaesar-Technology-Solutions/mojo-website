@@ -522,7 +522,7 @@
       },
       {
         "name": "The Stay Stage Rule (guest)",
-        "body": "Hero media is one full-bleed plane under the nav, with a black 55% overlay for type. Do not restore a rounded inset card (deferred) or a marketplace collage.",
+        "body": "Hero media is one full-bleed plane under the nav, with a black 35% overlay for type. Do not restore a rounded inset card (deferred) or a marketplace collage.",
         "section": "layout"
       },
       {

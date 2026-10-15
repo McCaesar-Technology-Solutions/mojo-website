@@ -4,7 +4,8 @@ import { z } from "zod";
 import { GuestShell } from "@/components/layout/guest-shell";
 import { EnquiryModal } from "@/components/booking/enquiry-modal";
 import { getBlockedDates, getPropertyBySlug, coverUrl } from "@/lib/properties";
-import { calcStayTotal, ghs, locationLabel, nightsBetween } from "@/lib/format";
+import { calcStayTotal, ghs, locationLabel, nightsBetween, toDateInputValue } from "@/lib/format";
+import { StayDateRange, StaySelect } from "@/components/guest/stay-pickers";
 import { getSupabase } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import type { Property } from "@/types/domain";
@@ -301,33 +302,25 @@ function PropertyDetailPage() {
                 <span className="text-[0.8125rem] text-brand-900/50">/ night</span>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 overflow-hidden border border-brand-900/10 bg-white">
-                <label className="block cursor-text border-r border-brand-900/10 p-3">
-                  <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
-                    Check-in
-                  </span>
-                  <input
-                    type="date"
-                    value={checkIn}
-                    onChange={(e) => {
-                      if (!dateBlocked(e.target.value)) setCheckIn(e.target.value);
-                    }}
-                    className="mt-1 w-full bg-transparent text-[0.9375rem] font-medium outline-none"
-                  />
-                </label>
-                <label className="block cursor-text p-3">
-                  <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
-                    Check-out
-                  </span>
-                  <input
-                    type="date"
-                    min={checkIn}
-                    value={checkOut}
-                    onChange={(e) => setCheckOut(e.target.value)}
-                    className="mt-1 w-full bg-transparent text-[0.9375rem] font-medium outline-none"
-                  />
-                </label>
-              </div>
+              <StayDateRange
+                checkIn={checkIn}
+                checkOut={checkOut}
+                minDate={toDateInputValue(new Date())}
+                disabled={(date) => dateBlocked(toDateInputValue(date))}
+                onCheckIn={(value) => {
+                  if (!dateBlocked(value)) setCheckIn(value);
+                }}
+                onCheckOut={setCheckOut}
+                inId="property-check-in"
+                outId="property-check-out"
+                inLabel="Check-in"
+                outLabel="Check-out"
+                showDash={false}
+                clusterClassName="mt-5 grid grid-cols-2 overflow-hidden border border-brand-900/10 bg-white"
+                fieldClassName="block w-full p-3 text-left first:border-r first:border-brand-900/10"
+                labelClassName="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45"
+                valueClassName="mt-1 flex min-h-11 items-center text-[0.9375rem] font-medium text-brand-900"
+              />
               {calendarError ? (
                 <p className="mt-2 text-[0.8125rem] text-brand-900">
                   Availability could not be loaded. Please try again before requesting these dates.
@@ -339,22 +332,22 @@ function PropertyDetailPage() {
                 </p>
               ) : null}
 
-              <label className="mt-3 block border border-brand-900/10 bg-white p-3">
+              <div className="mt-3 block border border-brand-900/10 bg-white p-3">
                 <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
                   Guests
                 </span>
-                <select
-                  value={guests}
-                  onChange={(e) => setGuests(Number(e.target.value))}
-                  className="mt-1 w-full appearance-none bg-transparent text-[0.9375rem] font-medium outline-none"
-                >
-                  {Array.from({ length: property.max_guests }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>
-                      {n} {n === 1 ? "guest" : "guests"}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                <StaySelect
+                  id="property-guests"
+                  value={String(guests)}
+                  onValueChange={(value) => setGuests(Number(value))}
+                  options={Array.from({ length: property.max_guests }, (_, i) => i + 1).map(
+                    (n) => ({
+                      value: String(n),
+                      label: `${n} ${n === 1 ? "guest" : "guests"}`,
+                    }),
+                  )}
+                />
+              </div>
 
               <div className="mt-5 space-y-2 text-[0.875rem] text-brand-900/70">
                 <div className="flex justify-between">

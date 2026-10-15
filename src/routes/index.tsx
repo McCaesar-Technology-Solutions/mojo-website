@@ -11,13 +11,14 @@ import { SiteNav } from "@/components/layout/site-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PropertyCard } from "@/components/properties/property-card";
 import { getWhatsAppNumber } from "@/lib/env";
-import { defaultStayDates, toDateInputValue } from "@/lib/format";
+import { defaultStayDates } from "@/lib/format";
 import {
   CatalogEmpty,
   CatalogLoading,
   CatalogUnavailable,
 } from "@/components/properties/catalog-status";
 import { usePublishedProperties } from "@/lib/use-published-properties";
+import { GUEST_CITIES, StayDateRange, StaySelect } from "@/components/guest/stay-pickers";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -80,9 +81,9 @@ function HeroSlideshow() {
           fetchPriority={slideIndex === 0 ? "high" : "low"}
           loading={slideIndex === 0 ? "eager" : "lazy"}
           decoding="async"
-          className={`absolute inset-0 h-full w-full object-cover object-[72%_center] ${
+          className={`guest-cinema-slide absolute inset-0 h-full w-full object-cover object-[72%_center] ${
             reduceMotion ? "" : "transition-opacity duration-1000 ease-in-out"
-          } ${slideIndex === index ? "opacity-100" : "opacity-0"}`}
+          } ${slideIndex === index ? "is-active opacity-100" : "opacity-0"}`}
         />
       ))}
     </div>
@@ -124,10 +125,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <section className="w-full pt-16">
         <div className="guest-cinema-stage relative flex min-h-[calc(100svh-4rem)] w-full flex-col overflow-hidden">
           <HeroSlideshow />
-          <div aria-hidden className="pointer-events-none absolute inset-0 z-10 bg-black/55" />
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-10 bg-black/35" />
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.28),transparent_68%)]"
+            className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.18),transparent_68%)]"
           />
 
           <div className="relative z-20 flex min-h-[inherit] flex-1 flex-col">
@@ -154,10 +155,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               }}
             >
               <div className="grid grid-cols-2 items-stretch gap-2 rounded-[1.25rem] border border-white/70 bg-[#FBFaf7]/88 p-2.5 shadow-[0_8px_32px_rgba(36,16,77,0.12)] backdrop-blur-xl sm:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,0.9fr)_auto] sm:gap-0 sm:rounded-[1.5rem] sm:p-2 sm:pl-4 md:p-2.5 md:pl-5">
-                <label
-                  htmlFor="hero-search-city"
-                  className="flex min-w-0 flex-col justify-center rounded-lg bg-white/50 px-3 py-2 sm:rounded-none sm:border-r sm:border-brand-900/10 sm:bg-transparent sm:px-4 sm:py-3"
-                >
+                <div className="flex min-w-0 flex-col justify-center rounded-lg bg-white/50 px-3 py-2 sm:rounded-none sm:border-r sm:border-brand-900/10 sm:bg-transparent sm:px-4 sm:py-3">
                   <span className="text-[0.75rem] font-bold leading-none text-brand-900 sm:text-[0.8125rem]">
                     City
                   </span>
@@ -168,18 +166,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                       className="hidden shrink-0 sm:block"
                       aria-hidden
                     />
-                    <select
+                    <StaySelect
                       id="hero-search-city"
                       value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="min-h-11 min-w-0 flex-1 cursor-pointer appearance-none rounded-md bg-transparent text-[1rem] font-medium leading-tight tracking-[-0.01em] text-brand-900 outline-none focus-visible:ring-2 focus-visible:ring-royal/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FBFaf7] sm:min-h-0"
-                    >
-                      {["Accra", "Kumasi", "Takoradi", "Tema"].map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
+                      hideChevron
+                      onValueChange={setCity}
+                      options={GUEST_CITIES.map((c) => ({ value: c, label: c }))}
+                    />
                     <iconify-icon
                       icon="solar:alt-arrow-down-linear"
                       width="16"
@@ -187,11 +180,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                       aria-hidden
                     />
                   </span>
-                </label>
-                <label
-                  htmlFor="hero-search-guests"
-                  className="flex min-w-0 flex-col justify-center rounded-lg bg-white/50 px-3 py-2 sm:order-3 sm:rounded-none sm:bg-transparent sm:px-4 sm:py-3"
-                >
+                </div>
+                <div className="flex min-w-0 flex-col justify-center rounded-lg bg-white/50 px-3 py-2 sm:order-3 sm:rounded-none sm:bg-transparent sm:px-4 sm:py-3">
                   <span className="text-[0.75rem] font-bold leading-none text-brand-900 sm:text-[0.8125rem]">
                     Guests
                   </span>
@@ -202,18 +192,16 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                       className="hidden shrink-0 sm:block"
                       aria-hidden
                     />
-                    <select
+                    <StaySelect
                       id="hero-search-guests"
-                      value={guests}
-                      onChange={(e) => setGuests(Number(e.target.value))}
-                      className="min-h-11 min-w-0 flex-1 cursor-pointer appearance-none rounded-md bg-transparent text-[1rem] font-medium leading-tight tracking-[-0.01em] text-brand-900 outline-none focus-visible:ring-2 focus-visible:ring-royal/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FBFaf7] sm:min-h-0"
-                    >
-                      {[1, 2, 3, 4, 5, 6].map((n) => (
-                        <option key={n} value={n}>
-                          {n} {n === 1 ? "guest" : "guests"}
-                        </option>
-                      ))}
-                    </select>
+                      value={String(guests)}
+                      hideChevron
+                      onValueChange={(value) => setGuests(Number(value))}
+                      options={[1, 2, 3, 4, 5, 6].map((n) => ({
+                        value: String(n),
+                        label: `${n} ${n === 1 ? "guest" : "guests"}`,
+                      }))}
+                    />
                     <iconify-icon
                       icon="solar:alt-arrow-down-linear"
                       width="16"
@@ -221,60 +209,20 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                       aria-hidden
                     />
                   </span>
-                </label>
-                <div className="col-span-2 grid grid-cols-2 gap-2 sm:order-2 sm:col-span-1 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-0 sm:rounded-none sm:border-r sm:border-brand-900/10 sm:px-4 sm:py-3">
-                  <label
-                    htmlFor="hero-search-check-in"
-                    className="flex min-w-0 flex-col justify-center rounded-lg bg-white/50 px-3 py-2 sm:bg-transparent sm:p-0"
-                  >
-                    <span className="text-[0.75rem] font-bold leading-none text-brand-900 sm:text-[0.8125rem]">
-                      Check in
-                    </span>
-                    <span className="mt-1 flex min-h-11 items-center gap-1.5 text-brand-900/60 sm:min-h-0">
-                      <iconify-icon
-                        icon="solar:calendar-linear"
-                        width="18"
-                        className="hidden shrink-0 sm:block"
-                        aria-hidden
-                      />
-                      <input
-                        id="hero-search-check-in"
-                        type="date"
-                        value={checkIn}
-                        min={defaults.checkIn}
-                        onChange={(e) => {
-                          const next = e.target.value;
-                          setCheckIn(next);
-                          if (checkOut && next >= checkOut) {
-                            const day = new Date(`${next}T00:00:00`);
-                            day.setDate(day.getDate() + 1);
-                            setCheckOut(toDateInputValue(day));
-                          }
-                        }}
-                        className="min-h-11 min-w-0 flex-1 cursor-pointer rounded-md bg-transparent text-[1rem] font-medium leading-tight tracking-[-0.01em] text-brand-900 outline-none focus-visible:ring-2 focus-visible:ring-royal/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FBFaf7] sm:min-h-0"
-                      />
-                    </span>
-                  </label>
-                  <span className="hidden items-end pb-2 text-brand-900/35 sm:flex" aria-hidden>
-                    –
-                  </span>
-                  <label
-                    htmlFor="hero-search-check-out"
-                    className="flex min-w-0 flex-col justify-center rounded-lg bg-white/50 px-3 py-2 sm:bg-transparent sm:p-0"
-                  >
-                    <span className="text-[0.75rem] font-bold leading-none text-brand-900 sm:text-[0.8125rem]">
-                      Check out
-                    </span>
-                    <input
-                      id="hero-search-check-out"
-                      type="date"
-                      value={checkOut}
-                      min={checkIn || defaults.checkIn}
-                      onChange={(e) => setCheckOut(e.target.value)}
-                      className="mt-1 min-h-11 min-w-0 w-full cursor-pointer rounded-md bg-transparent text-[1rem] font-medium leading-tight tracking-[-0.01em] text-brand-900 outline-none focus-visible:ring-2 focus-visible:ring-royal/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FBFaf7] sm:min-h-0"
-                    />
-                  </label>
                 </div>
+                <StayDateRange
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  minDate={defaults.checkIn}
+                  onCheckIn={setCheckIn}
+                  onCheckOut={setCheckOut}
+                  inId="hero-search-check-in"
+                  outId="hero-search-check-out"
+                  clusterClassName="col-span-2 grid grid-cols-2 gap-2 sm:order-2 sm:col-span-1 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-0 sm:rounded-none sm:border-r sm:border-brand-900/10 sm:px-4 sm:py-3"
+                  fieldClassName="flex min-w-0 flex-col justify-center rounded-lg bg-white/50 px-3 py-2 text-left sm:bg-transparent sm:p-0"
+                  labelClassName="text-[0.75rem] font-bold leading-none text-brand-900 sm:text-[0.8125rem]"
+                  valueClassName="mt-1 flex min-h-11 items-center gap-1.5 text-[1rem] font-medium leading-tight tracking-[-0.01em] text-brand-900 sm:min-h-0"
+                />
                 <button
                   type="submit"
                   className="col-span-2 flex min-h-11 w-full items-center justify-center rounded-lg bg-royal px-5 text-[1rem] font-bold tracking-[-0.01em] text-white transition hover:bg-royal/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FBFaf7] sm:order-4 sm:col-span-1 sm:w-auto sm:self-stretch sm:rounded-[1.15rem] sm:px-8"
