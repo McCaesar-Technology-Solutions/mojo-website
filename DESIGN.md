@@ -338,7 +338,7 @@ Shared MOJO brand hues; role differs by surface.
 ## Layout
 
 ### Guest — Stay Stage + Glass Desk
-First viewport is one composition: fixed nav **64px** paper ground, then a **full-bleed** stay slideshow (`pt-16`, no stage gutter or radius). Type sits on a **black 55%** overlay plus a soft center radial (`rgba(0,0,0,0.28)`). **Centered** Marcellus headline + gold hairline + Poppins Request-to-Book support line (no savings claims, no hero CTA pair). Bottom of the stage: **frosted cream glass desk**. Desktop: one row City · Check in · Check out · Guests · royal Search stays. Phone: City|Guests, then Check in|Check out, then full-width Search; controls **44×44**. Dates ride URL search into browse and property Request to Book; the list is not Instant Book inventory. Catalog below shows loading, empty, or error+retry — never a demo catalog. Slim how-it-works band (gold hairline tops, no “Step *n*” kickers), closing CTA. Ink **footer** with Marcellus `h2` columns. Section vertical rhythm ~**64–96px**.
+First viewport is one composition: fixed nav **64px** paper ground, then a **full-bleed** stay slideshow (`pt-16`, no stage gutter or radius). Type sits on a **black 35%** overlay plus a soft center radial (`rgba(0,0,0,0.18)`). **Centered** Marcellus headline + gold hairline + Poppins Request-to-Book support line (no savings claims, no hero CTA pair). Bottom of the stage: **frosted cream glass desk**. Desktop: one row City · Check in · Check out · Guests · royal Search stays. Pickers are paper Radix menus and a royal range calendar — not native `<select>` / `type="date"` chrome. Phone: City|Guests, then Check in|Check out, then full-width Search; controls **44×44**. Dates ride URL search into browse and property Request to Book; the list is not Instant Book inventory. Catalog below shows loading, empty, or error+retry — never a demo catalog. Slim how-it-works band (gold hairline tops, no “Step *n*” kickers), closing CTA. Ink **footer** with Marcellus `h2` columns. Section vertical rhythm ~**64–96px**.
 
 ### Ops — Concierge phone-sheet
 Slim fixed ops rail (**220px**) with **56px** brand/header bands. Main pads **16–24px** horizontal, **20px** vertical. Tight block rhythm (**16–20px**).
@@ -357,7 +357,7 @@ Slim fixed ops rail (**220px**) with **56px** brand/header bands. Main pads **16
 ## Elevation & Depth
 
 ### Guest
-Depth is overlay + frost: stay photos under black 55% + radial; nav is paper ground (scrolled: paper/95 + 1px shadow + blur). The glass desk is cream/white frost over the stage (`backdrop-blur` + light border). Property plates are full-bleed editorial splits (no card chrome, no type badges); gold hairline under the title. Authored motion: stage/brand/desk settle with blur→sharp (`prefers-reduced-motion` gated); plate media ease-scale on hover (~1.03 over 700ms).
+Depth is overlay + frost: stay photos under black 35% + radial; nav is paper ground (scrolled: paper/95 + 1px shadow + blur). The glass desk is cream/white frost over the stage (`backdrop-blur` + light border). Property plates are full-bleed editorial splits (no card chrome, no type badges); gold hairline under the title. Authored motion: stage/brand/desk settle with blur→sharp (`prefers-reduced-motion` gated); each hero slide Ken Burns zoom (~1.08 over 6s) as it becomes the visible frame; plate media ease-scale on hover (~1.03 over 700ms).
 
 ### Ops
 Almost flat. Depth is tonal: paper stone → sheet cream → white, separated by **1px** brand-ink/10 hairlines. Shadows are rare and structural.

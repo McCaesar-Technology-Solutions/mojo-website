@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 import { GuestShell } from "@/components/layout/guest-shell";
 import { PropertyCard } from "@/components/properties/property-card";
@@ -9,6 +9,13 @@ import {
   CatalogUnavailable,
 } from "@/components/properties/catalog-status";
 import { usePublishedProperties } from "@/lib/use-published-properties";
+import {
+  GUEST_CITIES,
+  GUEST_TYPES,
+  StayDateRange,
+  StaySelect,
+} from "@/components/guest/stay-pickers";
+import { defaultStayDates } from "@/lib/format";
 
 const searchSchema = z.object({
   city: z.string().optional(),
@@ -40,6 +47,12 @@ function PropertiesPage() {
     guests: search.guests,
   });
   const hasFilters = Boolean(search.city || search.guests || search.type);
+  const defaults = defaultStayDates();
+  const [city, setCity] = useState(search.city ?? "__all__");
+  const [guests, setGuests] = useState(search.guests ? String(search.guests) : "__all__");
+  const [type, setType] = useState(search.type ?? "__all__");
+  const [checkIn, setCheckIn] = useState(search.checkIn ?? "");
+  const [checkOut, setCheckOut] = useState(search.checkOut ?? "");
 
   const filtered = useMemo(() => {
     if (!search.type) return properties;
@@ -70,98 +83,73 @@ function PropertiesPage() {
           className="mb-10 grid overflow-hidden border border-brand-900/10 bg-[#FBFaf7] sm:grid-cols-[1fr_1.2fr_1fr_1fr_auto]"
           onSubmit={(e) => {
             e.preventDefault();
-            const fd = new FormData(e.currentTarget);
             void navigate({
               search: {
-                city: String(fd.get("city") || undefined) || undefined,
-                guests: Number(fd.get("guests") || undefined) || undefined,
-                type: String(fd.get("type") || undefined) || undefined,
-                checkIn: String(fd.get("checkIn") || undefined) || undefined,
-                checkOut: String(fd.get("checkOut") || undefined) || undefined,
+                city: city === "__all__" ? undefined : city,
+                guests: guests === "__all__" ? undefined : Number(guests),
+                type: type === "__all__" ? undefined : type,
+                checkIn: checkIn || undefined,
+                checkOut: checkOut || undefined,
               },
             });
           }}
         >
-          <label className="border-b border-brand-900/10 px-4 py-3 sm:border-b-0 sm:border-r">
+          <div className="border-b border-brand-900/10 px-4 py-3 sm:border-b-0 sm:border-r">
             <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
               City
             </span>
-            <select
-              name="city"
-              defaultValue={search.city ?? ""}
-              className="mt-1 w-full cursor-pointer appearance-none bg-transparent text-[0.9375rem] font-medium text-brand-900 outline-none"
-            >
-              <option value="">All cities</option>
-              {["Accra", "Kumasi", "Takoradi", "Tema"].map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="grid grid-cols-2 border-b border-brand-900/10 sm:border-b-0 sm:border-r">
-            <label htmlFor="properties-check-in" className="px-4 py-3">
-              <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
-                Check in
-              </span>
-              <input
-                id="properties-check-in"
-                type="date"
-                name="checkIn"
-                defaultValue={search.checkIn ?? ""}
-                className="mt-1 min-h-11 w-full min-w-0 bg-transparent text-[1rem] font-medium text-brand-900 outline-none sm:min-h-0 sm:text-[0.875rem]"
-              />
-            </label>
-            <label
-              htmlFor="properties-check-out"
-              className="border-l border-brand-900/10 px-4 py-3"
-            >
-              <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
-                Check out
-              </span>
-              <input
-                id="properties-check-out"
-                type="date"
-                name="checkOut"
-                defaultValue={search.checkOut ?? ""}
-                className="mt-1 min-h-11 w-full min-w-0 bg-transparent text-[1rem] font-medium text-brand-900 outline-none sm:min-h-0 sm:text-[0.875rem]"
-              />
-            </label>
+            <StaySelect
+              id="properties-city"
+              value={city}
+              onValueChange={setCity}
+              options={[
+                { value: "__all__", label: "All cities" },
+                ...GUEST_CITIES.map((c) => ({ value: c, label: c })),
+              ]}
+            />
           </div>
-          <label className="border-b border-brand-900/10 px-4 py-3 sm:border-b-0 sm:border-r">
+          <StayDateRange
+            checkIn={checkIn}
+            checkOut={checkOut}
+            minDate={defaults.checkIn}
+            onCheckIn={setCheckIn}
+            onCheckOut={setCheckOut}
+            inId="properties-check-in"
+            outId="properties-check-out"
+            showDash={false}
+            clusterClassName="grid grid-cols-2 border-b border-brand-900/10 sm:border-b-0 sm:border-r"
+            fieldClassName="px-4 py-3 text-left first:border-r first:border-brand-900/10"
+            labelClassName="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45"
+            valueClassName="mt-1 flex min-h-11 items-center text-[1rem] font-medium text-brand-900 sm:min-h-0 sm:text-[0.875rem]"
+          />
+          <div className="border-b border-brand-900/10 px-4 py-3 sm:border-b-0 sm:border-r">
             <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
               Type
             </span>
-            <select
-              name="type"
-              defaultValue={search.type ?? ""}
-              className="mt-1 w-full cursor-pointer appearance-none bg-transparent text-[0.9375rem] font-medium text-brand-900 outline-none"
-            >
-              <option value="">All types</option>
-              {["Apartment", "Hotel", "Suite", "Serviced"].map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="border-b border-brand-900/10 px-4 py-3 sm:border-b-0 sm:border-r">
+            <StaySelect
+              id="properties-type"
+              value={type}
+              onValueChange={setType}
+              options={[
+                { value: "__all__", label: "All types" },
+                ...GUEST_TYPES.map((t) => ({ value: t, label: t })),
+              ]}
+            />
+          </div>
+          <div className="border-b border-brand-900/10 px-4 py-3 sm:border-b-0 sm:border-r">
             <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-brand-900/45">
               Guests
             </span>
-            <select
-              name="guests"
-              defaultValue={search.guests ?? ""}
-              className="mt-1 w-full cursor-pointer appearance-none bg-transparent text-[0.9375rem] font-medium text-brand-900 outline-none"
-            >
-              <option value="">Any</option>
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <option key={n} value={n}>
-                  {n}+
-                </option>
-              ))}
-            </select>
-          </label>
+            <StaySelect
+              id="properties-guests"
+              value={guests}
+              onValueChange={setGuests}
+              options={[
+                { value: "__all__", label: "Any" },
+                ...[1, 2, 3, 4, 5, 6].map((n) => ({ value: String(n), label: `${n}+` })),
+              ]}
+            />
+          </div>
           <button
             type="submit"
             className="flex min-h-11 items-center justify-center gap-2 bg-royal px-6 py-3.5 text-[0.9375rem] font-medium text-white transition hover:bg-royal/90"

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { BrandMark } from "@/components/brand/brand-mark";
+import { MOJO_ENQUIRY_EMAIL, MOJO_PHONES } from "@/lib/contact";
 import { getWhatsAppNumber } from "@/lib/env";
 
 const footerHeading =
@@ -90,6 +91,18 @@ export function SiteFooter() {
                 Contact
               </Link>
             </li>
+            <li>
+              <a href={`mailto:${MOJO_ENQUIRY_EMAIL}`} className={footerLink}>
+                {MOJO_ENQUIRY_EMAIL}
+              </a>
+            </li>
+            {MOJO_PHONES.map((phone) => (
+              <li key={phone.tel}>
+                <a href={`tel:${phone.tel}`} className={footerLink}>
+                  {phone.display}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
       </div>

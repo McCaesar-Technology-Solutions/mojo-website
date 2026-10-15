@@ -11,7 +11,7 @@ related_targets: ["src/components/layout/site-nav.tsx","src/components/propertie
 Persuade (homepage) with Operate browse affordances. Nav + property plate shared across guest surfaces. Stay search params shared with `/properties` and `/properties/$slug`.
 
 ## Direction
-Stay Stage + Glass Desk — full-bleed media stage (zero margin; floating inset deferred), black 55% overlay + radial, centered Marcellus headline + gold hairline + Poppins subline. Glass desk: desktop one row; phone 2×2 City|Guests, Check in|Check out, then Search (44px controls). Nav: paper ground, BrandMark + Marcellus “MOJO”. Footer: ink field, Marcellus `h2` columns. Request-to-Book honesty only.
+Stay Stage + Glass Desk — full-bleed media stage (zero margin; floating inset deferred), black 35% overlay + radial, centered Marcellus headline + gold hairline + Poppins subline. Glass desk: desktop one row; phone 2×2 City|Guests, Check in|Check out, then Search (44px controls). Nav: paper ground, BrandMark + Marcellus “MOJO”. Footer: ink field, Marcellus `h2` columns. Request-to-Book honesty only.
 
 ## Constraints from PRODUCT.md
 Real stay media (slideshow) kept as the stage plane. No invented testimonials or savings claims. WhatsApp in nav/menu when configured. Mobile-first nav. Request to Book copy only — dates prefill enquiry, they do not imply Instant Book.

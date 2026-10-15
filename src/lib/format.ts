@@ -9,6 +9,10 @@ export const fmtDate = (v: string) =>
       })
     : "Select date";
 
+export function parseStayDate(iso: string) {
+  return new Date(`${iso}T00:00:00`);
+}
+
 export function toDateInputValue(date: Date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");

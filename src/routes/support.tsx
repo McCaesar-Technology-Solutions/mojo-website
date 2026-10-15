@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage } from "@/components/layout/legal-page";
+import { MOJO_ENQUIRY_EMAIL, MOJO_PHONES } from "@/lib/contact";
 import { getWhatsAppNumber } from "@/lib/env";
 
 export const Route = createFileRoute("/support")({
@@ -17,17 +18,19 @@ function SupportPage() {
       </p>
       <ul>
         <li>
-          WhatsApp:{" "}
-          {wa ? (
-            <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer">
-              Chat with MOJO
-            </a>
-          ) : (
-            <span>Number not configured — email us below.</span>
-          )}
+          Email:{" "}
+          <a href={`mailto:${MOJO_ENQUIRY_EMAIL}`}>{MOJO_ENQUIRY_EMAIL}</a>
         </li>
+        {MOJO_PHONES.map((phone) => (
+          <li key={phone.tel}>
+            Phone: <a href={`tel:${phone.tel}`}>{phone.display}</a>
+          </li>
+        ))}
         <li>
-          Email: <a href="mailto:support@mojoapartments.com">support@mojoapartments.com</a>
+          WhatsApp:{" "}
+          <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer">
+            Chat with MOJO
+          </a>
         </li>
         <li>Response target: within 24 hours for enquiries</li>
       </ul>
